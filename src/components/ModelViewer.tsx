@@ -57,20 +57,27 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   
   return (
     <div ref={containerRef} className={cn("model-container", className)}>
-      {/* @ts-ignore */}
-      <model-viewer
-        src={modelUrl}
-        alt="3D model"
-        auto-rotate={autoRotate ? "true" : "false"}
-        rotation-per-second="30deg"
-        camera-controls="true"
-        shadow-intensity="1"
-        exposure="0.75"
-        shadow-softness="1"
-        environment-image="neutral"
-        scale={scale}
+      {/* Using dangerouslySetInnerHTML instead of the JSX syntax for custom elements */}
+      <div
+        dangerouslySetInnerHTML={{
+          __html: `
+            <model-viewer
+              src="${modelUrl}"
+              alt="3D model"
+              auto-rotate="${autoRotate ? "true" : "false"}"
+              rotation-per-second="30deg"
+              camera-controls="true"
+              shadow-intensity="1"
+              exposure="0.75"
+              shadow-softness="1"
+              environment-image="neutral"
+              scale="${scale}"
+              style="width: 100%; height: 100%;"
+            ></model-viewer>
+          `
+        }}
         style={{ width: '100%', height: '100%' }}
-      ></model-viewer>
+      />
     </div>
   );
 };

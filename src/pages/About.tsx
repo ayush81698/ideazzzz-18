@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -7,7 +6,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle, Camera, Cpu, Printer3d } from 'lucide-react';
+import { ArrowRight, CheckCircle, Camera, Cpu, Printer } from 'lucide-react';
 
 const About = () => {
   const fadeInUp = {
@@ -162,7 +161,7 @@ const About = () => {
               <div className="h-2 bg-ideazzz-purple"></div>
               <CardContent className="p-6">
                 <div className="mb-4 h-12 w-12 rounded-full bg-ideazzz-purple/10 flex items-center justify-center">
-                  <Printer3d className="h-6 w-6 text-ideazzz-purple" />
+                  <Printer className="h-6 w-6 text-ideazzz-purple" />
                 </div>
                 <h3 className="text-xl font-bold mb-3">3. Precision 3D Printing</h3>
                 <p className="text-muted-foreground">

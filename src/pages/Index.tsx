@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -11,19 +10,19 @@ import { ArrowRight, CheckCircle, Star } from 'lucide-react';
 const models = [
   {
     id: 1,
-    title: "Superhero Action Figure",
-    description: "Custom superhero action figure with dynamic pose",
+    title: "Greek Statue Replica",
+    description: "Custom 3D printed Greek statue with realistic texture and detail",
     price: 4999,
-    modelUrl: "https://modelviewer.dev/shared-assets/models/Astronaut.glb", 
+    modelUrl: "https://modelviewer.dev/shared-assets/models/HumanBase.glb", 
     tags: ["Bestseller", "Customizable"],
     rating: 4.9
   },
   {
     id: 2,
-    title: "Celebrity Miniature",
-    description: "Highly detailed celebrity figurine with lifelike features",
+    title: "Portrait Bust",
+    description: "Highly detailed portrait bust with lifelike features",
     price: 6999,
-    modelUrl: "https://modelviewer.dev/shared-assets/models/RobotExpressive.glb",
+    modelUrl: "https://modelviewer.dev/shared-assets/models/HumanHead.glb",
     tags: ["Premium", "Limited Edition"],
     rating: 4.7
   },
@@ -32,17 +31,17 @@ const models = [
     title: "Wedding Cake Topper",
     description: "Personalized wedding cake topper from your photos",
     price: 3499,
-    modelUrl: "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
+    modelUrl: "https://modelviewer.dev/shared-assets/models/HumanPair.glb",
     tags: ["Custom", "Gift Idea"],
     rating: 5.0
   },
   {
     id: 4,
-    title: "Gaming Character",
-    description: "Your favorite gaming character in high-quality 3D print",
+    title: "Celebrity Figurine",
+    description: "Your favorite celebrity in high-quality 3D print",
     price: 5499,
-    modelUrl: "https://modelviewer.dev/shared-assets/models/RobotExpressive.glb",
-    tags: ["Popular", "Gaming"],
+    modelUrl: "https://modelviewer.dev/shared-assets/models/HumanStanding.glb",
+    tags: ["Popular", "Collectible"],
     rating: 4.8
   }
 ];
@@ -72,31 +71,21 @@ const features = [
 
 const Index = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const modelRefs = useRef<(HTMLDivElement | null)[]>([]);
   
+  // Remove the rotating animation for featured models
   useEffect(() => {
     observerRef.current = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('animate-rotate-slow');
-        } else {
-          entry.target.classList.remove('animate-rotate-slow');
+          // Keep visible but don't add rotating animation
         }
       });
     }, { threshold: 0.2 });
     
-    modelRefs.current.forEach((ref) => {
-      if (ref) {
-        observerRef.current?.observe(ref);
-      }
-    });
-    
     return () => {
-      modelRefs.current.forEach((ref) => {
-        if (ref) {
-          observerRef.current?.unobserve(ref);
-        }
-      });
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
     };
   }, []);
   
@@ -107,11 +96,24 @@ const Index = () => {
 
   return (
     <div className="overflow-x-hidden">
-      {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center overflow-hidden bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light">
+      {/* Hero Section with large 3D human model in background */}
+      <section className="relative min-h-[100vh] flex items-center overflow-hidden bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light dark:from-ideazzz-dark dark:via-gray-900 dark:to-ideazzz-dark">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] bg-ideazzz-pink opacity-10 rounded-full blur-[100px]"></div>
-          <div className="absolute -bottom-[10%] -left-[10%] w-[50%] h-[50%] bg-ideazzz-purple opacity-10 rounded-full blur-[100px]"></div>
+          <div className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] bg-ideazzz-pink opacity-10 rounded-full blur-[100px] dark:opacity-20"></div>
+          <div className="absolute -bottom-[10%] -left-[10%] w-[50%] h-[50%] bg-ideazzz-purple opacity-10 rounded-full blur-[100px] dark:opacity-20"></div>
+        </div>
+        
+        {/* Large human model in background */}
+        <div className="absolute inset-0 z-0 opacity-30 dark:opacity-20 pointer-events-none">
+          <ModelViewer 
+            modelUrl="https://modelviewer.dev/shared-assets/models/HumanFullBody.glb"
+            className="w-full h-[120%]" 
+            autoRotate={false}
+            cameraControls={false}
+            scale="1.5 1.5 1.5"
+            backgroundAlpha={0}
+            fieldOfView="30deg"
+          />
         </div>
         
         <div className="container mx-auto px-4 py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 relative z-10">
@@ -122,13 +124,13 @@ const Index = () => {
             variants={fadeInUp}
             className="flex flex-col justify-center"
           >
-            <Badge className="mb-4 bg-ideazzz-pink/10 text-ideazzz-pink border-none text-sm py-1 px-3 w-fit">
+            <Badge className="mb-4 bg-ideazzz-pink/10 text-ideazzz-pink dark:bg-ideazzz-pink/20 dark:text-ideazzz-pink border-none text-sm py-1 px-3 w-fit">
               Premium 3D Personalization
             </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
-              Your <span className="text-ideazzz-purple">Personal</span> Character in <span className="text-ideazzz-pink">3D</span>
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 dark:text-white">
+              Your <span className="text-ideazzz-purple dark:text-ideazzz-light">Personal</span> Character in <span className="text-ideazzz-pink">3D</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl">
+            <p className="text-lg md:text-xl text-muted-foreground dark:text-gray-300 mb-8 max-w-xl">
               Transform yourself into a stunning 3D model with our cutting-edge scanning technology. Perfect for gifts, memorabilia, or just because you deserve it!
             </p>
             
@@ -139,7 +141,7 @@ const Index = () => {
                 </Button>
               </Link>
               <Link to="/shop">
-                <Button variant="outline" className="btn-secondary">
+                <Button variant="outline" className="btn-secondary dark:border-ideazzz-light dark:text-ideazzz-light">
                   Shop 3D Models
                 </Button>
               </Link>
@@ -151,8 +153,8 @@ const Index = () => {
                   <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
-              <div className="text-sm text-muted-foreground">
-                From <span className="font-medium text-foreground">500+</span> satisfied customers
+              <div className="text-sm text-muted-foreground dark:text-gray-400">
+                From <span className="font-medium text-foreground dark:text-white">500+</span> satisfied customers
               </div>
             </div>
           </motion.div>
@@ -165,16 +167,16 @@ const Index = () => {
             className="flex items-center justify-center h-[400px] md:h-[500px]"
           >
             <ModelViewer 
-              modelUrl="https://modelviewer.dev/shared-assets/models/RobotExpressive.glb"
+              modelUrl="https://modelviewer.dev/shared-assets/models/HumanHead.glb"
               className="w-full h-full" 
-              autoRotate={true}
+              autoRotate={false}
             />
           </motion.div>
         </div>
       </section>
       
       {/* Features Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <motion.div 
             initial="hidden"
@@ -183,11 +185,11 @@ const Index = () => {
             variants={fadeInUp}
             className="text-center mb-14"
           >
-            <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple border-none text-sm py-1 px-3">
+            <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple dark:bg-ideazzz-purple/20 border-none text-sm py-1 px-3">
               Our Process
             </Badge>
-            <h2 className="section-title">How We Create Your 3D Model</h2>
-            <p className="section-subtitle">
+            <h2 className="section-title dark:text-white">How We Create Your 3D Model</h2>
+            <p className="section-subtitle dark:text-gray-300">
               State-of-the-art technology combined with expert craftsmanship to deliver personalized 3D models.
             </p>
           </motion.div>
@@ -201,11 +203,11 @@ const Index = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 variants={fadeInUp}
               >
-                <Card className="h-full card-hover border-none shadow-lg bg-gradient-to-br from-white to-gray-50">
+                <Card className="h-full card-hover border-none shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 dark:text-white">
                   <CardContent className="p-6">
                     <div className="text-4xl mb-4">{feature.icon}</div>
                     <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
+                    <p className="text-muted-foreground dark:text-gray-400">{feature.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -215,7 +217,7 @@ const Index = () => {
       </section>
       
       {/* Featured Models Section */}
-      <section className="py-20 bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light">
+      <section className="py-20 bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4">
           <motion.div 
             initial="hidden"
@@ -224,11 +226,11 @@ const Index = () => {
             variants={fadeInUp}
             className="text-center mb-14"
           >
-            <Badge className="mb-4 bg-ideazzz-pink/10 text-ideazzz-pink border-none text-sm py-1 px-3">
+            <Badge className="mb-4 bg-ideazzz-pink/10 text-ideazzz-pink dark:bg-ideazzz-pink/20 border-none text-sm py-1 px-3">
               Featured Models
             </Badge>
-            <h2 className="section-title">Popular 3D Models</h2>
-            <p className="section-subtitle">
+            <h2 className="section-title dark:text-white">Popular 3D Models</h2>
+            <p className="section-subtitle dark:text-gray-300">
               Explore our collection of ready-to-ship 3D character models
             </p>
           </motion.div>
@@ -243,12 +245,9 @@ const Index = () => {
                 variants={fadeInUp}
                 className="model-card"
               >
-                <Card className="overflow-hidden card-hover border-none shadow-xl">
-                  <div className="h-[300px] relative bg-gradient-to-br from-ideazzz-purple/5 to-ideazzz-pink/5">
-                    <div 
-                      ref={el => modelRefs.current[index] = el}
-                      className="h-full w-full transform transition-transform duration-500"
-                    >
+                <Card className="overflow-hidden card-hover border-none shadow-xl dark:bg-gray-800">
+                  <div className="h-[300px] relative bg-gradient-to-br from-ideazzz-purple/5 to-ideazzz-pink/5 dark:from-ideazzz-purple/10 dark:to-ideazzz-pink/10">
+                    <div className="h-full w-full">
                       <ModelViewer 
                         modelUrl={model.modelUrl} 
                         className="h-full"
@@ -265,17 +264,17 @@ const Index = () => {
                   </div>
                   <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-lg font-bold">{model.title}</h3>
+                      <h3 className="text-lg font-bold dark:text-white">{model.title}</h3>
                       <div className="flex items-center">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                        <span className="text-sm font-medium">{model.rating}</span>
+                        <span className="text-sm font-medium dark:text-white">{model.rating}</span>
                       </div>
                     </div>
-                    <p className="text-muted-foreground text-sm mb-4">{model.description}</p>
+                    <p className="text-muted-foreground text-sm mb-4 dark:text-gray-400">{model.description}</p>
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold">₹{model.price.toLocaleString()}</span>
+                      <span className="text-lg font-bold dark:text-white">₹{model.price.toLocaleString()}</span>
                       <Link to={`/shop/${model.id}`}>
-                        <Button size="sm" className="bg-ideazzz-purple hover:bg-ideazzz-dark">
+                        <Button size="sm" className="bg-ideazzz-purple hover:bg-ideazzz-dark dark:bg-ideazzz-purple dark:hover:bg-ideazzz-dark text-white">
                           View Details
                         </Button>
                       </Link>
@@ -326,7 +325,7 @@ const Index = () => {
       </section>
       
       {/* Testimonials Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <motion.div 
             initial="hidden"
@@ -338,8 +337,8 @@ const Index = () => {
             <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple border-none text-sm py-1 px-3">
               Customer Stories
             </Badge>
-            <h2 className="section-title">Why Our Customers Love Us</h2>
-            <p className="section-subtitle">
+            <h2 className="section-title dark:text-white">Why Our Customers Love Us</h2>
+            <p className="section-subtitle dark:text-gray-300">
               Hear what our satisfied customers have to say about their experience with Ideazzz
             </p>
           </motion.div>
@@ -353,14 +352,14 @@ const Index = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 variants={fadeInUp}
               >
-                <Card className="card-hover border-none shadow-lg">
+                <Card className="card-hover border-none shadow-lg dark:bg-gray-800 dark:text-white">
                   <CardContent className="p-6">
                     <div className="flex mb-4">
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                       ))}
                     </div>
-                    <p className="mb-4 italic text-muted-foreground">
+                    <p className="mb-4 italic text-muted-foreground dark:text-gray-400">
                       "I was amazed by the level of detail in my 3D model. The team at Ideazzz were professional and made the whole experience enjoyable. The final product exceeded my expectations!"
                     </p>
                     <div className="flex items-center">
@@ -370,8 +369,8 @@ const Index = () => {
                         </span>
                       </div>
                       <div>
-                        <h4 className="font-bold">Customer {index + 1}</h4>
-                        <p className="text-sm text-muted-foreground">Mumbai</p>
+                        <h4 className="font-bold dark:text-white">Customer {index + 1}</h4>
+                        <p className="text-sm text-muted-foreground dark:text-gray-400">Mumbai</p>
                       </div>
                     </div>
                   </CardContent>
@@ -383,7 +382,7 @@ const Index = () => {
       </section>
       
       {/* Why Choose Us Section */}
-      <section className="py-20 bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light">
+      <section className="py-20 bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div 
@@ -392,13 +391,13 @@ const Index = () => {
               transition={{ duration: 0.5 }}
               variants={fadeInUp}
             >
-              <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple border-none text-sm py-1 px-3">
+              <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple dark:bg-ideazzz-purple/20 border-none text-sm py-1 px-3">
                 Why Choose Ideazzz
               </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6 dark:text-white">
                 The Ideazzz Advantage
               </h2>
-              <p className="text-muted-foreground mb-8">
+              <p className="text-muted-foreground mb-8 dark:text-gray-300">
                 Our combination of cutting-edge technology, artistic expertise, and commitment to quality sets us apart from the competition.
               </p>
               
@@ -412,7 +411,7 @@ const Index = () => {
                 ].map((item, index) => (
                   <div key={index} className="flex items-start">
                     <CheckCircle className="h-5 w-5 text-ideazzz-pink mr-2 flex-shrink-0 mt-0.5" />
-                    <p>{item}</p>
+                    <p className="dark:text-white">{item}</p>
                   </div>
                 ))}
               </div>

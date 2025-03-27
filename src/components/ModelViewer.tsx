@@ -7,13 +7,19 @@ interface ModelViewerProps {
   className?: string;
   autoRotate?: boolean;
   scale?: string;
+  cameraControls?: boolean;
+  backgroundAlpha?: number;
+  fieldOfView?: string;
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
   modelUrl,
   className,
-  autoRotate = true,
-  scale = "1 1 1"
+  autoRotate = false,
+  scale = "1 1 1",
+  cameraControls = true,
+  backgroundAlpha = 0,
+  fieldOfView = "45deg"
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -28,36 +34,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     };
   }, []);
   
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const modelViewer = entry.target.querySelector('model-viewer');
-            if (modelViewer && autoRotate) {
-              // @ts-ignore
-              modelViewer.autoRotate = true;
-            }
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-    
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-    
-    return () => {
-      if (containerRef.current) {
-        observer.unobserve(containerRef.current);
-      }
-    };
-  }, [autoRotate]);
-  
   return (
     <div ref={containerRef} className={cn("model-container", className)}>
-      {/* Using dangerouslySetInnerHTML instead of the JSX syntax for custom elements */}
       <div
         dangerouslySetInnerHTML={{
           __html: `
@@ -66,13 +44,14 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
               alt="3D model"
               auto-rotate="${autoRotate ? "true" : "false"}"
               rotation-per-second="30deg"
-              camera-controls="true"
+              camera-controls="${cameraControls ? "true" : "false"}"
               shadow-intensity="1"
               exposure="0.75"
               shadow-softness="1"
               environment-image="neutral"
               scale="${scale}"
-              style="width: 100%; height: 100%;"
+              field-of-view="${fieldOfView}"
+              style="width: 100%; height: 100%; background-color: rgba(0,0,0,${backgroundAlpha});"
             ></model-viewer>
           `
         }}

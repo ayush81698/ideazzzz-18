@@ -345,7 +345,7 @@ const Index = () => {
           </motion.div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, A3].map((_, index) => (
+            {[1, 2, 3].map((_, index) => (
               <motion.div
                 key={index}
                 initial="hidden"

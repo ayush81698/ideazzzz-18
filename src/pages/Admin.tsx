@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -159,16 +158,36 @@ const Admin = () => {
     },
   });
   
-  const handleLogin = (data: LoginFormValues) => {
-    if (data.email === 'ayushk1@gmail.com' && data.password === '88888888') {
-      setIsLoggedIn(true);
-      toast.success("Login Successful", {
-        description: "Welcome to the admin dashboard",
-      });
-    } else {
+  const handleLogin = async (data: LoginFormValues) => {
+    const setLoading = useState(false)[1];
+    setLoading(true);
+    
+    // Here you would connect to Supabase for admin authentication
+    try {
+      // This is a placeholder for Supabase auth
+      // const { data: adminData, error } = await supabase
+      //   .from('admins')
+      //   .select('*')
+      //   .eq('email', data.email)
+      //   .single();
+      
+      // if (error || !adminData) throw new Error('Invalid credentials');
+      
+      // Authentication check (to be replaced with Supabase)
+      if (data.email === 'ayushk1@gmail.com' && data.password === '88888888') {
+        setIsLoggedIn(true);
+        toast.success("Login Successful", {
+          description: "Welcome to the admin dashboard",
+        });
+      } else {
+        throw new Error('Invalid credentials');
+      }
+    } catch (error) {
       toast.error("Login Failed", {
         description: "Invalid email or password",
       });
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -308,13 +327,6 @@ const Admin = () => {
                   </form>
                 </Form>
               </CardContent>
-              <CardFooter className="flex flex-col">
-                <div className="text-sm text-muted-foreground text-center">
-                  <p>Demo credentials:</p>
-                  <p>Email: ayushk1@gmail.com</p>
-                  <p>Password: 88888888</p>
-                </div>
-              </CardFooter>
             </Card>
           </motion.div>
         </div>

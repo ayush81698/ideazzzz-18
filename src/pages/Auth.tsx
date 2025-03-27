@@ -6,27 +6,110 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLoginSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    // In a real app, this would connect to Supabase
-    setTimeout(() => {
+    
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    
+    // Here you would connect to Supabase for authentication
+    try {
+      // This is a placeholder for Supabase auth
+      // const { data, error } = await supabase.auth.signInWithPassword({
+      //   email,
+      //   password,
+      // });
+      
+      // if (error) throw error;
+      
+      // Simulate successful login
+      setTimeout(() => {
+        setLoading(false);
+        toast.success("Login successful!", {
+          description: "Welcome back to Ideazzz",
+        });
+        navigate('/');
+      }, 1000);
+      
+    } catch (error) {
       setLoading(false);
-      alert("To implement authentication, please connect this project to Supabase first.");
-    }, 1000);
+      toast.error("Login failed", {
+        description: "Please check your credentials and try again",
+      });
+    }
+  };
+
+  const handleRegisterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirm-password') as string;
+    
+    if (password !== confirmPassword) {
+      setLoading(false);
+      toast.error("Passwords don't match", {
+        description: "Please make sure both passwords match",
+      });
+      return;
+    }
+    
+    // Here you would connect to Supabase for registration
+    try {
+      // This is a placeholder for Supabase auth
+      // const { data, error } = await supabase.auth.signUp({
+      //   email,
+      //   password,
+      //   options: {
+      //     data: {
+      //       name,
+      //     }
+      //   }
+      // });
+      
+      // if (error) throw error;
+      
+      // Simulate successful registration
+      setTimeout(() => {
+        setLoading(false);
+        toast.success("Registration successful!", {
+          description: "Your account has been created",
+        });
+        navigate('/');
+      }, 1000);
+      
+    } catch (error) {
+      setLoading(false);
+      toast.error("Registration failed", {
+        description: "Please try again later",
+      });
+    }
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
   };
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4 py-10">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial="hidden"
+        animate="visible"
         transition={{ duration: 0.5 }}
+        variants={fadeInUp}
         className="w-full max-w-md"
       >
         <Card className="border-none shadow-xl">
@@ -44,12 +127,13 @@ const Auth = () => {
               </TabsList>
               
               <TabsContent value="login">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleLoginSubmit}>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
                       <Label htmlFor="email">Email</Label>
                       <Input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder="youremail@example.com"
                         required
@@ -64,6 +148,7 @@ const Auth = () => {
                       </div>
                       <Input
                         id="password"
+                        name="password"
                         type="password"
                         placeholder="••••••••"
                         required
@@ -77,12 +162,13 @@ const Auth = () => {
               </TabsContent>
               
               <TabsContent value="register">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleRegisterSubmit}>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
                       <Label htmlFor="name">Full Name</Label>
                       <Input
                         id="name"
+                        name="name"
                         type="text"
                         placeholder="John Doe"
                         required
@@ -92,6 +178,7 @@ const Auth = () => {
                       <Label htmlFor="email">Email</Label>
                       <Input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder="youremail@example.com"
                         required
@@ -101,6 +188,7 @@ const Auth = () => {
                       <Label htmlFor="password">Password</Label>
                       <Input
                         id="password"
+                        name="password"
                         type="password"
                         placeholder="••••••••"
                         required
@@ -110,6 +198,7 @@ const Auth = () => {
                       <Label htmlFor="confirm-password">Confirm Password</Label>
                       <Input
                         id="confirm-password"
+                        name="confirm-password"
                         type="password"
                         placeholder="••••••••"
                         required

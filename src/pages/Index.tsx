@@ -72,7 +72,6 @@ const features = [
 const Index = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   
-  // Remove the rotating animation for featured models
   useEffect(() => {
     observerRef.current = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -96,23 +95,22 @@ const Index = () => {
 
   return (
     <div className="overflow-x-hidden">
-      {/* Hero Section with large 3D human model in background */}
       <section className="relative min-h-[100vh] flex items-center overflow-hidden bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light dark:from-ideazzz-dark dark:via-gray-900 dark:to-ideazzz-dark">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] bg-ideazzz-pink opacity-10 rounded-full blur-[100px] dark:opacity-20"></div>
           <div className="absolute -bottom-[10%] -left-[10%] w-[50%] h-[50%] bg-ideazzz-purple opacity-10 rounded-full blur-[100px] dark:opacity-20"></div>
         </div>
         
-        {/* Large human model in background */}
         <div className="absolute inset-0 z-0 opacity-30 dark:opacity-20 pointer-events-none">
           <ModelViewer 
-            modelUrl="https://modelviewer.dev/shared-assets/models/HumanFullBody.glb"
+            modelUrl="https://modelviewer.dev/shared-assets/models/Statue_01.gltf"
             className="w-full h-[120%]" 
             autoRotate={false}
             cameraControls={false}
             scale="1.5 1.5 1.5"
             backgroundAlpha={0}
             fieldOfView="30deg"
+            rotateOnScroll={true}
           />
         </div>
         
@@ -167,7 +165,7 @@ const Index = () => {
             className="flex items-center justify-center h-[400px] md:h-[500px]"
           >
             <ModelViewer 
-              modelUrl="https://modelviewer.dev/shared-assets/models/HumanHead.glb"
+              modelUrl="https://modelviewer.dev/shared-assets/models/Statue_01.gltf"
               className="w-full h-full" 
               autoRotate={false}
             />
@@ -175,7 +173,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Features Section */}
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <motion.div 
@@ -185,7 +182,7 @@ const Index = () => {
             variants={fadeInUp}
             className="text-center mb-14"
           >
-            <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple dark:bg-ideazzz-purple/20 border-none text-sm py-1 px-3">
+            <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple border-none text-sm py-1 px-3">
               Our Process
             </Badge>
             <h2 className="section-title dark:text-white">How We Create Your 3D Model</h2>
@@ -216,7 +213,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Featured Models Section */}
       <section className="py-20 bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4">
           <motion.div 
@@ -295,7 +291,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* CTA Section */}
       <section className="py-20 bg-ideazzz-dark text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
@@ -324,7 +319,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Testimonials Section */}
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <motion.div 
@@ -381,7 +375,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Why Choose Us Section */}
       <section className="py-20 bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

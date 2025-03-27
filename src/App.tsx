@@ -14,6 +14,7 @@ import About from "./pages/About";
 import Cart from "./pages/Cart";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => {
                 <Route path="cart" element={<Cart />} />
                 <Route path="admin" element={<Admin />} />
                 <Route path="auth" element={<Auth />} />
+                <Route path="profile" element={<Profile />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

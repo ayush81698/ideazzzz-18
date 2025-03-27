@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ModelViewerProps {
@@ -10,6 +10,7 @@ interface ModelViewerProps {
   cameraControls?: boolean;
   backgroundAlpha?: number;
   fieldOfView?: string;
+  rotateOnScroll?: boolean;
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
@@ -19,20 +20,47 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   scale = "1 1 1",
   cameraControls = true,
   backgroundAlpha = 0,
-  fieldOfView = "45deg"
+  fieldOfView = "45deg",
+  rotateOnScroll = false
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [rotation, setRotation] = useState(0);
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   
+  // Load model-viewer script
   useEffect(() => {
     const script = document.createElement('script');
     script.type = 'module';
     script.src = 'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js';
+    script.onload = () => setIsScriptLoaded(true);
     document.body.appendChild(script);
     
     return () => {
       document.body.removeChild(script);
     };
   }, []);
+  
+  // Handle scroll-based rotation
+  useEffect(() => {
+    if (!rotateOnScroll) return;
+    
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const newRotation = scrollY * 0.1 % 360; // Adjust the multiplier for rotation speed
+      setRotation(newRotation);
+      
+      // Update the model rotation if the model-viewer element exists
+      if (isScriptLoaded && containerRef.current) {
+        const modelViewer = containerRef.current.querySelector('model-viewer');
+        if (modelViewer) {
+          modelViewer.setAttribute('camera-orbit', `${newRotation}deg 75deg 105%`);
+        }
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [rotateOnScroll, isScriptLoaded]);
   
   return (
     <div ref={containerRef} className={cn("model-container", className)}>
@@ -52,6 +80,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
               scale="${scale}"
               field-of-view="${fieldOfView}"
               style="width: 100%; height: 100%; background-color: rgba(0,0,0,${backgroundAlpha});"
+              camera-orbit="${rotation}deg 75deg 105%"
             ></model-viewer>
           `
         }}

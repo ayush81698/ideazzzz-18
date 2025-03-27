@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import ModelViewer from '@/components/ModelViewer';
 import { ArrowRight, CheckCircle, Star } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const models = [
   {
@@ -71,6 +72,39 @@ const features = [
 
 const Index = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const [featuredModel, setFeaturedModel] = useState({
+    name: 'Greek Statue',
+    modelUrl: 'https://modelviewer.dev/shared-assets/models/Statue_01.gltf'
+  });
+  
+  useEffect(() => {
+    const fetchFeaturedModel = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('models')
+          .select('name, model_url')
+          .eq('is_featured', true)
+          .eq('position', 'homepage')
+          .single();
+        
+        if (error) {
+          console.error('Error fetching featured model:', error);
+          return;
+        }
+        
+        if (data) {
+          setFeaturedModel({
+            name: data.name,
+            modelUrl: data.model_url
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch featured model:', error);
+      }
+    };
+    
+    fetchFeaturedModel();
+  }, []);
   
   useEffect(() => {
     observerRef.current = new IntersectionObserver((entries) => {
@@ -103,7 +137,7 @@ const Index = () => {
         
         <div className="absolute inset-0 z-0 opacity-30 dark:opacity-20 pointer-events-none">
           <ModelViewer 
-            modelUrl="https://modelviewer.dev/shared-assets/models/Statue_01.gltf"
+            modelUrl={featuredModel.modelUrl}
             className="w-full h-[120%]" 
             autoRotate={false}
             cameraControls={false}
@@ -165,9 +199,9 @@ const Index = () => {
             className="flex items-center justify-center h-[400px] md:h-[500px]"
           >
             <ModelViewer 
-              modelUrl="https://modelviewer.dev/shared-assets/models/Statue_01.gltf"
+              modelUrl={featuredModel.modelUrl}
               className="w-full h-full" 
-              autoRotate={false}
+              autoRotate={true}
             />
           </motion.div>
         </div>
@@ -293,29 +327,27 @@ const Index = () => {
       
       <section className="py-20 bg-ideazzz-dark text-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.div 
-              initial="hidden"
-              animate="visible"
-              transition={{ duration: 0.5 }}
-              variants={fadeInUp}
-            >
-              <Badge className="mb-4 bg-white/10 text-white border-none text-sm py-1 px-3">
-                Limited Time Offer
-              </Badge>
-              <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                Get 20% Off Your First 3D Scan
-              </h2>
-              <p className="text-xl text-gray-300 mb-8">
-                Book your scanning session today and receive a special discount for first-time customers.
-              </p>
-              <Link to="/booking">
-                <Button size="lg" className="bg-white text-ideazzz-purple hover:bg-gray-100">
-                  Book Your Scan Now
-                </Button>
-              </Link>
-            </motion.div>
-          </div>
+          <motion.div 
+            initial="hidden"
+            animate="visible"
+            transition={{ duration: 0.5 }}
+            variants={fadeInUp}
+          >
+            <Badge className="mb-4 bg-white/10 text-white border-none text-sm py-1 px-3">
+              Limited Time Offer
+            </Badge>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              Get 20% Off Your First 3D Scan
+            </h2>
+            <p className="text-xl text-gray-300 mb-8">
+              Book your scanning session today and receive a special discount for first-time customers.
+            </p>
+            <Link to="/booking">
+              <Button size="lg" className="bg-white text-ideazzz-purple hover:bg-gray-100">
+                Book Your Scan Now
+              </Button>
+            </Link>
+          </motion.div>
         </div>
       </section>
       

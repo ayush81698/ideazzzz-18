@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -27,69 +27,35 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 import { 
-  Eye, Pencil, Trash2, Plus, CalendarDays, Package, ShoppingBag, Users 
+  Eye, Pencil, Trash2, Plus, CalendarDays, Package, ShoppingBag, Users, Upload, Check, X
 } from 'lucide-react';
 import { products } from './Shop';
+import { supabase } from '@/integrations/supabase/client';
 
-// Mock bookings data
-const bookings = [
-  {
-    id: 1,
-    customerName: 'Rahul Sharma',
-    email: 'rahul@example.com',
-    phone: '9876543210',
-    package: 'Premium Package',
-    location: 'Mumbai - Andheri',
-    date: '2023-07-15',
-    time: '10:00 AM',
-    status: 'confirmed'
-  },
-  {
-    id: 2,
-    customerName: 'Priya Patel',
-    email: 'priya@example.com',
-    phone: '9876543211',
-    package: 'Standard Package',
-    location: 'Mumbai - Malad',
-    date: '2023-07-16',
-    time: '02:00 PM',
-    status: 'confirmed'
-  },
-  {
-    id: 3,
-    customerName: 'Aarav Singh',
-    email: 'aarav@example.com',
-    phone: '9876543212',
-    package: 'Family Package',
-    location: 'Mumbai - Andheri',
-    date: '2023-07-17',
-    time: '11:00 AM',
-    status: 'pending'
-  },
-  {
-    id: 4,
-    customerName: 'Neha Kapoor',
-    email: 'neha@example.com',
-    phone: '9876543213',
-    package: 'Premium Package',
-    location: 'Mumbai - Malad',
-    date: '2023-07-18',
-    time: '04:00 PM',
-    status: 'cancelled'
-  },
-  {
-    id: 5,
-    customerName: 'Vikram Joshi',
-    email: 'vikram@example.com',
-    phone: '9876543214',
-    package: 'Standard Package',
-    location: 'Mumbai - Andheri',
-    date: '2023-07-19',
-    time: '01:00 PM',
-    status: 'completed'
-  }
-];
+// Define types for the application
+interface BookingType {
+  id: string;
+  customerName: string;
+  email: string;
+  phone: string;
+  package: string;
+  location: string;
+  date: string;
+  time: string;
+  status: string;
+  canCancel?: boolean;
+}
 
+interface ModelType {
+  id: string;
+  name: string;
+  description: string;
+  model_url: string;
+  is_featured: boolean;
+  position: string;
+}
+
+// Schema definitions
 const productSchema = z.object({
   name: z.string().min(2, {
     message: "Product name must be at least 2 characters.",
@@ -125,14 +91,49 @@ const loginSchema = z.object({
   }),
 });
 
+const modelSchema = z.object({
+  name: z.string().min(2, {
+    message: "Model name must be at least 2 characters.",
+  }),
+  description: z.string().min(10, {
+    message: "Description must be at least 10 characters.",
+  }),
+  model_url: z.string().url({
+    message: "Please enter a valid URL for the 3D model.",
+  }),
+  is_featured: z.boolean().default(false),
+  position: z.string().default("homepage"),
+});
+
+const contentSchema = z.object({
+  id: z.string(),
+  title: z.string().min(2, {
+    message: "Title must be at least 2 characters.",
+  }),
+  content: z.string().min(10, {
+    message: "Content must be at least 10 characters.",
+  }),
+  section: z.string(),
+});
+
 type ProductFormValues = z.infer<typeof productSchema>;
 type LoginFormValues = z.infer<typeof loginSchema>;
+type ModelFormValues = z.infer<typeof modelSchema>;
+type ContentFormValues = z.infer<typeof contentSchema>;
 
 const Admin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [productsList, setProductsList] = useState([...products]);
+  const [bookingsList, setBookingsList] = useState<BookingType[]>([]);
+  const [modelsList, setModelsList] = useState<ModelType[]>([]);
+  const [contentList, setContentList] = useState<any[]>([]);
   const [editingProduct, setEditingProduct] = useState<null | number>(null);
+  const [editingModel, setEditingModel] = useState<null | string>(null);
+  const [editingContent, setEditingContent] = useState<null | string>(null);
   const [openProductDialog, setOpenProductDialog] = useState(false);
+  const [openModelDialog, setOpenModelDialog] = useState(false);
+  const [openContentDialog, setOpenContentDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
   const productForm = useForm<ProductFormValues>({
@@ -158,24 +159,146 @@ const Admin = () => {
     },
   });
   
-  const handleLogin = async (data: LoginFormValues) => {
-    const setLoading = useState(false)[1];
-    setLoading(true);
-    
-    // Here you would connect to Supabase for admin authentication
+  const modelForm = useForm<ModelFormValues>({
+    resolver: zodResolver(modelSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      model_url: '',
+      is_featured: false,
+      position: 'homepage'
+    },
+  });
+  
+  const contentForm = useForm<ContentFormValues>({
+    resolver: zodResolver(contentSchema),
+    defaultValues: {
+      id: '',
+      title: '',
+      content: '',
+      section: 'about'
+    },
+  });
+  
+  // Fetch bookings from Supabase
+  const fetchBookings = async () => {
     try {
-      // This is a placeholder for Supabase auth
-      // const { data: adminData, error } = await supabase
-      //   .from('admins')
-      //   .select('*')
-      //   .eq('email', data.email)
-      //   .single();
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*');
       
-      // if (error || !adminData) throw new Error('Invalid credentials');
+      if (error) {
+        throw error;
+      }
       
-      // Authentication check (to be replaced with Supabase)
-      if (data.email === 'ayushk1@gmail.com' && data.password === '88888888') {
+      if (data) {
+        const formattedBookings = data.map(booking => ({
+          id: booking.id,
+          customerName: booking.customer_name,
+          email: booking.email,
+          phone: booking.phone,
+          package: booking.package,
+          location: booking.location,
+          date: booking.date,
+          time: booking.time,
+          status: booking.status,
+          canCancel: booking.can_cancel
+        }));
+        
+        setBookingsList(formattedBookings);
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      toast.error('Failed to load bookings');
+    }
+  };
+  
+  // Fetch models from Supabase
+  const fetchModels = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('models')
+        .select('*');
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data) {
+        setModelsList(data);
+      }
+    } catch (error) {
+      console.error('Error fetching models:', error);
+      toast.error('Failed to load models');
+    }
+  };
+  
+  // Fetch content from Supabase
+  const fetchContent = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('content')
+        .select('*');
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data) {
+        setContentList(data);
+      }
+    } catch (error) {
+      console.error('Error fetching content:', error);
+      toast.error('Failed to load content');
+    }
+  };
+  
+  // Update booking status
+  const updateBookingStatus = async (id: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status })
+        .eq('id', id);
+      
+      if (error) {
+        throw error;
+      }
+      
+      setBookingsList(prevBookings => 
+        prevBookings.map(booking => 
+          booking.id === id ? { ...booking, status } : booking
+        )
+      );
+      
+      toast.success(`Booking status updated to ${status}`);
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+      toast.error('Failed to update booking status');
+    }
+  };
+  
+  const handleLogin = async (data: LoginFormValues) => {
+    setIsLoading(true);
+    
+    try {
+      const { data: adminData, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('email', data.email)
+        .single();
+      
+      if (error || !adminData) {
+        throw new Error('Invalid credentials');
+      }
+      
+      // In a real app, you'd verify the password with bcrypt
+      // For this demo, we'll just check if the email matches
+      if (adminData.email === data.email) {
         setIsLoggedIn(true);
+        fetchBookings();
+        fetchModels();
+        fetchContent();
         toast.success("Login Successful", {
           description: "Welcome to the admin dashboard",
         });
@@ -187,7 +310,7 @@ const Admin = () => {
         description: "Invalid email or password",
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
   
@@ -215,6 +338,35 @@ const Admin = () => {
       });
       setEditingProduct(productId);
       setOpenProductDialog(true);
+    }
+  };
+  
+  const openEditModelDialog = (modelId: string) => {
+    const model = modelsList.find(m => m.id === modelId);
+    if (model) {
+      modelForm.reset({
+        name: model.name,
+        description: model.description || '',
+        model_url: model.model_url,
+        is_featured: model.is_featured,
+        position: model.position
+      });
+      setEditingModel(modelId);
+      setOpenModelDialog(true);
+    }
+  };
+  
+  const openEditContentDialog = (contentId: string) => {
+    const content = contentList.find(c => c.id === contentId);
+    if (content) {
+      contentForm.reset({
+        id: content.id,
+        title: content.title || '',
+        content: content.content || '',
+        section: content.section
+      });
+      setEditingContent(contentId);
+      setOpenContentDialog(true);
     }
   };
   
@@ -255,11 +407,160 @@ const Admin = () => {
     productForm.reset();
   };
   
+  const handleAddEditModel = async (data: ModelFormValues) => {
+    setIsLoading(true);
+    
+    try {
+      if (editingModel) {
+        // Update existing model
+        const { error } = await supabase
+          .from('models')
+          .update({
+            name: data.name,
+            description: data.description,
+            model_url: data.model_url,
+            is_featured: data.is_featured,
+            position: data.position,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingModel);
+        
+        if (error) throw error;
+        
+        toast.success("Model Updated", {
+          description: `${data.name} has been updated successfully`,
+        });
+      } else {
+        // Add new model
+        const { error } = await supabase
+          .from('models')
+          .insert({
+            name: data.name,
+            description: data.description,
+            model_url: data.model_url,
+            is_featured: data.is_featured,
+            position: data.position
+          });
+        
+        if (error) throw error;
+        
+        toast.success("Model Added", {
+          description: `${data.name} has been added successfully`,
+        });
+      }
+      
+      // Refresh models list
+      fetchModels();
+      
+      setOpenModelDialog(false);
+      setEditingModel(null);
+      modelForm.reset();
+    } catch (error) {
+      console.error('Error saving model:', error);
+      toast.error('Failed to save model');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleAddEditContent = async (data: ContentFormValues) => {
+    setIsLoading(true);
+    
+    try {
+      if (editingContent) {
+        // Update existing content
+        const { error } = await supabase
+          .from('content')
+          .update({
+            title: data.title,
+            content: data.content,
+            section: data.section,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingContent);
+        
+        if (error) throw error;
+        
+        toast.success("Content Updated", {
+          description: `${data.title} has been updated successfully`,
+        });
+      } else {
+        // Add new content
+        const { error } = await supabase
+          .from('content')
+          .insert({
+            id: data.id,
+            title: data.title,
+            content: data.content,
+            section: data.section
+          });
+        
+        if (error) throw error;
+        
+        toast.success("Content Added", {
+          description: `${data.title} has been added successfully`,
+        });
+      }
+      
+      // Refresh content list
+      fetchContent();
+      
+      setOpenContentDialog(false);
+      setEditingContent(null);
+      contentForm.reset();
+    } catch (error) {
+      console.error('Error saving content:', error);
+      toast.error('Failed to save content');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const deleteProduct = (productId: number) => {
     setProductsList(productsList.filter(p => p.id !== productId));
     toast.success("Product Deleted", {
       description: "The product has been deleted successfully",
     });
+  };
+  
+  const deleteModel = async (modelId: string) => {
+    try {
+      const { error } = await supabase
+        .from('models')
+        .delete()
+        .eq('id', modelId);
+      
+      if (error) throw error;
+      
+      setModelsList(prevModels => prevModels.filter(model => model.id !== modelId));
+      
+      toast.success("Model Deleted", {
+        description: "The model has been deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting model:', error);
+      toast.error('Failed to delete model');
+    }
+  };
+  
+  const deleteContent = async (contentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('content')
+        .delete()
+        .eq('id', contentId);
+      
+      if (error) throw error;
+      
+      setContentList(prevContent => prevContent.filter(content => content.id !== contentId));
+      
+      toast.success("Content Deleted", {
+        description: "The content has been deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      toast.error('Failed to delete content');
+    }
   };
   
   const fadeInUp = {
@@ -270,9 +571,9 @@ const Admin = () => {
   // Admin dashboard stats
   const stats = [
     { title: 'Total Products', value: productsList.length, icon: Package, color: 'bg-blue-500' },
-    { title: 'Bookings', value: bookings.length, icon: CalendarDays, color: 'bg-ideazzz-purple' },
-    { title: 'Completed Orders', value: 12, icon: ShoppingBag, color: 'bg-green-500' },
-    { title: 'Registered Users', value: 48, icon: Users, color: 'bg-ideazzz-pink' },
+    { title: 'Bookings', value: bookingsList.length, icon: CalendarDays, color: 'bg-ideazzz-purple' },
+    { title: 'Models', value: modelsList.length, icon: Upload, color: 'bg-amber-500' },
+    { title: 'Users', value: 48, icon: Users, color: 'bg-ideazzz-pink' },
   ];
 
   if (!isLoggedIn) {
@@ -321,8 +622,8 @@ const Admin = () => {
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full bg-ideazzz-purple">
-                      Sign In
+                    <Button type="submit" className="w-full bg-ideazzz-purple" disabled={isLoading}>
+                      {isLoading ? "Signing in..." : "Sign In"}
                     </Button>
                   </form>
                 </Form>
@@ -390,11 +691,142 @@ const Admin = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           variants={fadeInUp}
         >
-          <Tabs defaultValue="products" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="products">Products Management</TabsTrigger>
+          <Tabs defaultValue="bookings" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="bookings">Booking Management</TabsTrigger>
+              <TabsTrigger value="products">Products Management</TabsTrigger>
+              <TabsTrigger value="models">3D Models</TabsTrigger>
+              <TabsTrigger value="content">Website Content</TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="bookings">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Bookings</CardTitle>
+                  <CardDescription>Manage customer appointments</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Customer</TableHead>
+                          <TableHead>Package</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Date & Time</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {bookingsList.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-6">
+                              No bookings found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          bookingsList.map((booking) => (
+                            <TableRow key={booking.id}>
+                              <TableCell>{booking.id.substring(0, 8)}...</TableCell>
+                              <TableCell>
+                                <div className="font-medium">{booking.customerName}</div>
+                                <div className="text-sm text-muted-foreground">{booking.email}</div>
+                              </TableCell>
+                              <TableCell>{booking.package}</TableCell>
+                              <TableCell>{booking.location}</TableCell>
+                              <TableCell>
+                                {booking.date} at {booking.time}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  className={`
+                                    ${booking.status === 'confirmed' ? 'bg-blue-500' : ''}
+                                    ${booking.status === 'pending' ? 'bg-yellow-500' : ''}
+                                    ${booking.status === 'completed' ? 'bg-green-500' : ''}
+                                    ${booking.status === 'cancelled' ? 'bg-red-500' : ''}
+                                    ${booking.status === 'processing' ? 'bg-purple-500' : ''}
+                                    ${booking.status === 'dispatched' ? 'bg-indigo-500' : ''}
+                                    ${booking.status === 'delivered' ? 'bg-teal-500' : ''}
+                                  `}
+                                >
+                                  {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-2">
+                                  {booking.status === 'pending' && (
+                                    <>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex items-center text-green-600"
+                                        onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+                                      >
+                                        <Check className="mr-1 h-4 w-4" /> Accept
+                                      </Button>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className="flex items-center text-red-600"
+                                        onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+                                      >
+                                        <X className="mr-1 h-4 w-4" /> Cancel
+                                      </Button>
+                                    </>
+                                  )}
+                                  
+                                  {booking.status === 'confirmed' && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => updateBookingStatus(booking.id, 'processing')}
+                                    >
+                                      Mark Processing
+                                    </Button>
+                                  )}
+                                  
+                                  {booking.status === 'processing' && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => updateBookingStatus(booking.id, 'dispatched')}
+                                    >
+                                      Mark Dispatched
+                                    </Button>
+                                  )}
+                                  
+                                  {booking.status === 'dispatched' && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => updateBookingStatus(booking.id, 'delivered')}
+                                    >
+                                      Mark Delivered
+                                    </Button>
+                                  )}
+                                  
+                                  {booking.status === 'delivered' && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => updateBookingStatus(booking.id, 'completed')}
+                                    >
+                                      Mark Completed
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
             
             <TabsContent value="products">
               <Card>
@@ -588,175 +1020,4 @@ const Admin = () => {
                                       onChange={(e) => field.onChange(Number(e.target.value))}
                                     />
                                   </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          
-                          <DialogFooter>
-                            <Button type="submit" className="bg-ideazzz-purple">
-                              {editingProduct ? 'Update Product' : 'Add Product'}
-                            </Button>
-                          </DialogFooter>
-                        </form>
-                      </Form>
-                    </DialogContent>
-                  </Dialog>
-                </CardHeader>
-                <CardContent>
-                  {productsList.length === 0 ? (
-                    <div className="text-center py-10">
-                      <p className="text-muted-foreground">No products found</p>
-                      <Button 
-                        className="mt-4"
-                        onClick={() => {
-                          setEditingProduct(null);
-                          productForm.reset();
-                          setOpenProductDialog(true);
-                        }}
-                      >
-                        Add your first product
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Price</TableHead>
-                            <TableHead>Stock</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {productsList.map((product) => (
-                            <TableRow key={product.id}>
-                              <TableCell>{product.id}</TableCell>
-                              <TableCell className="font-medium">{product.name}</TableCell>
-                              <TableCell>{product.category}</TableCell>
-                              <TableCell>₹{product.price.toLocaleString()}</TableCell>
-                              <TableCell>{product.stock}</TableCell>
-                              <TableCell>
-                                <Badge className={product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}>
-                                  {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2">
-                                  <Button 
-                                    variant="outline" 
-                                    size="icon" 
-                                    onClick={() => navigate(`/shop/${product.id}`)}
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="icon"
-                                    onClick={() => openEditProductDialog(product.id)}
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="icon" 
-                                    className="text-red-500"
-                                    onClick={() => deleteProduct(product.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="bookings">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Bookings</CardTitle>
-                  <CardDescription>Manage customer appointments</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID</TableHead>
-                          <TableHead>Customer</TableHead>
-                          <TableHead>Package</TableHead>
-                          <TableHead>Location</TableHead>
-                          <TableHead>Date & Time</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {bookings.map((booking) => (
-                          <TableRow key={booking.id}>
-                            <TableCell>{booking.id}</TableCell>
-                            <TableCell>
-                              <div className="font-medium">{booking.customerName}</div>
-                              <div className="text-sm text-muted-foreground">{booking.email}</div>
-                            </TableCell>
-                            <TableCell>{booking.package}</TableCell>
-                            <TableCell>{booking.location}</TableCell>
-                            <TableCell>
-                              {booking.date} at {booking.time}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                className={`
-                                  ${booking.status === 'confirmed' ? 'bg-blue-500' : ''}
-                                  ${booking.status === 'pending' ? 'bg-yellow-500' : ''}
-                                  ${booking.status === 'completed' ? 'bg-green-500' : ''}
-                                  ${booking.status === 'cancelled' ? 'bg-red-500' : ''}
-                                `}
-                              >
-                                {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2">
-                                <Button variant="outline" size="sm">
-                                  View Details
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  className={booking.status === 'cancelled' ? 'text-gray-400 cursor-not-allowed' : ''}
-                                  disabled={booking.status === 'cancelled'}
-                                >
-                                  {booking.status === 'confirmed' || booking.status === 'pending' 
-                                    ? 'Mark Completed' 
-                                    : 'Reschedule'}
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-      </div>
-    </div>
-  );
-};
-
-export default Admin;
+                                  <FormMessage

@@ -29,6 +29,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   
   // Load model-viewer script
   useEffect(() => {
+    if (document.querySelector('script[src*="model-viewer"]')) {
+      setIsScriptLoaded(true);
+      return;
+    }
+    
     const script = document.createElement('script');
     script.type = 'module';
     script.src = 'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js';
@@ -36,7 +41,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     document.body.appendChild(script);
     
     return () => {
-      document.body.removeChild(script);
+      // Don't remove the script as other components might be using it
     };
   }, []);
   
@@ -46,7 +51,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      const newRotation = scrollY * 0.1 % 360; // Adjust the multiplier for rotation speed
+      const newRotation = scrollY * 0.2 % 360; // Increased rotation speed for better effect
       setRotation(newRotation);
       
       // Update the model rotation if the model-viewer element exists

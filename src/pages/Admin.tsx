@@ -28,7 +28,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 import { 
-  Eye, Pencil, Trash2, Plus, CalendarDays, Package, ShoppingBag, Users, Upload, Check, X, Box, Cube
+  Eye, Pencil, Trash2, Plus, CalendarDays, Package, ShoppingBag, Users, Upload, Check, X, Box
 } from 'lucide-react';
 import { products } from './Shop';
 import { supabase } from '@/integrations/supabase/client';
@@ -1258,7 +1258,7 @@ const Admin = () => {
                               <TableCell>
                                 <div className="flex items-center space-x-3">
                                   <div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center">
-                                    <Cube className="h-6 w-6 text-ideazzz-purple" />
+                                    <Box className="h-6 w-6 text-ideazzz-purple" />
                                   </div>
                                   <div>
                                     <div className="font-medium">{model.name}</div>

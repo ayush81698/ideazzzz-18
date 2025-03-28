@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import ModelViewer from '@/components/ModelViewer';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
-import { Cube, ShoppingBag, Calendar } from 'lucide-react';
+import { Box, ShoppingBag, Calendar } from 'lucide-react';
 
 const Index = () => {
   const [models, setModels] = useState([]);
@@ -47,46 +47,35 @@ const Index = () => {
       try {
         // In a real app, this would fetch from the products table with a featured flag
         // Since we're using mock data, we'll simulate fetching featured products
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .limit(3);
-        
-        if (error) {
-          console.error('Error fetching featured products:', error);
-          // Use mock data as fallback
-          setFeaturedProducts([
-            {
-              id: 1,
-              name: 'Custom Portrait Sculpture',
-              description: 'Personalized 3D printed portrait',
-              price: 2999,
-              imageUrl: 'https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b',
-              discount: '20% OFF'
-            },
-            {
-              id: 2,
-              name: 'Pet Figurine',
-              description: 'Turn your pet into a 3D model',
-              price: 1999,
-              imageUrl: 'https://images.unsplash.com/photo-1487887235947-a955ef187fcc',
-              discount: 'Limited Time'
-            },
-            {
-              id: 3,
-              name: '3D Family Photo Frame',
-              description: 'Create a 3D scene from your family photo',
-              price: 3499,
-              imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
-              discount: 'New Arrival'
-            }
-          ]);
-        } else if (data && data.length > 0) {
-          setFeaturedProducts(data);
-        }
+        setFeaturedProducts([
+          {
+            id: 1,
+            name: 'Custom Portrait Sculpture',
+            description: 'Personalized 3D printed portrait',
+            price: 2999,
+            imageUrl: 'https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b',
+            discount: '20% OFF'
+          },
+          {
+            id: 2,
+            name: 'Pet Figurine',
+            description: 'Turn your pet into a 3D model',
+            price: 1999,
+            imageUrl: 'https://images.unsplash.com/photo-1487887235947-a955ef187fcc',
+            discount: 'Limited Time'
+          },
+          {
+            id: 3,
+            name: '3D Family Photo Frame',
+            description: 'Create a 3D scene from your family photo',
+            price: 3499,
+            imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
+            discount: 'New Arrival'
+          }
+        ]);
+        setLoadingProducts(false);
       } catch (error) {
         console.error('Error in featured products fetch:', error);
-      } finally {
         setLoadingProducts(false);
       }
     }

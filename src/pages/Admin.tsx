@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -29,7 +28,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 import { 
-  Eye, Pencil, Trash2, Plus, CalendarDays, Package, ShoppingBag, Users, Upload, Check, X, Cube, Model3d
+  Eye, Pencil, Trash2, Plus, CalendarDays, Package, ShoppingBag, Users, Upload, Check, X, Box, CubeIcon
 } from 'lucide-react';
 import { products } from './Shop';
 import { supabase } from '@/integrations/supabase/client';
@@ -473,7 +472,6 @@ const Admin = () => {
     visible: { opacity: 1, y: 0 }
   };
   
-  // Admin dashboard stats
   const stats = [
     { title: 'Total Products', value: productsList.length, icon: Package, color: 'bg-blue-500' },
     { title: 'Bookings', value: bookings.length, icon: CalendarDays, color: 'bg-ideazzz-purple' },
@@ -570,7 +568,6 @@ const Admin = () => {
           </motion.div>
         </div>
         
-        {/* Stats Section */}
         <motion.div 
           initial="hidden"
           animate="visible"
@@ -1261,7 +1258,7 @@ const Admin = () => {
                               <TableCell>
                                 <div className="flex items-center space-x-3">
                                   <div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center">
-                                    <Model3d className="h-6 w-6 text-ideazzz-purple" />
+                                    <CubeIcon className="h-6 w-6 text-ideazzz-purple" />
                                   </div>
                                   <div>
                                     <div className="font-medium">{model.name}</div>

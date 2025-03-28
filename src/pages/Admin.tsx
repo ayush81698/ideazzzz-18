@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -927,3 +928,403 @@ const Admin = () => {
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={productForm.control}
+                              name="modelUrl"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>3D Model URL</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="https://example.com/model.glb" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={productForm.control}
+                              name="imageUrl"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Image URL</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="https://example.com/image.jpg" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={productForm.control}
+                              name="tags"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Tags (comma separated)</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="action, collectible, limited" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={productForm.control}
+                              name="rating"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Rating (0-5)</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      min="0" 
+                                      max="5" 
+                                      step="0.1"
+                                      {...field}
+                                      onChange={(e) => field.onChange(Number(e.target.value))}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <DialogFooter>
+                            <Button type="submit">
+                              {editingProduct ? 'Update Product' : 'Add Product'}
+                            </Button>
+                          </DialogFooter>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Product</TableHead>
+                          <TableHead>Category</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Stock</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {productsList.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-4">
+                              No products found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          productsList.map((product) => (
+                            <TableRow key={product.id}>
+                              <TableCell>
+                                <div className="flex items-center space-x-3">
+                                  <div className="h-12 w-12 rounded bg-gray-100 overflow-hidden">
+                                    {product.imageUrl ? (
+                                      <img 
+                                        src={product.imageUrl} 
+                                        alt={product.name}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="flex h-full w-full items-center justify-center bg-gray-200">
+                                        <Package className="h-6 w-6 text-gray-400" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="font-medium">{product.name}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                      ID: {product.id}
+                                    </div>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">{product.category}</Badge>
+                              </TableCell>
+                              <TableCell>₹{product.price.toLocaleString()}</TableCell>
+                              <TableCell>
+                                <Badge className={product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}>
+                                  {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openEditProductDialog(product.id)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-500 hover:text-red-700"
+                                    onClick={() => deleteProduct(product.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="models">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>3D Models</CardTitle>
+                    <CardDescription>Manage your 3D models across the website</CardDescription>
+                  </div>
+                  <Dialog open={openModelDialog} onOpenChange={setOpenModelDialog}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        onClick={() => {
+                          setEditingModel(null);
+                          modelForm.reset({
+                            name: '',
+                            description: '',
+                            model_url: '',
+                            is_featured: false,
+                            position: 'homepage'
+                          });
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" /> Add 3D Model
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[600px]">
+                      <DialogHeader>
+                        <DialogTitle>
+                          {editingModel ? 'Edit 3D Model' : 'Add New 3D Model'}
+                        </DialogTitle>
+                        <DialogDescription>
+                          {editingModel 
+                            ? 'Make changes to the existing 3D model' 
+                            : 'Fill in the details for the new 3D model'}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Form {...modelForm}>
+                        <form onSubmit={modelForm.handleSubmit(handleAddEditModel)} className="space-y-6">
+                          <FormField
+                            control={modelForm.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Model Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Model name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={modelForm.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Description</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Model description" 
+                                    className="min-h-[100px]"
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={modelForm.control}
+                            name="model_url"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>3D Model URL</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="https://example.com/model.glb" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                <FormDescription>
+                                  Provide a URL to a .glb, .gltf, or .usdz 3D model file
+                                </FormDescription>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={modelForm.control}
+                            name="position"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Position on Website</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select where to display this model" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="homepage">Homepage Hero</SelectItem>
+                                    <SelectItem value="about">About Page</SelectItem>
+                                    <SelectItem value="services">Services Section</SelectItem>
+                                    <SelectItem value="contact">Contact Page</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={modelForm.control}
+                            name="is_featured"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                  <FormLabel className="text-base">
+                                    Feature this model
+                                  </FormLabel>
+                                  <FormDescription>
+                                    When featured, this model will be displayed on the selected page position.
+                                    Only one model can be featured per position.
+                                  </FormDescription>
+                                </div>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <DialogFooter>
+                            <Button type="submit">
+                              {editingModel ? 'Update Model' : 'Add Model'}
+                            </Button>
+                          </DialogFooter>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Model Name</TableHead>
+                          <TableHead>Position</TableHead>
+                          <TableHead>Featured</TableHead>
+                          <TableHead>Last Updated</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {models.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-4">
+                              No 3D models found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          models.map((model) => (
+                            <TableRow key={model.id}>
+                              <TableCell>
+                                <div className="flex items-center space-x-3">
+                                  <div className="h-10 w-10 rounded bg-gray-100 flex items-center justify-center">
+                                    <Model3d className="h-6 w-6 text-ideazzz-purple" />
+                                  </div>
+                                  <div>
+                                    <div className="font-medium">{model.name}</div>
+                                    <div className="text-xs text-muted-foreground truncate max-w-[250px]">
+                                      {model.model_url}
+                                    </div>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="capitalize">
+                                  {model.position || 'Not set'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className={model.is_featured ? "text-green-500" : "text-gray-400"}
+                                    onClick={() => toggleFeaturedModel(model.id, model.is_featured, model.position)}
+                                  >
+                                    {model.is_featured ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
+                                  </Button>
+                                  <span>{model.is_featured ? 'Featured' : 'Not Featured'}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {model.updated_at ? new Date(model.updated_at).toLocaleDateString() : 'Never'}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openEditModelDialog(model.id)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-red-500 hover:text-red-700"
+                                    onClick={() => deleteModel(model.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+export default Admin;

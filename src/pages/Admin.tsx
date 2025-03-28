@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -28,68 +27,69 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 import { 
-  Eye, Pencil, Trash2, Plus, CalendarDays, Package, ShoppingBag, Users 
+  Eye, Pencil, Trash2, Plus, CalendarDays, Package, ShoppingBag, Users, Upload, Check, X
 } from 'lucide-react';
 import { products } from './Shop';
+import { supabase } from '@/integrations/supabase/client';
 
 // Mock bookings data
-const bookings = [
-  {
-    id: 1,
-    customerName: 'Rahul Sharma',
-    email: 'rahul@example.com',
-    phone: '9876543210',
-    package: 'Premium Package',
-    location: 'Mumbai - Andheri',
-    date: '2023-07-15',
-    time: '10:00 AM',
-    status: 'confirmed'
-  },
-  {
-    id: 2,
-    customerName: 'Priya Patel',
-    email: 'priya@example.com',
-    phone: '9876543211',
-    package: 'Standard Package',
-    location: 'Mumbai - Malad',
-    date: '2023-07-16',
-    time: '02:00 PM',
-    status: 'confirmed'
-  },
-  {
-    id: 3,
-    customerName: 'Aarav Singh',
-    email: 'aarav@example.com',
-    phone: '9876543212',
-    package: 'Family Package',
-    location: 'Mumbai - Andheri',
-    date: '2023-07-17',
-    time: '11:00 AM',
-    status: 'pending'
-  },
-  {
-    id: 4,
-    customerName: 'Neha Kapoor',
-    email: 'neha@example.com',
-    phone: '9876543213',
-    package: 'Premium Package',
-    location: 'Mumbai - Malad',
-    date: '2023-07-18',
-    time: '04:00 PM',
-    status: 'cancelled'
-  },
-  {
-    id: 5,
-    customerName: 'Vikram Joshi',
-    email: 'vikram@example.com',
-    phone: '9876543214',
-    package: 'Standard Package',
-    location: 'Mumbai - Andheri',
-    date: '2023-07-19',
-    time: '01:00 PM',
-    status: 'completed'
-  }
-];
+// const bookings = [
+//   {
+//     id: 1,
+//     customerName: 'Rahul Sharma',
+//     email: 'rahul@example.com',
+//     phone: '9876543210',
+//     package: 'Premium Package',
+//     location: 'Mumbai - Andheri',
+//     date: '2023-07-15',
+//     time: '10:00 AM',
+//     status: 'confirmed'
+//   },
+//   {
+//     id: 2,
+//     customerName: 'Priya Patel',
+//     email: 'priya@example.com',
+//     phone: '9876543211',
+//     package: 'Standard Package',
+//     location: 'Mumbai - Malad',
+//     date: '2023-07-16',
+//     time: '02:00 PM',
+//     status: 'confirmed'
+//   },
+//   {
+//     id: 3,
+//     customerName: 'Aarav Singh',
+//     email: 'aarav@example.com',
+//     phone: '9876543212',
+//     package: 'Family Package',
+//     location: 'Mumbai - Andheri',
+//     date: '2023-07-17',
+//     time: '11:00 AM',
+//     status: 'pending'
+//   },
+//   {
+//     id: 4,
+//     customerName: 'Neha Kapoor',
+//     email: 'neha@example.com',
+//     phone: '9876543213',
+//     package: 'Premium Package',
+//     location: 'Mumbai - Malad',
+//     date: '2023-07-18',
+//     time: '04:00 PM',
+//     status: 'cancelled'
+//   },
+//   {
+//     id: 5,
+//     customerName: 'Vikram Joshi',
+//     email: 'vikram@example.com',
+//     phone: '9876543214',
+//     package: 'Standard Package',
+//     location: 'Mumbai - Andheri',
+//     date: '2023-07-19',
+//     time: '01:00 PM',
+//     status: 'completed'
+//   }
+// ];
 
 const productSchema = z.object({
   name: z.string().min(2, {
@@ -135,6 +135,10 @@ const Admin = () => {
   const [editingProduct, setEditingProduct] = useState<null | number>(null);
   const [openProductDialog, setOpenProductDialog] = useState(false);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [models, setModels] = useState([]);
+  const [content, setContent] = useState([]);
   
   const productForm = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -159,24 +163,66 @@ const Admin = () => {
     },
   });
   
-  const handleLogin = async (data: LoginFormValues) => {
-    const setLoading = useState(false)[1];
-    setLoading(true);
-    
-    // Here you would connect to Supabase for admin authentication
+  const fetchBookings = async () => {
     try {
-      // This is a placeholder for Supabase auth
-      // const { data: adminData, error } = await supabase
-      //   .from('admins')
-      //   .select('*')
-      //   .eq('email', data.email)
-      //   .single();
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*');
       
-      // if (error || !adminData) throw new Error('Invalid credentials');
+      if (error) {
+        throw error;
+      }
+      setBookings(data);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      toast.error("Failed to load bookings.");
+    }
+  };
+  
+  const fetchModels = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('models')
+        .select('*');
       
-      // Authentication check (to be replaced with Supabase)
+      if (error) {
+        throw error;
+      }
+      setModels(data);
+    } catch (error) {
+      console.error("Error fetching models:", error);
+      toast.error("Failed to load models.");
+    }
+  };
+  
+  const fetchContent = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('content')
+        .select('*');
+      
+      if (error) {
+        throw error;
+      }
+      setContent(data);
+    } catch (error) {
+      console.error("Error fetching content:", error);
+      toast.error("Failed to load content.");
+    }
+  };
+  
+  const handleLogin = async (data: LoginFormValues) => {
+    setIsLoading(true);
+    
+    try {
+      console.log("Login attempt with:", data.email);
+      
+      // For demonstration, we'll hardcode the check until proper authentication is set up
       if (data.email === 'ayushk1@gmail.com' && data.password === '88888888') {
         setIsLoggedIn(true);
+        fetchBookings();
+        fetchModels();
+        fetchContent();
         toast.success("Login Successful", {
           description: "Welcome to the admin dashboard",
         });
@@ -184,11 +230,12 @@ const Admin = () => {
         throw new Error('Invalid credentials');
       }
     } catch (error) {
+      console.error("Login error:", error);
       toast.error("Login Failed", {
         description: "Invalid email or password",
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
   
@@ -322,9 +369,14 @@ const Admin = () => {
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full bg-ideazzz-purple">
-                      Sign In
+                    <Button type="submit" className="w-full bg-ideazzz-purple" disabled={isLoading}>
+                      {isLoading ? "Signing in..." : "Sign In"}
                     </Button>
+                    <div className="text-center mt-4">
+                      <p className="text-sm text-gray-500">
+                        Demo credentials: ayushk1@gmail.com / 88888888
+                      </p>
+                    </div>
                   </form>
                 </Form>
               </CardContent>

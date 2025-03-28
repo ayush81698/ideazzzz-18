@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -21,30 +22,26 @@ const Auth = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     
-    // Here you would connect to Supabase for authentication
     try {
-      // This is a placeholder for Supabase auth
-      // const { data, error } = await supabase.auth.signInWithPassword({
-      //   email,
-      //   password,
-      // });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       
-      // if (error) throw error;
+      if (error) throw error;
       
-      // Simulate successful login
-      setTimeout(() => {
-        setLoading(false);
-        toast.success("Login successful!", {
-          description: "Welcome back to Ideazzz",
-        });
-        navigate('/');
-      }, 1000);
+      setLoading(false);
+      toast.success("Login successful!", {
+        description: "Welcome back to Ideazzz",
+      });
+      navigate('/profile');
       
-    } catch (error) {
+    } catch (error: any) {
       setLoading(false);
       toast.error("Login failed", {
-        description: "Please check your credentials and try again",
+        description: error.message || "Please check your credentials and try again",
       });
+      console.error("Login error:", error);
     }
   };
 
@@ -66,35 +63,31 @@ const Auth = () => {
       return;
     }
     
-    // Here you would connect to Supabase for registration
     try {
-      // This is a placeholder for Supabase auth
-      // const { data, error } = await supabase.auth.signUp({
-      //   email,
-      //   password,
-      //   options: {
-      //     data: {
-      //       name,
-      //     }
-      //   }
-      // });
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+          }
+        }
+      });
       
-      // if (error) throw error;
+      if (error) throw error;
       
-      // Simulate successful registration
-      setTimeout(() => {
-        setLoading(false);
-        toast.success("Registration successful!", {
-          description: "Your account has been created",
-        });
-        navigate('/');
-      }, 1000);
+      setLoading(false);
+      toast.success("Registration successful!", {
+        description: "Your account has been created",
+      });
+      navigate('/profile');
       
-    } catch (error) {
+    } catch (error: any) {
       setLoading(false);
       toast.error("Registration failed", {
-        description: "Please try again later",
+        description: error.message || "Please try again later",
       });
+      console.error("Registration error:", error);
     }
   };
 

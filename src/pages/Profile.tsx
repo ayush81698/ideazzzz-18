@@ -11,35 +11,16 @@ import { useNavigate } from 'react-router-dom';
 import { CalendarClock, Package, User, LogOut } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { supabase } from '@/integrations/supabase/client';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // In a real app, this would come from auth state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [bookings, setBookings] = useState<any[]>([]);
   
-  // Mock data for bookings and orders
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      package: 'Premium 3D Scan',
-      location: 'Mumbai - Andheri',
-      date: '2023-08-15',
-      time: '10:00 AM',
-      status: 'confirmed',
-      bookingTime: new Date(Date.now() - 30 * 60000).toISOString(), // 30 minutes ago
-      canCancel: true
-    },
-    {
-      id: 2,
-      package: 'Family Package',
-      location: 'Mumbai - Malad',
-      date: '2023-09-01',
-      time: '02:00 PM',
-      status: 'pending',
-      bookingTime: new Date(Date.now() - 2 * 60 * 60000).toISOString(), // 2 hours ago
-      canCancel: false
-    }
-  ]);
-  
+  // Mock data for orders
   const [orders, setOrders] = useState([
     {
       id: 1,
@@ -75,40 +56,96 @@ const Profile = () => {
     }
   ]);
   
-  // Check if a booking is within the cancellation window (1 hour)
   useEffect(() => {
-    const checkCancellationWindows = () => {
-      setBookings(prev => prev.map(booking => {
-        const bookingTime = new Date(booking.bookingTime);
-        const currentTime = new Date();
-        const timeDiffHours = (currentTime.getTime() - bookingTime.getTime()) / (1000 * 60 * 60);
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        const currentUser = session?.user;
+        setUser(currentUser ?? null);
+        setIsLoggedIn(!!currentUser);
         
-        return {
-          ...booking,
-          canCancel: timeDiffHours <= 1 && booking.status !== 'cancelled'
-        };
-      }));
+        if (currentUser) {
+          fetchUserBookings(currentUser.id);
+        } else {
+          // If no user is logged in, redirect to auth page
+          navigate('/auth');
+        }
+        
+        setLoading(false);
+      }
+    );
+    
+    // Get initial session
+    const getInitialSession = async () => {
+      setLoading(true);
+      const { data } = await supabase.auth.getSession();
+      const currentUser = data.session?.user;
+      
+      setUser(currentUser ?? null);
+      setIsLoggedIn(!!currentUser);
+      
+      if (currentUser) {
+        await fetchUserBookings(currentUser.id);
+      } else {
+        // If no user is logged in, redirect to auth page
+        navigate('/auth');
+      }
+      
+      setLoading(false);
     };
     
-    checkCancellationWindows();
-    const interval = setInterval(checkCancellationWindows, 60000); // Check every minute
+    getInitialSession();
     
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [navigate]);
   
-  const handleCancelBooking = (id: number) => {
-    // In a real app, this would call the API to cancel the booking
-    setBookings(prev => prev.map(booking => 
-      booking.id === id ? { ...booking, status: 'cancelled', canCancel: false } : booking
-    ));
-    
-    toast.success("Booking Cancelled", {
-      description: "Your booking has been successfully cancelled",
-    });
+  // Fetch user's bookings from Supabase
+  const fetchUserBookings = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('user_id', userId);
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data) {
+        setBookings(data);
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      toast.error('Failed to load your bookings');
+    }
   };
   
-  const handleLogout = () => {
-    // In a real app, this would call the auth service to log out
+  const handleCancelBooking = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: 'cancelled', can_cancel: false })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setBookings(prev => prev.map(booking => 
+        booking.id === id ? { ...booking, status: 'cancelled', can_cancel: false } : booking
+      ));
+      
+      toast.success("Booking Cancelled", {
+        description: "Your booking has been successfully cancelled",
+      });
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      toast.error('Failed to cancel booking');
+    }
+  };
+  
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setIsLoggedIn(false);
     navigate('/auth');
     toast.info("Logged Out", {
@@ -122,9 +159,16 @@ const Profile = () => {
     visible: { opacity: 1, y: 0 }
   };
 
+  if (loading) {
+    return (
+      <div className="py-20 flex justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ideazzz-purple"></div>
+      </div>
+    );
+  }
+
   if (!isLoggedIn) {
-    navigate('/auth');
-    return null;
+    return null; // Will redirect to /auth via the useEffect
   }
 
   return (
@@ -144,10 +188,10 @@ const Profile = () => {
                 <div className="flex flex-col items-center text-center">
                   <Avatar className="h-24 w-24 mb-4">
                     <AvatarImage src="/placeholder.svg" alt="User Avatar" />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarFallback>{user?.email?.substring(0, 2).toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
-                  <h2 className="text-2xl font-bold mb-1">John Doe</h2>
-                  <p className="text-muted-foreground mb-6">john.doe@example.com</p>
+                  <h2 className="text-2xl font-bold mb-1">{user?.user_metadata?.name || "User"}</h2>
+                  <p className="text-muted-foreground mb-6">{user?.email}</p>
                   
                   <div className="w-full space-y-2">
                     <Button variant="outline" className="w-full justify-start">
@@ -234,10 +278,10 @@ const Profile = () => {
                                   <Button 
                                     variant="destructive" 
                                     size="sm"
-                                    disabled={!booking.canCancel}
+                                    disabled={!booking.can_cancel || booking.status === 'cancelled'}
                                     onClick={() => handleCancelBooking(booking.id)}
                                   >
-                                    {booking.canCancel ? "Cancel Booking" : "Cannot Cancel"}
+                                    {booking.can_cancel && booking.status !== 'cancelled' ? "Cancel Booking" : "Cannot Cancel"}
                                   </Button>
                                 </TableCell>
                               </TableRow>

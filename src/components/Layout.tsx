@@ -34,7 +34,7 @@ interface NavigationItem {
 }
 
 const Layout = () => {
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const location = useLocation();
   const { theme, toggleTheme } = useThemeContext();
   const [user, setUser] = useState(null);

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -29,7 +28,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 import { 
-  Eye, Pencil, Trash2, Plus, CalendarDays, Package, ShoppingBag, Users, Upload, Check, X
+  Eye, Pencil, Trash2, Plus, CalendarDays, Package, ShoppingBag, Users, Upload, Check, X, Cube, Model3d
 } from 'lucide-react';
 import { products } from './Shop';
 import { supabase } from '@/integrations/supabase/client';
@@ -69,8 +68,21 @@ const loginSchema = z.object({
   }),
 });
 
+const modelSchema = z.object({
+  name: z.string().min(2, {
+    message: "Model name must be at least 2 characters.",
+  }),
+  description: z.string().optional(),
+  model_url: z.string().url({
+    message: "Please enter a valid URL for the 3D model.",
+  }),
+  is_featured: z.boolean().default(false),
+  position: z.string().default('homepage')
+});
+
 type ProductFormValues = z.infer<typeof productSchema>;
 type LoginFormValues = z.infer<typeof loginSchema>;
+type ModelFormValues = z.infer<typeof modelSchema>;
 
 const Admin = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -79,6 +91,8 @@ const Admin = () => {
   const [openProductDialog, setOpenProductDialog] = useState(false);
   const [editingBooking, setEditingBooking] = useState<null | string>(null);
   const [openBookingDialog, setOpenBookingDialog] = useState(false);
+  const [openModelDialog, setOpenModelDialog] = useState(false);
+  const [editingModel, setEditingModel] = useState<null | string>(null);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [bookings, setBookings] = useState([]);
@@ -97,6 +111,17 @@ const Admin = () => {
       stock: 0,
       tags: '',
       rating: 4.5
+    },
+  });
+  
+  const modelForm = useForm<ModelFormValues>({
+    resolver: zodResolver(modelSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      model_url: '',
+      is_featured: false,
+      position: 'homepage'
     },
   });
   
@@ -214,6 +239,21 @@ const Admin = () => {
     }
   };
   
+  const openEditModelDialog = (modelId: string) => {
+    const model = models.find(m => m.id === modelId);
+    if (model) {
+      modelForm.reset({
+        name: model.name,
+        description: model.description || '',
+        model_url: model.model_url,
+        is_featured: model.is_featured || false,
+        position: model.position || 'homepage'
+      });
+      setEditingModel(modelId);
+      setOpenModelDialog(true);
+    }
+  };
+  
   const handleAddEditProduct = (data: ProductFormValues) => {
     console.log("Form data:", data);
     
@@ -251,11 +291,107 @@ const Admin = () => {
     productForm.reset();
   };
   
+  const handleAddEditModel = async (data: ModelFormValues) => {
+    try {
+      // If updating an existing model
+      if (editingModel) {
+        const { error } = await supabase
+          .from('models')
+          .update({
+            name: data.name,
+            description: data.description,
+            model_url: data.model_url,
+            is_featured: data.is_featured,
+            position: data.position,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingModel);
+        
+        if (error) throw error;
+        
+        // If this model is set as featured, make sure to unfeatured other models
+        if (data.is_featured) {
+          const { error: updateError } = await supabase
+            .from('models')
+            .update({ is_featured: false })
+            .neq('id', editingModel)
+            .eq('position', data.position);
+          
+          if (updateError) console.error("Error updating other models:", updateError);
+        }
+        
+        toast.success("Model Updated", {
+          description: `${data.name} has been updated successfully`,
+        });
+      } else {
+        // Adding a new model
+        const { data: newModel, error } = await supabase
+          .from('models')
+          .insert({
+            name: data.name,
+            description: data.description,
+            model_url: data.model_url,
+            is_featured: data.is_featured,
+            position: data.position
+          })
+          .select();
+        
+        if (error) throw error;
+        
+        // If this model is set as featured, make sure to unfeatured other models
+        if (data.is_featured) {
+          const { error: updateError } = await supabase
+            .from('models')
+            .update({ is_featured: false })
+            .neq('id', newModel[0].id)
+            .eq('position', data.position);
+          
+          if (updateError) console.error("Error updating other models:", updateError);
+        }
+        
+        toast.success("Model Added", {
+          description: `${data.name} has been added successfully`,
+        });
+      }
+      
+      // Refresh the models list
+      fetchModels();
+      
+      setOpenModelDialog(false);
+      setEditingModel(null);
+      modelForm.reset();
+    } catch (error) {
+      console.error("Error saving model:", error);
+      toast.error("Failed to save model.");
+    }
+  };
+  
   const deleteProduct = (productId: number) => {
     setProductsList(productsList.filter(p => p.id !== productId));
     toast.success("Product Deleted", {
       description: "The product has been deleted successfully",
     });
+  };
+  
+  const deleteModel = async (modelId: string) => {
+    try {
+      const { error } = await supabase
+        .from('models')
+        .delete()
+        .eq('id', modelId);
+      
+      if (error) throw error;
+      
+      // Update the local state
+      setModels(models.filter(m => m.id !== modelId));
+      
+      toast.success("Model Deleted", {
+        description: "The model has been deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting model:", error);
+      toast.error("Failed to delete model.");
+    }
   };
   
   const updateBookingStatus = async (id: string, newStatus: string) => {
@@ -292,6 +428,42 @@ const Admin = () => {
     } catch (error) {
       console.error('Error updating booking:', error);
       toast.error('Failed to update booking status');
+    }
+  };
+  
+  const toggleFeaturedModel = async (modelId: string, currentFeatured: boolean, position: string) => {
+    try {
+      // First update this model
+      const { error } = await supabase
+        .from('models')
+        .update({ 
+          is_featured: !currentFeatured,
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', modelId);
+      
+      if (error) throw error;
+      
+      // If we're setting this model as featured, un-feature all other models in the same position
+      if (!currentFeatured) {
+        const { error: updateError } = await supabase
+          .from('models')
+          .update({ is_featured: false })
+          .neq('id', modelId)
+          .eq('position', position);
+        
+        if (updateError) console.error("Error updating other models:", updateError);
+      }
+      
+      // Refresh the models
+      fetchModels();
+      
+      toast.success("Model Updated", {
+        description: `Model is now ${!currentFeatured ? 'featured' : 'not featured'}`,
+      });
+    } catch (error) {
+      console.error('Error updating model:', error);
+      toast.error('Failed to update model status');
     }
   };
   
@@ -429,9 +601,10 @@ const Admin = () => {
           variants={fadeInUp}
         >
           <Tabs defaultValue="bookings" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="bookings">Booking Management</TabsTrigger>
               <TabsTrigger value="products">Products Management</TabsTrigger>
+              <TabsTrigger value="models">3D Models Management</TabsTrigger>
             </TabsList>
             
             <TabsContent value="bookings">
@@ -754,169 +927,3 @@ const Admin = () => {
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
-                              )}
-                            />
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                              control={productForm.control}
-                              name="modelUrl"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>3D Model URL</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="https://example.com/model.glb" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={productForm.control}
-                              name="imageUrl"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Image URL</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="https://example.com/image.jpg" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                              control={productForm.control}
-                              name="tags"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Tags (comma separated)</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="e.g. Premium, Bestseller" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={productForm.control}
-                              name="rating"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Rating (0-5)</FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      type="number" 
-                                      min="0" 
-                                      max="5" 
-                                      step="0.1"
-                                      {...field}
-                                      onChange={(e) => field.onChange(Number(e.target.value))}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          
-                          <DialogFooter>
-                            <Button type="submit" className="bg-ideazzz-purple">
-                              {editingProduct ? 'Update Product' : 'Add Product'}
-                            </Button>
-                          </DialogFooter>
-                        </form>
-                      </Form>
-                    </DialogContent>
-                  </Dialog>
-                </CardHeader>
-                <CardContent>
-                  {productsList.length === 0 ? (
-                    <div className="text-center py-10">
-                      <p className="text-muted-foreground">No products found</p>
-                      <Button 
-                        className="mt-4"
-                        onClick={() => {
-                          setEditingProduct(null);
-                          productForm.reset();
-                          setOpenProductDialog(true);
-                        }}
-                      >
-                        Add your first product
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>ID</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Price</TableHead>
-                            <TableHead>Stock</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {productsList.map((product) => (
-                            <TableRow key={product.id}>
-                              <TableCell>{product.id}</TableCell>
-                              <TableCell className="font-medium">{product.name}</TableCell>
-                              <TableCell>{product.category}</TableCell>
-                              <TableCell>₹{product.price.toLocaleString()}</TableCell>
-                              <TableCell>{product.stock}</TableCell>
-                              <TableCell>
-                                <Badge className={product.stock > 0 ? 'bg-green-500' : 'bg-red-500'}>
-                                  {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2">
-                                  <Button 
-                                    variant="outline" 
-                                    size="icon" 
-                                    onClick={() => navigate(`/shop/${product.id}`)}
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="icon"
-                                    onClick={() => openEditProductDialog(product.id)}
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="icon" 
-                                    className="text-red-500"
-                                    onClick={() => deleteProduct(product.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-      </div>
-    </div>
-  );
-};
-
-export default Admin;

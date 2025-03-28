@@ -51,7 +51,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     
     const handleScroll = () => {
       const scrollY = window.scrollY;
-      const newRotation = scrollY * 0.1 % 360; // Adjust the multiplier for rotation speed
+      const newRotation = scrollY * 0.2 % 360; // Increased multiplier for faster rotation
       setRotation(newRotation);
       
       // Update the model rotation if the model-viewer element exists
@@ -68,9 +68,18 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   }, [rotateOnScroll, isScriptLoaded]);
   
   // Fallback for when model URL is invalid or can't be loaded
-  const handleModelError = () => {
+  const handleModelError = (e: Event) => {
     console.error(`Failed to load model from URL: ${modelUrl}`);
   };
+  
+  useEffect(() => {
+    const handleModelError = () => {
+      console.error(`Failed to load model from URL: ${modelUrl}`);
+    };
+    
+    document.addEventListener('model-error', handleModelError);
+    return () => document.removeEventListener('model-error', handleModelError);
+  }, [modelUrl]);
   
   return (
     <div ref={containerRef} className={cn("model-container", className)}>

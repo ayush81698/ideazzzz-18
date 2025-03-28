@@ -5,10 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import ModelViewer from '@/components/ModelViewer';
 import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent } from '@/components/ui/card';
+import { Cube, ShoppingBag, Calendar } from 'lucide-react';
 
 const Index = () => {
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   useEffect(() => {
     async function fetchFeaturedModels() {
@@ -39,7 +43,56 @@ const Index = () => {
       }
     }
     
+    async function fetchFeaturedProducts() {
+      try {
+        // In a real app, this would fetch from the products table with a featured flag
+        // Since we're using mock data, we'll simulate fetching featured products
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .limit(3);
+        
+        if (error) {
+          console.error('Error fetching featured products:', error);
+          // Use mock data as fallback
+          setFeaturedProducts([
+            {
+              id: 1,
+              name: 'Custom Portrait Sculpture',
+              description: 'Personalized 3D printed portrait',
+              price: 2999,
+              imageUrl: 'https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b',
+              discount: '20% OFF'
+            },
+            {
+              id: 2,
+              name: 'Pet Figurine',
+              description: 'Turn your pet into a 3D model',
+              price: 1999,
+              imageUrl: 'https://images.unsplash.com/photo-1487887235947-a955ef187fcc',
+              discount: 'Limited Time'
+            },
+            {
+              id: 3,
+              name: '3D Family Photo Frame',
+              description: 'Create a 3D scene from your family photo',
+              price: 3499,
+              imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
+              discount: 'New Arrival'
+            }
+          ]);
+        } else if (data && data.length > 0) {
+          setFeaturedProducts(data);
+        }
+      } catch (error) {
+        console.error('Error in featured products fetch:', error);
+      } finally {
+        setLoadingProducts(false);
+      }
+    }
+    
     fetchFeaturedModels();
+    fetchFeaturedProducts();
   }, []);
 
   return (
@@ -55,7 +108,7 @@ const Index = () => {
               className="order-2 lg:order-1"
             >
               <Badge className="mb-4 bg-ideazzz-purple px-4 py-1 text-white">Premium Craftsmanship</Badge>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Bringing Your <span className="text-ideazzz-purple">Ideas</span> To Life</h1>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
               <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8">
                 Experience the artistry of sculpting and 3D printing that transforms your concepts into tangible masterpieces.
               </p>
@@ -64,7 +117,7 @@ const Index = () => {
                   <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">Explore Shop</Button>
                 </Link>
                 <Link to="/booking">
-                  <Button size="lg" variant="outline">Book Consultation</Button>
+                  <Button size="lg" variant="outline">Book a 3D Scan</Button>
                 </Link>
               </div>
             </motion.div>
@@ -84,10 +137,11 @@ const Index = () => {
                   <ModelViewer
                     key={model.id}
                     modelUrl={model.model_url}
-                    autoRotate={true}
+                    autoRotate={false}
                     className="w-full h-full"
                     cameraControls={true}
                     backgroundAlpha={0}
+                    rotateOnScroll={true}
                   />
                 ))
               )}
@@ -96,8 +150,79 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Rest of the content */}
+      {/* Featured Products Section */}
       <section className="py-16 bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-10">
+            <Badge className="mb-2 bg-ideazzz-pink px-4 py-1 text-white">Special Offers</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold">Featured Products</h2>
+            <p className="text-gray-600 dark:text-gray-300 mt-2">
+              Explore our handpicked collection of premium 3D models and services
+            </p>
+          </div>
+          
+          {loadingProducts ? (
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ideazzz-purple"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {featuredProducts.map((product) => (
+                <motion.div 
+                  key={product.id}
+                  whileHover={{ y: -10 }}
+                  className="relative"
+                >
+                  <Card className="overflow-hidden h-full">
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={product.imageUrl} 
+                        alt={product.name}
+                        className="w-full h-full object-cover transform transition-transform hover:scale-110" 
+                      />
+                      {product.discount && (
+                        <div className="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 text-sm font-semibold">
+                          {product.discount}
+                        </div>
+                      )}
+                    </div>
+                    <CardContent className="p-5">
+                      <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm">
+                        {product.description}
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold">₹{product.price.toLocaleString()}</span>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="text-ideazzz-purple border-ideazzz-purple hover:bg-ideazzz-purple hover:text-white"
+                          asChild
+                        >
+                          <Link to={`/shop/${product.id}`}>
+                            <ShoppingBag className="h-4 w-4 mr-1" /> View
+                          </Link>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
+          
+          <div className="mt-10 text-center">
+            <Link to="/shop">
+              <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">
+                View All Products
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+      
+      {/* Services Section - Keeping the same structure but with updated content */}
+      <section className="py-16 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Services</h2>

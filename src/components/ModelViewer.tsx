@@ -29,6 +29,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   
   // Load model-viewer script
   useEffect(() => {
+    if (document.querySelector('script[src*="model-viewer"]')) {
+      setIsScriptLoaded(true);
+      return;
+    }
+    
     const script = document.createElement('script');
     script.type = 'module';
     script.src = 'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js';
@@ -36,7 +41,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     document.body.appendChild(script);
     
     return () => {
-      document.body.removeChild(script);
+      // Don't remove the script on unmount as it might be used by other components
     };
   }, []);
   
@@ -62,6 +67,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [rotateOnScroll, isScriptLoaded]);
   
+  // Fallback for when model URL is invalid or can't be loaded
+  const handleModelError = () => {
+    console.error(`Failed to load model from URL: ${modelUrl}`);
+  };
+  
   return (
     <div ref={containerRef} className={cn("model-container", className)}>
       <div
@@ -81,6 +91,12 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
               field-of-view="${fieldOfView}"
               style="width: 100%; height: 100%; background-color: rgba(0,0,0,${backgroundAlpha});"
               camera-orbit="${rotation}deg 75deg 105%"
+              ar
+              ar-modes="webxr scene-viewer quick-look"
+              poster="https://via.placeholder.com/600x400?text=Loading+3D+Model"
+              loading="lazy"
+              reveal="auto"
+              onError="document.dispatchEvent(new CustomEvent('model-error', {}))"
             ></model-viewer>
           `
         }}

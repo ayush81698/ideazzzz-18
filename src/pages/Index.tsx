@@ -1,435 +1,182 @@
-import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 import ModelViewer from '@/components/ModelViewer';
-import { ArrowRight, CheckCircle, Star } from 'lucide-react';
-
-const models = [
-  {
-    id: 1,
-    title: "Greek Statue Replica",
-    description: "Custom 3D printed Greek statue with realistic texture and detail",
-    price: 4999,
-    modelUrl: "https://modelviewer.dev/shared-assets/models/HumanBase.glb", 
-    tags: ["Bestseller", "Customizable"],
-    rating: 4.9
-  },
-  {
-    id: 2,
-    title: "Portrait Bust",
-    description: "Highly detailed portrait bust with lifelike features",
-    price: 6999,
-    modelUrl: "https://modelviewer.dev/shared-assets/models/HumanHead.glb",
-    tags: ["Premium", "Limited Edition"],
-    rating: 4.7
-  },
-  {
-    id: 3,
-    title: "Wedding Cake Topper",
-    description: "Personalized wedding cake topper from your photos",
-    price: 3499,
-    modelUrl: "https://modelviewer.dev/shared-assets/models/HumanPair.glb",
-    tags: ["Custom", "Gift Idea"],
-    rating: 5.0
-  },
-  {
-    id: 4,
-    title: "Celebrity Figurine",
-    description: "Your favorite celebrity in high-quality 3D print",
-    price: 5499,
-    modelUrl: "https://modelviewer.dev/shared-assets/models/HumanStanding.glb",
-    tags: ["Popular", "Collectible"],
-    rating: 4.8
-  }
-];
-
-const features = [
-  {
-    title: "30 DSLR Cameras",
-    description: "Our studio uses 30 professional-grade DSLR cameras to capture every detail from all angles.",
-    icon: "📸"
-  },
-  {
-    title: "Blender Enhanced",
-    description: "Expert 3D artists enhance your model in Blender with perfect details and textures.",
-    icon: "🎨"
-  },
-  {
-    title: "Professional 3D Printing",
-    description: "State-of-the-art 3D printers create your model with precision and durability.",
-    icon: "🖨️"
-  },
-  {
-    title: "Home Delivery",
-    description: "Your personalized 3D model delivered safely to your doorstep.",
-    icon: "🚚"
-  }
-];
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  
+  const [models, setModels] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    observerRef.current = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          // Keep visible but don't add rotating animation
+    async function fetchFeaturedModels() {
+      try {
+        const { data, error } = await supabase
+          .from('models')
+          .select('*')
+          .eq('is_featured', true)
+          .limit(1);
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          setModels(data);
+        } else {
+          // If no featured models, use default model
+          setModels([{
+            id: 'default',
+            name: 'Sculpture Sample',
+            description: 'A beautiful example of our craftsmanship',
+            model_url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb'
+          }]);
         }
-      });
-    }, { threshold: 0.2 });
-    
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
+      } catch (error) {
+        console.error('Error fetching models:', error);
+      } finally {
+        setLoading(false);
       }
-    };
+    }
+    
+    fetchFeaturedModels();
   }, []);
-  
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
 
   return (
-    <div className="overflow-x-hidden">
-      <section className="relative min-h-[100vh] flex items-center overflow-hidden bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light dark:from-ideazzz-dark dark:via-gray-900 dark:to-ideazzz-dark">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] bg-ideazzz-pink opacity-10 rounded-full blur-[100px] dark:opacity-20"></div>
-          <div className="absolute -bottom-[10%] -left-[10%] w-[50%] h-[50%] bg-ideazzz-purple opacity-10 rounded-full blur-[100px] dark:opacity-20"></div>
-        </div>
-        
-        <div className="absolute inset-0 z-0 opacity-30 dark:opacity-20 pointer-events-none">
-          <ModelViewer 
-            modelUrl="https://modelviewer.dev/shared-assets/models/Statue_01.gltf"
-            className="w-full h-[120%]" 
-            autoRotate={false}
-            cameraControls={false}
-            scale="1.5 1.5 1.5"
-            backgroundAlpha={0}
-            fieldOfView="30deg"
-            rotateOnScroll={true}
-          />
-        </div>
-        
-        <div className="container mx-auto px-4 py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 relative z-10">
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.5, delay: 0.2 }}
-            variants={fadeInUp}
-            className="flex flex-col justify-center"
-          >
-            <Badge className="mb-4 bg-ideazzz-pink/10 text-ideazzz-pink dark:bg-ideazzz-pink/20 dark:text-ideazzz-pink border-none text-sm py-1 px-3 w-fit">
-              Premium 3D Personalization
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 dark:text-white">
-              Your <span className="text-ideazzz-purple dark:text-ideazzz-light">Personal</span> Character in <span className="text-ideazzz-pink">3D</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground dark:text-gray-300 mb-8 max-w-xl">
-              Transform yourself into a stunning 3D model with our cutting-edge scanning technology. Perfect for gifts, memorabilia, or just because you deserve it!
-            </p>
-            
-            <div className="flex flex-wrap gap-4">
-              <Link to="/booking">
-                <Button className="btn-primary">
-                  Book Your Scan <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to="/shop">
-                <Button variant="outline" className="btn-secondary dark:border-ideazzz-light dark:text-ideazzz-light">
-                  Shop 3D Models
-                </Button>
-              </Link>
-            </div>
-            
-            <div className="flex items-center space-x-4 mt-8">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <div className="text-sm text-muted-foreground dark:text-gray-400">
-                From <span className="font-medium text-foreground dark:text-white">500+</span> satisfied customers
-              </div>
-            </div>
-          </motion.div>
-          
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.5, delay: 0.4 }}
-            variants={fadeInUp}
-            className="flex items-center justify-center h-[400px] md:h-[500px]"
-          >
-            <ModelViewer 
-              modelUrl="https://modelviewer.dev/shared-assets/models/Statue_01.gltf"
-              className="w-full h-full" 
-              autoRotate={false}
-            />
-          </motion.div>
-        </div>
-      </section>
-      
-      <section className="py-20 bg-white dark:bg-gray-900">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.5 }}
-            variants={fadeInUp}
-            className="text-center mb-14"
-          >
-            <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple border-none text-sm py-1 px-3">
-              Our Process
-            </Badge>
-            <h2 className="section-title dark:text-white">How We Create Your 3D Model</h2>
-            <p className="section-subtitle dark:text-gray-300">
-              State-of-the-art technology combined with expert craftsmanship to deliver personalized 3D models.
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial="hidden"
-                animate="visible"
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                variants={fadeInUp}
-              >
-                <Card className="h-full card-hover border-none shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 dark:text-white">
-                  <CardContent className="p-6">
-                    <div className="text-4xl mb-4">{feature.icon}</div>
-                    <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground dark:text-gray-400">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-      
-      <section className="py-20 bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.5 }}
-            variants={fadeInUp}
-            className="text-center mb-14"
-          >
-            <Badge className="mb-4 bg-ideazzz-pink/10 text-ideazzz-pink dark:bg-ideazzz-pink/20 border-none text-sm py-1 px-3">
-              Featured Models
-            </Badge>
-            <h2 className="section-title dark:text-white">Popular 3D Models</h2>
-            <p className="section-subtitle dark:text-gray-300">
-              Explore our collection of ready-to-ship 3D character models
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {models.map((model, index) => (
-              <motion.div
-                key={model.id}
-                initial="hidden"
-                animate="visible"
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                variants={fadeInUp}
-                className="model-card"
-              >
-                <Card className="overflow-hidden card-hover border-none shadow-xl dark:bg-gray-800">
-                  <div className="h-[300px] relative bg-gradient-to-br from-ideazzz-purple/5 to-ideazzz-pink/5 dark:from-ideazzz-purple/10 dark:to-ideazzz-pink/10">
-                    <div className="h-full w-full">
-                      <ModelViewer 
-                        modelUrl={model.modelUrl} 
-                        className="h-full"
-                        autoRotate={false}
-                      />
-                    </div>
-                    <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-                      {model.tags.map((tag, i) => (
-                        <Badge key={i} className="bg-ideazzz-pink text-white border-none">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-lg font-bold dark:text-white">{model.title}</h3>
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                        <span className="text-sm font-medium dark:text-white">{model.rating}</span>
-                      </div>
-                    </div>
-                    <p className="text-muted-foreground text-sm mb-4 dark:text-gray-400">{model.description}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold dark:text-white">₹{model.price.toLocaleString()}</span>
-                      <Link to={`/shop/${model.id}`}>
-                        <Button size="sm" className="bg-ideazzz-purple hover:bg-ideazzz-dark dark:bg-ideazzz-purple dark:hover:bg-ideazzz-dark text-white">
-                          View Details
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-          
-          <div className="mt-12 text-center">
-            <Link to="/shop">
-              <Button size="lg" className="btn-primary">
-                View All Models <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-      
-      <section className="py-20 bg-ideazzz-dark text-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.div 
-              initial="hidden"
-              animate="visible"
-              transition={{ duration: 0.5 }}
-              variants={fadeInUp}
-            >
-              <Badge className="mb-4 bg-white/10 text-white border-none text-sm py-1 px-3">
-                Limited Time Offer
-              </Badge>
-              <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                Get 20% Off Your First 3D Scan
-              </h2>
-              <p className="text-xl text-gray-300 mb-8">
-                Book your scanning session today and receive a special discount for first-time customers.
-              </p>
-              <Link to="/booking">
-                <Button size="lg" className="bg-white text-ideazzz-purple hover:bg-gray-100">
-                  Book Your Scan Now
-                </Button>
-              </Link>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-      
-      <section className="py-20 bg-white dark:bg-gray-900">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.5 }}
-            variants={fadeInUp}
-            className="text-center mb-14"
-          >
-            <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple border-none text-sm py-1 px-3">
-              Customer Stories
-            </Badge>
-            <h2 className="section-title dark:text-white">Why Our Customers Love Us</h2>
-            <p className="section-subtitle dark:text-gray-300">
-              Hear what our satisfied customers have to say about their experience with Ideazzz
-            </p>
-          </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((_, index) => (
-              <motion.div
-                key={index}
-                initial="hidden"
-                animate="visible"
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                variants={fadeInUp}
-              >
-                <Card className="card-hover border-none shadow-lg dark:bg-gray-800 dark:text-white">
-                  <CardContent className="p-6">
-                    <div className="flex mb-4">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                    <p className="mb-4 italic text-muted-foreground dark:text-gray-400">
-                      "I was amazed by the level of detail in my 3D model. The team at Ideazzz were professional and made the whole experience enjoyable. The final product exceeded my expectations!"
-                    </p>
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 bg-ideazzz-purple/20 rounded-full flex items-center justify-center mr-3">
-                        <span className="text-ideazzz-purple font-bold">
-                          {String.fromCharCode(65 + index)}
-                        </span>
-                      </div>
-                      <div>
-                        <h4 className="font-bold dark:text-white">Customer {index + 1}</h4>
-                        <p className="text-sm text-muted-foreground dark:text-gray-400">Mumbai</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-      
-      <section className="py-20 bg-gradient-to-br from-ideazzz-light via-white to-ideazzz-light dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div>
+      {/* Hero Section with 3D Model */}
+      <section className="relative bg-gradient-to-b from-ideazzz-purple/10 to-transparent py-20 md:py-28">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div 
-              initial="hidden"
-              animate="visible"
-              transition={{ duration: 0.5 }}
-              variants={fadeInUp}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="order-2 lg:order-1"
             >
-              <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple dark:bg-ideazzz-purple/20 border-none text-sm py-1 px-3">
-                Why Choose Ideazzz
-              </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 dark:text-white">
-                The Ideazzz Advantage
-              </h2>
-              <p className="text-muted-foreground mb-8 dark:text-gray-300">
-                Our combination of cutting-edge technology, artistic expertise, and commitment to quality sets us apart from the competition.
+              <Badge className="mb-4 bg-ideazzz-purple px-4 py-1 text-white">Premium Craftsmanship</Badge>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Bringing Your <span className="text-ideazzz-purple">Ideas</span> To Life</h1>
+              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8">
+                Experience the artistry of sculpting and 3D printing that transforms your concepts into tangible masterpieces.
               </p>
-              
-              <div className="space-y-4">
-                {[
-                  "Highest resolution 3D scanning in the industry",
-                  "Professional artists for detailed refinements",
-                  "Premium quality printing materials",
-                  "Fast turnaround time",
-                  "100% satisfaction guarantee"
-                ].map((item, index) => (
-                  <div key={index} className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-ideazzz-pink mr-2 flex-shrink-0 mt-0.5" />
-                    <p className="dark:text-white">{item}</p>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-8">
+              <div className="flex flex-wrap gap-4">
+                <Link to="/shop">
+                  <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">Explore Shop</Button>
+                </Link>
                 <Link to="/booking">
-                  <Button className="btn-primary">
-                    Book Your Scan <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <Button size="lg" variant="outline">Book Consultation</Button>
                 </Link>
               </div>
             </motion.div>
             
             <motion.div 
-              initial="hidden"
-              animate="visible"
-              transition={{ duration: 0.5, delay: 0.2 }}
-              variants={fadeInUp}
-              className="h-[500px]"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="order-1 lg:order-2 h-[400px] lg:h-[500px] relative"
             >
-              <ModelViewer 
-                modelUrl="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
-                className="h-full" 
-                autoRotate={true}
-              />
+              {loading ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ideazzz-purple"></div>
+                </div>
+              ) : (
+                models.map((model) => (
+                  <ModelViewer
+                    key={model.id}
+                    modelUrl={model.model_url}
+                    autoRotate={true}
+                    className="w-full h-full"
+                    cameraControls={true}
+                    backgroundAlpha={0}
+                  />
+                ))
+              )}
+            </motion.div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Rest of the content */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Services</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Discover how we can transform your ideas into reality with our premium sculpting and 3D printing services.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Service Card 1 */}
+            <motion.div 
+              whileHover={{ y: -10 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
+            >
+              <div className="p-8">
+                <div className="w-14 h-14 bg-ideazzz-purple/10 rounded-lg flex items-center justify-center mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-ideazzz-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Custom Design</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  Work with our expert designers to bring your unique vision to life with precision and artistry.
+                </p>
+                <Link to="/booking" className="text-ideazzz-purple font-medium inline-flex items-center">
+                  Learn More
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </motion.div>
+            
+            {/* Service Card 2 */}
+            <motion.div 
+              whileHover={{ y: -10 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
+            >
+              <div className="p-8">
+                <div className="w-14 h-14 bg-ideazzz-pink/10 rounded-lg flex items-center justify-center mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-ideazzz-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3">3D Printing</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  High-quality 3D printing services using premium materials for durable and detailed results.
+                </p>
+                <Link to="/shop" className="text-ideazzz-pink font-medium inline-flex items-center">
+                  Explore Products
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </motion.div>
+            
+            {/* Service Card 3 */}
+            <motion.div 
+              whileHover={{ y: -10 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
+            >
+              <div className="p-8">
+                <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3">Premium Materials</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  We use only the highest quality materials to ensure longevity and beauty in every piece.
+                </p>
+                <Link to="/about" className="text-blue-500 font-medium inline-flex items-center">
+                  About Our Process
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
             </motion.div>
           </div>
         </div>

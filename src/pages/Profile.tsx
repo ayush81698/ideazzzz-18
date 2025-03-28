@@ -57,16 +57,21 @@ const Profile = () => {
   ]);
   
   useEffect(() => {
+    console.log("Profile component mounted, checking authentication state");
+    
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
         const currentUser = session?.user;
         setUser(currentUser ?? null);
         setIsLoggedIn(!!currentUser);
         
         if (currentUser) {
+          console.log("User is logged in, fetching bookings for user:", currentUser.id);
           await fetchUserBookings(currentUser.id);
         } else {
           // If no user is logged in, redirect to auth page
+          console.log("No user logged in, redirecting to auth page");
           navigate('/auth');
         }
         
@@ -78,15 +83,18 @@ const Profile = () => {
     const getInitialSession = async () => {
       setLoading(true);
       const { data } = await supabase.auth.getSession();
+      console.log("Initial session data:", data);
       const currentUser = data.session?.user;
       
       setUser(currentUser ?? null);
       setIsLoggedIn(!!currentUser);
       
       if (currentUser) {
+        console.log("User found in session, fetching bookings");
         await fetchUserBookings(currentUser.id);
       } else {
         // If no user is logged in, redirect to auth page
+        console.log("No user in session, redirecting to auth");
         navigate('/auth');
       }
       
@@ -96,6 +104,7 @@ const Profile = () => {
     getInitialSession();
     
     return () => {
+      console.log("Profile component unmounted, cleaning up listener");
       authListener.subscription.unsubscribe();
     };
   }, [navigate]);

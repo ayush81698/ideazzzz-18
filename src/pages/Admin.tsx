@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -31,65 +33,6 @@ import {
 } from 'lucide-react';
 import { products } from './Shop';
 import { supabase } from '@/integrations/supabase/client';
-
-// Mock bookings data
-// const bookings = [
-//   {
-//     id: 1,
-//     customerName: 'Rahul Sharma',
-//     email: 'rahul@example.com',
-//     phone: '9876543210',
-//     package: 'Premium Package',
-//     location: 'Mumbai - Andheri',
-//     date: '2023-07-15',
-//     time: '10:00 AM',
-//     status: 'confirmed'
-//   },
-//   {
-//     id: 2,
-//     customerName: 'Priya Patel',
-//     email: 'priya@example.com',
-//     phone: '9876543211',
-//     package: 'Standard Package',
-//     location: 'Mumbai - Malad',
-//     date: '2023-07-16',
-//     time: '02:00 PM',
-//     status: 'confirmed'
-//   },
-//   {
-//     id: 3,
-//     customerName: 'Aarav Singh',
-//     email: 'aarav@example.com',
-//     phone: '9876543212',
-//     package: 'Family Package',
-//     location: 'Mumbai - Andheri',
-//     date: '2023-07-17',
-//     time: '11:00 AM',
-//     status: 'pending'
-//   },
-//   {
-//     id: 4,
-//     customerName: 'Neha Kapoor',
-//     email: 'neha@example.com',
-//     phone: '9876543213',
-//     package: 'Premium Package',
-//     location: 'Mumbai - Malad',
-//     date: '2023-07-18',
-//     time: '04:00 PM',
-//     status: 'cancelled'
-//   },
-//   {
-//     id: 5,
-//     customerName: 'Vikram Joshi',
-//     email: 'vikram@example.com',
-//     phone: '9876543214',
-//     package: 'Standard Package',
-//     location: 'Mumbai - Andheri',
-//     date: '2023-07-19',
-//     time: '01:00 PM',
-//     status: 'completed'
-//   }
-// ];
 
 const productSchema = z.object({
   name: z.string().min(2, {
@@ -134,6 +77,8 @@ const Admin = () => {
   const [productsList, setProductsList] = useState([...products]);
   const [editingProduct, setEditingProduct] = useState<null | number>(null);
   const [openProductDialog, setOpenProductDialog] = useState(false);
+  const [editingBooking, setEditingBooking] = useState<null | string>(null);
+  const [openBookingDialog, setOpenBookingDialog] = useState(false);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [bookings, setBookings] = useState([]);
@@ -165,6 +110,7 @@ const Admin = () => {
   
   const fetchBookings = async () => {
     try {
+      console.log("Fetching all bookings for admin dashboard");
       const { data, error } = await supabase
         .from('bookings')
         .select('*');
@@ -172,7 +118,8 @@ const Admin = () => {
       if (error) {
         throw error;
       }
-      setBookings(data);
+      console.log("Admin booking data received:", data);
+      setBookings(data || []);
     } catch (error) {
       console.error("Error fetching bookings:", error);
       toast.error("Failed to load bookings.");
@@ -188,7 +135,8 @@ const Admin = () => {
       if (error) {
         throw error;
       }
-      setModels(data);
+      console.log("Models data received:", data);
+      setModels(data || []);
     } catch (error) {
       console.error("Error fetching models:", error);
       toast.error("Failed to load models.");
@@ -204,7 +152,7 @@ const Admin = () => {
       if (error) {
         throw error;
       }
-      setContent(data);
+      setContent(data || []);
     } catch (error) {
       console.error("Error fetching content:", error);
       toast.error("Failed to load content.");
@@ -215,7 +163,7 @@ const Admin = () => {
     setIsLoading(true);
     
     try {
-      console.log("Login attempt with:", data.email);
+      console.log("Admin login attempt with:", data.email);
       
       // For demonstration, we'll hardcode the check until proper authentication is set up
       if (data.email === 'ayushk1@gmail.com' && data.password === '88888888') {
@@ -310,6 +258,43 @@ const Admin = () => {
     });
   };
   
+  const updateBookingStatus = async (id: string, newStatus: string) => {
+    try {
+      console.log(`Updating booking ${id} to status ${newStatus}`);
+      const { error } = await supabase
+        .from('bookings')
+        .update({ 
+          status: newStatus,
+          can_cancel: newStatus !== 'completed' && newStatus !== 'cancelled',
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setBookings(prev => prev.map(booking => 
+        booking.id === id ? { 
+          ...booking, 
+          status: newStatus,
+          can_cancel: newStatus !== 'completed' && newStatus !== 'cancelled',
+          updated_at: new Date().toISOString()
+        } : booking
+      ));
+      
+      toast.success("Booking Updated", {
+        description: `Booking status changed to ${newStatus}`,
+      });
+      
+      setOpenBookingDialog(false);
+      setEditingBooking(null);
+      
+    } catch (error) {
+      console.error('Error updating booking:', error);
+      toast.error('Failed to update booking status');
+    }
+  };
+  
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
@@ -319,7 +304,7 @@ const Admin = () => {
   const stats = [
     { title: 'Total Products', value: productsList.length, icon: Package, color: 'bg-blue-500' },
     { title: 'Bookings', value: bookings.length, icon: CalendarDays, color: 'bg-ideazzz-purple' },
-    { title: 'Completed Orders', value: 12, icon: ShoppingBag, color: 'bg-green-500' },
+    { title: 'Completed Orders', value: bookings.filter(b => b.status === 'completed').length, icon: ShoppingBag, color: 'bg-green-500' },
     { title: 'Registered Users', value: 48, icon: Users, color: 'bg-ideazzz-pink' },
   ];
 
@@ -443,11 +428,204 @@ const Admin = () => {
           transition={{ duration: 0.5, delay: 0.3 }}
           variants={fadeInUp}
         >
-          <Tabs defaultValue="products" className="space-y-6">
+          <Tabs defaultValue="bookings" className="space-y-6">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="products">Products Management</TabsTrigger>
               <TabsTrigger value="bookings">Booking Management</TabsTrigger>
+              <TabsTrigger value="products">Products Management</TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="bookings">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Bookings</CardTitle>
+                  <CardDescription>Manage customer appointments</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>Customer</TableHead>
+                          <TableHead>Package</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Date & Time</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {bookings.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-4">
+                              No bookings found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          bookings.map((booking) => (
+                            <TableRow key={booking.id}>
+                              <TableCell className="font-mono text-xs">{booking.id.substring(0, 8)}...</TableCell>
+                              <TableCell>
+                                <div className="font-medium">{booking.customer_name}</div>
+                                <div className="text-sm text-muted-foreground">{booking.email}</div>
+                              </TableCell>
+                              <TableCell>{booking.package}</TableCell>
+                              <TableCell>{booking.location}</TableCell>
+                              <TableCell>
+                                {booking.date} at {booking.time}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  className={`
+                                    ${booking.status === 'confirmed' ? 'bg-blue-500' : ''}
+                                    ${booking.status === 'pending' ? 'bg-yellow-500' : ''}
+                                    ${booking.status === 'completed' ? 'bg-green-500' : ''}
+                                    ${booking.status === 'cancelled' ? 'bg-red-500' : ''}
+                                  `}
+                                >
+                                  {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button variant="outline" size="sm">
+                                        View Details
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Booking Details</DialogTitle>
+                                      </DialogHeader>
+                                      <div className="space-y-4 py-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <Label className="text-muted-foreground">Customer</Label>
+                                            <p className="font-medium">{booking.customer_name}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="text-muted-foreground">Contact</Label>
+                                            <p className="font-medium">{booking.email}</p>
+                                            <p className="text-sm">{booking.phone}</p>
+                                          </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <Label className="text-muted-foreground">Package</Label>
+                                            <p className="font-medium">{booking.package}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="text-muted-foreground">Location</Label>
+                                            <p className="font-medium">{booking.location}</p>
+                                          </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <Label className="text-muted-foreground">Date</Label>
+                                            <p className="font-medium">{booking.date}</p>
+                                          </div>
+                                          <div>
+                                            <Label className="text-muted-foreground">Time</Label>
+                                            <p className="font-medium">{booking.time}</p>
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <Label className="text-muted-foreground">Status</Label>
+                                          <div className="flex items-center space-x-2 mt-1">
+                                            <Badge
+                                              className={`
+                                                ${booking.status === 'confirmed' ? 'bg-blue-500' : ''}
+                                                ${booking.status === 'pending' ? 'bg-yellow-500' : ''}
+                                                ${booking.status === 'completed' ? 'bg-green-500' : ''}
+                                                ${booking.status === 'cancelled' ? 'bg-red-500' : ''}
+                                              `}
+                                            >
+                                              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                                            </Badge>
+                                            <p className="text-sm text-muted-foreground">
+                                              Updated: {new Date(booking.updated_at).toLocaleString()}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
+                                  
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        className={booking.status === 'cancelled' ? 'text-gray-400 cursor-not-allowed' : ''}
+                                        disabled={booking.status === 'cancelled'}
+                                      >
+                                        Update Status
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                      <DialogHeader>
+                                        <DialogTitle>Update Booking Status</DialogTitle>
+                                        <DialogDescription>
+                                          Change the status of this booking
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <div className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                          <Label>Current Status</Label>
+                                          <Badge
+                                            className={`
+                                              ${booking.status === 'confirmed' ? 'bg-blue-500' : ''}
+                                              ${booking.status === 'pending' ? 'bg-yellow-500' : ''}
+                                              ${booking.status === 'completed' ? 'bg-green-500' : ''}
+                                              ${booking.status === 'cancelled' ? 'bg-red-500' : ''}
+                                            `}
+                                          >
+                                            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                                          </Badge>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label>New Status</Label>
+                                          <div className="grid grid-cols-2 gap-2">
+                                            {['pending', 'confirmed', 'completed', 'cancelled'].map((status) => (
+                                              <Button
+                                                key={status}
+                                                variant={status === booking.status ? "default" : "outline"}
+                                                size="sm"
+                                                disabled={status === booking.status}
+                                                onClick={() => updateBookingStatus(booking.id, status)}
+                                                className={`
+                                                  ${status === 'confirmed' ? 'border-blue-500 text-blue-500 hover:bg-blue-50' : ''}
+                                                  ${status === 'pending' ? 'border-yellow-500 text-yellow-500 hover:bg-yellow-50' : ''}
+                                                  ${status === 'completed' ? 'border-green-500 text-green-500 hover:bg-green-50' : ''}
+                                                  ${status === 'cancelled' ? 'border-red-500 text-red-500 hover:bg-red-50' : ''}
+                                                  ${status === booking.status ? 'cursor-not-allowed opacity-50' : ''}
+                                                `}
+                                              >
+                                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                                              </Button>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <DialogFooter>
+                                        <Button variant="outline" onClick={() => {}} className="w-full">
+                                          Close
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
             
             <TabsContent value="products">
               <Card>
@@ -731,77 +909,6 @@ const Admin = () => {
                       </Table>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="bookings">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Bookings</CardTitle>
-                  <CardDescription>Manage customer appointments</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>ID</TableHead>
-                          <TableHead>Customer</TableHead>
-                          <TableHead>Package</TableHead>
-                          <TableHead>Location</TableHead>
-                          <TableHead>Date & Time</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {bookings.map((booking) => (
-                          <TableRow key={booking.id}>
-                            <TableCell>{booking.id}</TableCell>
-                            <TableCell>
-                              <div className="font-medium">{booking.customerName}</div>
-                              <div className="text-sm text-muted-foreground">{booking.email}</div>
-                            </TableCell>
-                            <TableCell>{booking.package}</TableCell>
-                            <TableCell>{booking.location}</TableCell>
-                            <TableCell>
-                              {booking.date} at {booking.time}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                className={`
-                                  ${booking.status === 'confirmed' ? 'bg-blue-500' : ''}
-                                  ${booking.status === 'pending' ? 'bg-yellow-500' : ''}
-                                  ${booking.status === 'completed' ? 'bg-green-500' : ''}
-                                  ${booking.status === 'cancelled' ? 'bg-red-500' : ''}
-                                `}
-                              >
-                                {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2">
-                                <Button variant="outline" size="sm">
-                                  View Details
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  className={booking.status === 'cancelled' ? 'text-gray-400 cursor-not-allowed' : ''}
-                                  disabled={booking.status === 'cancelled'}
-                                >
-                                  {booking.status === 'confirmed' || booking.status === 'pending' 
-                                    ? 'Mark Completed' 
-                                    : 'Reschedule'}
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

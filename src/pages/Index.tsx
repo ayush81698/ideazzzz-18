@@ -85,10 +85,39 @@ const Index = () => {
   }, []);
 
   return (
-    <div>
+    <div className="relative">
       {/* Hero Section with 3D Model */}
-      <section className="relative bg-gradient-to-b from-ideazzz-purple/10 to-transparent py-20 md:py-28">
-        <div className="container mx-auto px-4">
+      <section className="relative py-20 md:py-28 min-h-[85vh] overflow-hidden">
+        {/* 3D Model Background */}
+        <div className="absolute inset-0 w-full z-0">
+          {loading ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ideazzz-purple"></div>
+            </div>
+          ) : (
+            models.map((model) => (
+              <ModelViewer
+                key={model.id}
+                modelUrl={model.model_url}
+                autoRotate={false}
+                className="w-full bg-gradient-to-b from-ideazzz-purple/5 to-transparent"
+                cameraControls={true}
+                backgroundAlpha={0}
+                rotateOnScroll={true}
+                rotationMultiplier={0.1}
+                cameraOrbit="0deg 65deg 120%"
+                scale="1.5 1.5 1.5"
+                fieldOfView="40deg"
+                exposure="1"
+                height="100vh"
+                position="absolute"
+                zIndex={-1}
+              />
+            ))
+          )}
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -115,25 +144,10 @@ const Index = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="order-1 lg:order-2 h-[400px] lg:h-[500px] relative"
+              className="order-1 lg:order-2"
             >
-              {loading ? (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ideazzz-purple"></div>
-                </div>
-              ) : (
-                models.map((model) => (
-                  <ModelViewer
-                    key={model.id}
-                    modelUrl={model.model_url}
-                    autoRotate={false}
-                    className="w-full h-full"
-                    cameraControls={true}
-                    backgroundAlpha={0}
-                    rotateOnScroll={true}
-                  />
-                ))
-              )}
+              {/* This div is now just a spacer since the model is in the background */}
+              <div className="h-[300px] lg:h-[450px]"></div>
             </motion.div>
           </div>
         </div>
@@ -210,7 +224,7 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Services Section - Keeping the same structure but with updated content */}
+      {/* Services Section */}
       <section className="py-16 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">

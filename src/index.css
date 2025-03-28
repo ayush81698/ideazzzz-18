@@ -2,189 +2,76 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+ 
 @layer base {
   :root {
-    --background: 280 60% 98%;
-    --foreground: 280 10% 20%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 280 10% 15%;
-
+    --card-foreground: 222.2 84% 4.9%;
+ 
     --popover: 0 0% 100%;
-    --popover-foreground: 280 10% 15%;
-
-    --primary: 280 70% 45%;
-    --primary-foreground: 280 10% 98%;
-
-    --secondary: 330 80% 60%;
-    --secondary-foreground: 330 10% 98%;
-
-    --muted: 280 10% 95%;
-    --muted-foreground: 280 8% 40%;
-
-    --accent: 330 70% 93%;
-    --accent-foreground: 330 80% 40%;
-
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 280 20% 90%;
-    --input: 280 20% 90%;
-    --ring: 280 70% 45%;
-
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+ 
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
-
+ 
   .dark {
-    --background: 280 20% 10%;
-    --foreground: 280 10% 95%;
-
-    --card: 280 20% 12%;
-    --card-foreground: 280 10% 95%;
-
-    --popover: 280 20% 12%;
-    --popover-foreground: 280 10% 95%;
-
-    --primary: 280 70% 60%;
-    --primary-foreground: 280 10% 98%;
-
-    --secondary: 330 80% 45%;
-    --secondary-foreground: 330 10% 98%;
-
-    --muted: 280 10% 20%;
-    --muted-foreground: 280 8% 70%;
-
-    --accent: 330 70% 20%;
-    --accent-foreground: 330 80% 90%;
-
-    --destructive: 0 84.2% 40.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 280 20% 30%;
-    --input: 280 20% 30%;
-    --ring: 280 70% 60%;
-
-    --sidebar-background: 280 20% 15%;
-    --sidebar-foreground: 240 5.3% 90%;
-    --sidebar-primary: 240 5.9% 90%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 25%;
-    --sidebar-accent-foreground: 240 5.9% 90%;
-    --sidebar-border: 220 13% 30%;
-    --sidebar-ring: 217.2 91.2% 70%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
   }
-
+}
+ 
+@layer base {
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground overflow-x-hidden;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground;
   }
-
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
-
-  ::-webkit-scrollbar-track {
-    @apply bg-muted rounded-full;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-gradient-to-b from-ideazzz-purple to-ideazzz-pink rounded-full;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gradient-to-b from-ideazzz-dark to-ideazzz-pink;
-  }
-}
-
-@layer components {
-  .hero-gradient {
-    @apply bg-gradient-to-r from-ideazzz-purple via-ideazzz-pink to-ideazzz-purple bg-size-200 animate-gradient;
-  }
-
-  .btn-primary {
-    @apply px-6 py-3 rounded-lg bg-gradient-to-r from-ideazzz-purple to-ideazzz-pink text-white font-medium 
-           transition-all duration-300 hover:shadow-lg hover:shadow-ideazzz-purple/20 active:scale-95
-           dark:from-ideazzz-purple dark:to-ideazzz-pink dark:hover:shadow-ideazzz-purple/40;
-  }
-
-  .btn-secondary {
-    @apply px-6 py-3 rounded-lg bg-white text-ideazzz-purple border-2 border-ideazzz-purple font-medium 
-           transition-all duration-300 hover:shadow-lg hover:shadow-ideazzz-purple/20 active:scale-95
-           dark:bg-gray-800 dark:text-ideazzz-light dark:border-ideazzz-light dark:hover:shadow-ideazzz-light/20;
-  }
-
-  .card-hover {
-    @apply hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
-  }
-  
-  .animate-gradient {
-    background-size: 200% 200%;
-    animation: gradient 8s ease infinite;
-  }
-
-  .glass-card {
-    @apply backdrop-blur-md bg-white/50 rounded-lg border border-white/20 shadow-lg
-           dark:bg-gray-900/50 dark:border-white/10;
-  }
-  
-  .nav-link {
-    @apply relative text-foreground hover:text-ideazzz-purple transition-colors duration-300 after:absolute after:w-0 after:h-0.5 
-           after:bg-ideazzz-pink after:left-0 after:-bottom-1 after:transition-all after:duration-300 hover:after:w-full
-           dark:text-gray-200 dark:hover:text-ideazzz-light dark:after:bg-ideazzz-light;
-  }
-  
-  .section-title {
-    @apply text-3xl md:text-4xl font-bold mb-6 text-ideazzz-dark dark:text-white;
-  }
-  
-  .section-subtitle {
-    @apply text-xl text-muted-foreground mb-10 max-w-2xl mx-auto dark:text-gray-300;
-  }
-
-  .dark-mode-transition {
-    @apply transition-colors duration-300;
-  }
-}
-
-@keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.model-container {
-  perspective: 1000px;
-}
-
-.model-card {
-  transform-style: preserve-3d;
-  transition: transform 0.5s ease;
-}
-
-.parallax-bg {
-  background-attachment: fixed;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
 }

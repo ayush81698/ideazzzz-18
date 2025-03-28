@@ -12,6 +12,7 @@ const AuthButtons = () => {
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("Auth state change event:", event);
         setUser(session?.user ?? null);
         setLoading(false);
       }
@@ -19,9 +20,11 @@ const AuthButtons = () => {
 
     // Get initial session
     const getInitialSession = async () => {
+      console.log("Getting initial session");
       const { data } = await supabase.auth.getSession();
       setUser(data.session?.user ?? null);
       setLoading(false);
+      console.log("Initial session user:", data.session?.user);
     };
 
     getInitialSession();

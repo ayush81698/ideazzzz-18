@@ -4,9 +4,13 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import AuthButtons from './AuthButtons';
+import { Moon, Sun } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
+import { Button } from '@/components/ui/button';
 
 const Layout = () => {
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   
   const routes = [
     { name: 'Home', path: '/' },
@@ -25,7 +29,7 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b py-4 sticky top-0 z-50 bg-white/80 backdrop-blur-sm">
+      <header className="border-b py-4 sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center gap-8">
             <Link to="/" className="font-bold text-2xl text-ideazzz-purple">
@@ -46,7 +50,17 @@ const Layout = () => {
               ))}
             </nav>
           </div>
-          <AuthButtons />
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleTheme} 
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+            <AuthButtons />
+          </div>
         </div>
       </header>
       
@@ -60,12 +74,12 @@ const Layout = () => {
         <Outlet />
       </motion.main>
       
-      <footer className="bg-gray-50 py-8 border-t">
+      <footer className="bg-muted py-8 border-t">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 className="font-bold text-lg mb-4">Ideazzz</h3>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Turning your ideas into stunning 3D reality. Personalized statues, action figures, and more.
               </p>
             </div>
@@ -75,7 +89,7 @@ const Layout = () => {
               <ul className="space-y-2">
                 {routes.map((route) => (
                   <li key={route.path}>
-                    <Link to={route.path} className="text-gray-600 hover:text-ideazzz-purple">
+                    <Link to={route.path} className="text-muted-foreground hover:text-ideazzz-purple">
                       {route.name}
                     </Link>
                   </li>
@@ -85,7 +99,7 @@ const Layout = () => {
             
             <div>
               <h3 className="font-bold text-lg mb-4">Contact Us</h3>
-              <address className="not-italic text-gray-600">
+              <address className="not-italic text-muted-foreground">
                 <p>Email: info@ideazzz.com</p>
                 <p>Phone: +91 9876543210</p>
                 <p>Address: 123 Creativity Lane, Mumbai, India</p>
@@ -93,7 +107,7 @@ const Layout = () => {
             </div>
           </div>
           
-          <div className="mt-8 pt-4 border-t text-center text-gray-500 text-sm">
+          <div className="mt-8 pt-4 border-t text-center text-muted-foreground text-sm">
             <p>© {new Date().getFullYear()} Ideazzz. All rights reserved.</p>
           </div>
         </div>

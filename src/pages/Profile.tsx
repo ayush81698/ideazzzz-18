@@ -20,7 +20,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<any[]>([]);
   
-  // Mock data for orders
+  // Mock data for orders - will be replaced with real data in future
   const [orders, setOrders] = useState([
     {
       id: 1,
@@ -58,13 +58,13 @@ const Profile = () => {
   
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         const currentUser = session?.user;
         setUser(currentUser ?? null);
         setIsLoggedIn(!!currentUser);
         
         if (currentUser) {
-          fetchUserBookings(currentUser.id);
+          await fetchUserBookings(currentUser.id);
         } else {
           // If no user is logged in, redirect to auth page
           navigate('/auth');
@@ -103,14 +103,18 @@ const Profile = () => {
   // Fetch user's bookings from Supabase
   const fetchUserBookings = async (userId: string) => {
     try {
+      console.log("Fetching bookings for user ID:", userId);
       const { data, error } = await supabase
         .from('bookings')
         .select('*')
         .eq('user_id', userId);
       
       if (error) {
+        console.error("Error details:", error);
         throw error;
       }
+      
+      console.log("Booking data received:", data);
       
       if (data) {
         setBookings(data);

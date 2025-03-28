@@ -21,9 +21,9 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { Sun, Moon, Menu, User, ShoppingCart } from 'lucide-react';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useThemeContext } from '@/providers/ThemeProvider';
-import { AuthButtons } from './AuthButtons';
+import AuthButtons from './AuthButtons';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 

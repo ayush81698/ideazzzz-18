@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -32,6 +33,7 @@ interface PositionData {
   angleX?: string;
   angleY?: string;
   angleZ?: string;
+  rotationAxis?: 'x' | 'y' | 'z';
 }
 
 interface Model {
@@ -69,7 +71,8 @@ const ModelManager = () => {
       angleX: '0deg',
       angleY: '0deg',
       angleZ: '0deg',
-      zIndex: 1
+      zIndex: 1,
+      rotationAxis: 'y'
     }
   });
   const [editingModel, setEditingModel] = useState<Model | null>(null);

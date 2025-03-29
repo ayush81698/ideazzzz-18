@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -90,7 +91,8 @@ const Index = () => {
                 bottom: positionData?.bottom || defaultPositions.bottom,
               },
               scale: positionData?.scale || (isMobile ? "0.6 0.6 0.6" : "1 1 1"),
-              rotationAxis: "y",
+              rotationAxis: (positionData?.rotation?.includes('X') ? 'x' : 
+                             positionData?.rotation?.includes('Z') ? 'z' : 'y') as 'x' | 'y' | 'z',
               initialRotation: positionData?.rotation || `${index * 120}deg`,
               zIndex: positionData?.zIndex || (3 - index),
               angleX: positionData?.angleX || "0deg",

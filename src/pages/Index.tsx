@@ -11,6 +11,20 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Box, ShoppingBag, Calendar } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// Define the type for position data to avoid TypeScript errors
+interface PositionData {
+  top?: string;
+  left?: string;
+  right?: string;
+  bottom?: string;
+  scale?: string;
+  rotation?: string;
+  zIndex?: number;
+  angleX?: string;
+  angleY?: string;
+  angleZ?: string;
+}
+
 const Index = () => {
   const [models, setModels] = useState([]);
   const [floatingModels, setFloatingModels] = useState([]);
@@ -38,10 +52,10 @@ const Index = () => {
           if (data.length > 1) {
             const floatingModelData = data.map((model, index) => {
               // Parse position data from string to object if it exists
-              let positionData = {};
+              let positionData: PositionData = {}; // Use our defined type
               try {
                 if (model.position && typeof model.position === 'string') {
-                  positionData = JSON.parse(model.position);
+                  positionData = JSON.parse(model.position) as PositionData;
                 }
               } catch (e) {
                 console.error('Failed to parse position data:', e);
@@ -54,18 +68,18 @@ const Index = () => {
                 id: model.id || `model-${index}`,
                 url: model.model_url,
                 position: {
-                  top: positionData.top || defaultPositions.top,
-                  left: positionData.left || defaultPositions.left,
-                  right: positionData.right || defaultPositions.right,
-                  bottom: positionData.bottom || defaultPositions.bottom,
+                  top: positionData?.top || defaultPositions.top,
+                  left: positionData?.left || defaultPositions.left,
+                  right: positionData?.right || defaultPositions.right,
+                  bottom: positionData?.bottom || defaultPositions.bottom,
                 },
-                scale: positionData.scale || (isMobile ? "0.6 0.6 0.6" : "1 1 1"),
+                scale: positionData?.scale || (isMobile ? "0.6 0.6 0.6" : "1 1 1"),
                 rotationAxis: "y",
-                initialRotation: positionData.rotation || `${index * 120}deg`,
-                zIndex: positionData.zIndex || (2 - index),
-                angleX: positionData.angleX || "0deg",
-                angleY: positionData.angleY || `${index * 60}deg`,
-                angleZ: positionData.angleZ || "0deg"
+                initialRotation: positionData?.rotation || `${index * 120}deg`,
+                zIndex: positionData?.zIndex || (2 - index),
+                angleX: positionData?.angleX || "0deg",
+                angleY: positionData?.angleY || `${index * 60}deg`,
+                angleZ: positionData?.angleZ || "0deg"
               };
             });
             setFloatingModels(floatingModelData);

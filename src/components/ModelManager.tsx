@@ -20,6 +20,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { Pencil, Trash2, Plus, X, Upload, RotateCw } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+interface PositionData {
+  top?: string;
+  left?: string;
+  right?: string;
+  bottom?: string;
+  scale?: string;
+  rotation?: string;
+  zIndex?: number;
+  angleX?: string;
+  angleY?: string;
+  angleZ?: string;
+}
+
 interface Model {
   id: string;
   name: string;
@@ -27,18 +40,7 @@ interface Model {
   model_url: string;
   is_featured: boolean;
   position?: string;
-  position_data?: {
-    top?: string;
-    left?: string;
-    right?: string;
-    bottom?: string;
-    scale?: string;
-    rotation?: string;
-    angleX?: string;
-    angleY?: string;
-    angleZ?: string;
-    zIndex?: number;
-  };
+  position_data?: PositionData;
 }
 
 interface SupabaseModel {
@@ -156,12 +158,10 @@ const ModelManager = () => {
       setUploading(true);
       toast.info('Uploading model file, please wait...');
 
-      // Create a unique file path
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `models/${fileName}`;
 
-      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('models')
         .upload(filePath, selectedFile);
@@ -170,7 +170,6 @@ const ModelManager = () => {
         throw uploadError;
       }
 
-      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('models')
         .getPublicUrl(filePath);
@@ -184,7 +183,6 @@ const ModelManager = () => {
     } finally {
       setUploading(false);
       setSelectedFile(null);
-      // Reset the file input
       const fileInput = document.getElementById('model-file') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
     }
@@ -199,13 +197,12 @@ const ModelManager = () => {
 
       let modelUrl = newModel.model_url;
       
-      // If a file was selected, upload it first
       if (selectedFile) {
         const uploadedUrl = await uploadModelFile();
         if (uploadedUrl) {
           modelUrl = uploadedUrl;
         } else {
-          return; // Stop if upload failed
+          return;
         }
       }
 
@@ -214,10 +211,8 @@ const ModelManager = () => {
         return;
       }
 
-      // Convert position_data to a JSON string for storage
       const positionJson = newModel.position_data ? JSON.stringify(newModel.position_data) : null;
 
-      // Create a properly typed object for Supabase
       const modelToInsert: SupabaseModel = {
         name: newModel.name,
         description: newModel.description,
@@ -268,13 +263,12 @@ const ModelManager = () => {
 
       let modelUrl = editingModel.model_url;
       
-      // If a file was selected, upload it first
       if (selectedFile) {
         const uploadedUrl = await uploadModelFile();
         if (uploadedUrl) {
           modelUrl = uploadedUrl;
         } else {
-          return; // Stop if upload failed
+          return;
         }
       }
 
@@ -283,22 +277,19 @@ const ModelManager = () => {
         return;
       }
 
-      // Convert position_data to a JSON string for storage
       const positionJson = editingModel.position_data ? JSON.stringify(editingModel.position_data) : null;
 
-      // Update the model URL if a new file was uploaded
       const modelToUpdate = {
         ...editingModel,
         model_url: modelUrl,
         position: positionJson,
       };
 
-      // Remove position_data as it's not in the database schema
-      delete modelToUpdate.position_data;
+      const { position_data, ...modelToSend } = modelToUpdate;
 
       const { error } = await supabase
         .from('models')
-        .update(modelToUpdate)
+        .update(modelToSend)
         .eq('id', editingModel.id);
 
       if (error) throw error;
@@ -345,7 +336,7 @@ const ModelManager = () => {
   useEffect(() => {
     if (editingModel && editingModel.position && !editingModel.position_data) {
       try {
-        const positionData = JSON.parse(editingModel.position);
+        const positionData = JSON.parse(editingModel.position) as PositionData;
         setEditingModel({
           ...editingModel,
           position_data: positionData

@@ -106,7 +106,7 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
     },
     {
       id: 'model3',
-      url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
+      url: 'https://modelviewer.dev/shared-assets/models/NeilArmstrong.glb',
       position: {
         bottom: isMobile ? '15%' : '20%',
         right: isMobile ? '20%' : '30%',

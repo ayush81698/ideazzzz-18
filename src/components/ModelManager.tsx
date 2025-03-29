@@ -35,6 +35,14 @@ interface Model {
   };
 }
 
+interface SupabaseModel {
+  name: string;
+  description?: string;
+  model_url: string;
+  is_featured?: boolean;
+  position_data?: any;
+}
+
 const ModelManager = () => {
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,9 +139,18 @@ const ModelManager = () => {
         return;
       }
 
+      // Create a properly typed object for Supabase
+      const modelToInsert: SupabaseModel = {
+        name: newModel.name,
+        description: newModel.description,
+        model_url: newModel.model_url,
+        is_featured: newModel.is_featured,
+        position_data: newModel.position_data
+      };
+
       const { data, error } = await supabase
         .from('models')
-        .insert([newModel])
+        .insert(modelToInsert)
         .select();
 
       if (error) throw error;

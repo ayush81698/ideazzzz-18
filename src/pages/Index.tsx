@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { ShoppingBag } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from 'sonner';
+import type { FloatingModel } from '@/components/FloatingModels';
 
 interface PositionData {
   top?: string;
@@ -21,6 +23,7 @@ interface PositionData {
   angleX?: string;
   angleY?: string;
   angleZ?: string;
+  rotationAxis?: 'x' | 'y' | 'z';
 }
 
 interface Model {
@@ -30,24 +33,6 @@ interface Model {
   model_url: string;
   is_featured: boolean;
   position?: string;
-}
-
-interface FloatingModel {
-  id: string;
-  url: string;
-  position: {
-    top?: string;
-    left?: string;
-    right?: string;
-    bottom?: string;
-  };
-  scale: string;
-  rotationAxis: 'x' | 'y' | 'z';
-  initialRotation: string;
-  zIndex: number;
-  angleX?: string;
-  angleY?: string;
-  angleZ?: string;
 }
 
 const Index = () => {
@@ -71,9 +56,15 @@ const Index = () => {
         if (data && data.length > 0) {
           const floatingModelData = data.map((model, index) => {
             let positionData: PositionData = {};
+            
             try {
               if (model.position && typeof model.position === 'string') {
-                positionData = JSON.parse(model.position) as PositionData;
+                if (model.position === 'homepage') {
+                  // Default position for homepage
+                  positionData = {};
+                } else {
+                  positionData = JSON.parse(model.position) as PositionData;
+                }
               }
             } catch (e) {
               console.error('Failed to parse position data:', e);
@@ -81,6 +72,20 @@ const Index = () => {
             
             const defaultPositions = getPositionForIndex(index);
             
+            // Determine rotation axis, defaulting to 'y' if invalid
+            let rotationAxis: 'x' | 'y' | 'z' = 'y';
+            if (positionData?.rotationAxis) {
+              if (['x', 'y', 'z'].includes(positionData.rotationAxis)) {
+                rotationAxis = positionData.rotationAxis as 'x' | 'y' | 'z';
+              }
+            } else if (positionData?.rotation) {
+              if (positionData.rotation.includes('X')) {
+                rotationAxis = 'x';
+              } else if (positionData.rotation.includes('Z')) {
+                rotationAxis = 'z';
+              }
+            }
+
             return {
               id: model.id || `model-${index}`,
               url: model.model_url,
@@ -91,19 +96,24 @@ const Index = () => {
                 bottom: positionData?.bottom || defaultPositions.bottom,
               },
               scale: positionData?.scale || (isMobile ? "0.6 0.6 0.6" : "1 1 1"),
-              rotationAxis: (positionData?.rotation?.includes('X') ? 'x' : 
-                             positionData?.rotation?.includes('Z') ? 'z' : 'y') as 'x' | 'y' | 'z',
+              rotationAxis,
               initialRotation: positionData?.rotation || `${index * 120}deg`,
               zIndex: positionData?.zIndex || (3 - index),
-              angleX: positionData?.angleX || "0deg",
-              angleY: positionData?.angleY || `${index * 60}deg`,
-              angleZ: positionData?.angleZ || "0deg"
+              angleX: positionData?.angleX || (index === 0 ? "10deg" : index === 1 ? "0deg" : "-5deg"),
+              angleY: positionData?.angleY || (index === 0 ? "45deg" : index === 1 ? "-30deg" : "120deg"),
+              angleZ: positionData?.angleZ || (index === 0 ? "5deg" : index === 1 ? "0deg" : "0deg")
             };
           });
+          
           setFloatingModels(floatingModelData);
+        } else {
+          // If no models, use defaults
+          setFloatingModels([]);
         }
       } catch (error) {
         console.error('Error fetching models:', error);
+        toast.error('Failed to load 3D models');
+        setFloatingModels([]);
       } finally {
         setLoading(false);
       }
@@ -150,9 +160,24 @@ const Index = () => {
 
   const getPositionForIndex = (index: number) => {
     const positions = [
-      { top: isMobile ? '15%' : '20%', left: isMobile ? '5%' : '10%' },
-      { top: isMobile ? '5%' : '10%', right: isMobile ? '5%' : '15%' },
-      { bottom: isMobile ? '20%' : '25%', right: isMobile ? '15%' : '25%' }
+      { 
+        top: isMobile ? '15%' : '20%', 
+        left: isMobile ? '5%' : '15%',
+        right: undefined,
+        bottom: undefined
+      },
+      { 
+        top: isMobile ? '5%' : '10%', 
+        right: isMobile ? '10%' : '20%',
+        left: undefined,
+        bottom: undefined  
+      },
+      { 
+        bottom: isMobile ? '15%' : '20%', 
+        right: isMobile ? '15%' : '30%',
+        top: undefined,
+        left: undefined
+      }
     ];
     return positions[index % positions.length];
   };

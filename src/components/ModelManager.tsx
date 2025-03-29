@@ -14,13 +14,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Pencil, Trash2, Plus, X, Upload, RotateCw } from 'lucide-react';
+import { Pencil, Trash2, Plus, X, Upload, RotateCw, Model } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Progress } from '@/components/ui/progress';
 
 interface PositionData {
   top?: string;
@@ -58,6 +58,7 @@ const ModelManager = () => {
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [newModel, setNewModel] = useState<Partial<Model>>({
     name: '',
     description: '',
@@ -94,7 +95,13 @@ const ModelManager = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setModels(data || []);
+      
+      if (data && data.length > 0) {
+        setModels(data);
+      } else {
+        setModels([]);
+        toast.info('No models found. Add your first 3D model!');
+      }
     } catch (error) {
       console.error('Error fetching models:', error);
       useToastFn({
@@ -161,15 +168,37 @@ const ModelManager = () => {
 
     try {
       setUploading(true);
+      setUploadProgress(0);
       toast.info('Uploading model file, please wait...');
+
+      // Create storage bucket if it doesn't exist
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const modelsBucketExists = buckets?.some(bucket => bucket.name === 'models');
+      
+      if (!modelsBucketExists) {
+        const { error } = await supabase.storage.createBucket('models', {
+          public: true
+        });
+        
+        if (error) {
+          throw new Error(`Failed to create storage bucket: ${error.message}`);
+        }
+      }
 
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `models/${fileName}`;
+      const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('models')
-        .upload(filePath, selectedFile);
+        .upload(filePath, selectedFile, {
+          cacheControl: '3600',
+          upsert: false,
+          onProgress: (progress) => {
+            const percent = Math.round((progress.loaded / progress.total) * 100);
+            setUploadProgress(percent);
+          }
+        });
 
       if (uploadError) {
         throw uploadError;
@@ -187,6 +216,7 @@ const ModelManager = () => {
       return null;
     } finally {
       setUploading(false);
+      setUploadProgress(0);
       setSelectedFile(null);
       const fileInput = document.getElementById('model-file') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
@@ -235,7 +265,15 @@ const ModelManager = () => {
 
       if (error) throw error;
 
-      setModels([...models, data[0]]);
+      if (data) {
+        setModels([...models, data[0]]);
+        toast.success('Model added successfully');
+        
+        if (data[0].is_featured) {
+          toast.info('Model added to homepage. Refresh to see it!');
+        }
+      }
+
       setNewModel({
         name: '',
         description: '',
@@ -249,13 +287,13 @@ const ModelManager = () => {
           angleX: '0deg',
           angleY: '0deg',
           angleZ: '0deg',
-          zIndex: 1
+          zIndex: 1,
+          rotationAxis: 'y'
         }
       });
       setIsDialogOpen(false);
       setModelSourceType('file');
       
-      toast.success('Model added successfully');
     } catch (error) {
       console.error('Error adding model:', error);
       toast.error('Failed to add model');
@@ -306,6 +344,10 @@ const ModelManager = () => {
       setModelSourceType('file');
       
       toast.success('Model updated successfully');
+      
+      if (modelToUpdate.is_featured) {
+        toast.info('Model updated on homepage. Refresh to see changes!');
+      }
     } catch (error) {
       console.error('Error updating model:', error);
       toast.error('Failed to update model');
@@ -335,8 +377,12 @@ const ModelManager = () => {
     
     if (model.position && !model.position_data) {
       try {
-        const positionData = JSON.parse(model.position) as PositionData;
-        modelWithPositionData.position_data = positionData;
+        if (model.position !== 'homepage') {
+          const positionData = JSON.parse(model.position) as PositionData;
+          modelWithPositionData.position_data = positionData;
+        } else {
+          modelWithPositionData.position_data = {};
+        }
       } catch (e) {
         console.error('Failed to parse position data:', e);
         modelWithPositionData.position_data = {};
@@ -525,6 +571,12 @@ const ModelManager = () => {
                       <RotateCw className="h-4 w-4 animate-spin" />
                     )}
                   </div>
+                  {uploading && (
+                    <Progress
+                      value={uploadProgress}
+                      className="h-2 mt-2"
+                    />
+                  )}
                   <p className="text-xs text-muted-foreground mt-1">
                     Upload a 3D model file (.glb or .gltf format)
                   </p>
@@ -639,6 +691,41 @@ const ModelManager = () => {
                 </div>
                 
                 <div>
+                  <Label htmlFor="rotationAxis" className="text-xs">
+                    Rotation Axis
+                  </Label>
+                  <select
+                    id="rotationAxis"
+                    name="position_data.rotationAxis"
+                    value={editingModel?.position_data?.rotationAxis || newModel.position_data?.rotationAxis || 'y'}
+                    onChange={(e) => {
+                      if (editingModel) {
+                        setEditingModel({
+                          ...editingModel,
+                          position_data: {
+                            ...editingModel.position_data,
+                            rotationAxis: e.target.value as 'x' | 'y' | 'z'
+                          }
+                        });
+                      } else {
+                        setNewModel({
+                          ...newModel,
+                          position_data: {
+                            ...newModel.position_data,
+                            rotationAxis: e.target.value as 'x' | 'y' | 'z'
+                          }
+                        });
+                      }
+                    }}
+                    className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="x">X Axis</option>
+                    <option value="y">Y Axis</option>
+                    <option value="z">Z Axis</option>
+                  </select>
+                </div>
+                
+                <div>
                   <Label htmlFor="rotation" className="text-xs">
                     Initial Rotation
                   </Label>
@@ -724,7 +811,7 @@ const ModelManager = () => {
               {uploading ? (
                 <>
                   <RotateCw className="h-4 w-4 mr-2 animate-spin" />
-                  Uploading...
+                  Uploading... {uploadProgress}%
                 </>
               ) : (
                 <>{editingModel ? 'Update' : 'Add'} Model</>
@@ -747,6 +834,10 @@ const ModelManager = () => {
 
       setModels(models.map(m => m.id === model.id ? model : m));
       toast.success(`Model ${model.is_featured ? 'added to' : 'removed from'} homepage`);
+      
+      if (model.is_featured) {
+        toast.info('Refresh the homepage to see your changes');
+      }
     } catch (error) {
       console.error('Error updating model feature status:', error);
       toast.error('Failed to update model feature status');

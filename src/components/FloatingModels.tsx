@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import ModelViewer from './ModelViewer';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Progress } from '@/components/ui/progress';
 
-interface Model {
+export interface FloatingModel {
   id: string;
   url: string;
   position: {
@@ -22,7 +23,7 @@ interface Model {
 }
 
 interface FloatingModelsProps {
-  models: Model[];
+  models: FloatingModel[];
   backgroundImage?: string;
   rotateOnScroll?: boolean;
 }
@@ -34,14 +35,19 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const [scrollY, setScrollY] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadedModels, setLoadedModels] = useState<Set<string>>(new Set());
   
   useEffect(() => {
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      // Use requestAnimationFrame for smoother scroll handling
+      requestAnimationFrame(() => {
+        setScrollY(window.scrollY);
+      });
     };
     
     if (rotateOnScroll) {
-      window.addEventListener('scroll', handleScroll);
+      window.addEventListener('scroll', handleScroll, { passive: true });
     }
     
     return () => {
@@ -50,15 +56,30 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
       }
     };
   }, [rotateOnScroll]);
+
+  useEffect(() => {
+    if (loadedModels.size === models.length && models.length > 0) {
+      setIsLoading(false);
+    }
+  }, [loadedModels, models]);
+
+  // Handle model load events
+  const handleModelLoad = (modelId: string) => {
+    setLoadedModels(prev => {
+      const newSet = new Set(prev);
+      newSet.add(modelId);
+      return newSet;
+    });
+  };
   
   // Default models if none provided
-  const defaultModels: Model[] = [
+  const defaultModels: FloatingModel[] = [
     {
       id: 'model1',
       url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
       position: {
         top: isMobile ? '15%' : '20%',
-        left: isMobile ? '5%' : '10%',
+        left: isMobile ? '5%' : '15%',
       },
       scale: isMobile ? '0.7 0.7 0.7' : '1 1 1',
       rotationAxis: 'y',
@@ -73,7 +94,7 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
       url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
       position: {
         top: isMobile ? '5%' : '10%',
-        right: isMobile ? '5%' : '15%',
+        right: isMobile ? '10%' : '20%',
       },
       scale: isMobile ? '0.5 0.5 0.5' : '0.8 0.8 0.8',
       rotationAxis: 'y',
@@ -87,10 +108,10 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
       id: 'model3',
       url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
       position: {
-        bottom: isMobile ? '20%' : '25%',
-        right: isMobile ? '15%' : '25%',
+        bottom: isMobile ? '15%' : '20%',
+        right: isMobile ? '20%' : '30%',
       },
-      scale: isMobile ? '0.3 0.3 0.3' : '0.5 0.5 0.5',
+      scale: isMobile ? '0.4 0.4 0.4' : '0.6 0.6 0.6',
       rotationAxis: 'y',
       initialRotation: '90deg',
       zIndex: 1,
@@ -101,15 +122,27 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
   ];
   
   const displayModels = models.length > 0 ? models : defaultModels;
-  
+
   return (
-    <div className="absolute inset-0 overflow-hidden"
-         style={{
-           backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
-           backgroundSize: 'cover',
-           backgroundPosition: 'center',
-           backgroundRepeat: 'no-repeat'
-         }}>
+    <div 
+      className="absolute inset-0 overflow-hidden"
+      style={{
+        backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {isLoading && displayModels.length > 0 && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-50">
+          <div className="text-white mb-4">Loading 3D Models...</div>
+          <Progress 
+            value={Math.round((loadedModels.size / displayModels.length) * 100)} 
+            className="w-64 h-2"
+          />
+        </div>
+      )}
+
       {displayModels.map((model) => (
         <ModelViewer
           key={model.id}
@@ -128,12 +161,13 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
           autoRotate={false}
           cameraControls={false}
           backgroundAlpha={0}
-          rotationMultiplier={0.15}
-          height={isMobile ? "60%" : "70%"}
-          width={isMobile ? "60%" : "50%"}
+          rotationMultiplier={0.05} // Reduced for smoother rotation
+          height={isMobile ? "55%" : "65%"}
+          width={isMobile ? "55%" : "45%"}
           angleX={model.angleX}
           angleY={model.angleY}
           angleZ={model.angleZ}
+          onModelLoad={() => handleModelLoad(model.id)}
         />
       ))}
     </div>

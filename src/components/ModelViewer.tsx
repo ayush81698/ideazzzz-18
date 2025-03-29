@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -31,6 +31,7 @@ interface ModelViewerProps {
   angleY?: string;
   angleZ?: string;
   scrollY?: number;
+  onModelLoad?: () => void;
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
@@ -60,7 +61,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   angleX = "0deg",
   angleY = "0deg",
   angleZ = "0deg",
-  scrollY = 0
+  scrollY = 0,
+  onModelLoad
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState(parseInt(initialRotation) || 0);
@@ -93,16 +95,18 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const mobileCameraOrbit = isMobile ? "0deg 75deg 150%" : cameraOrbit;
   const mobileFieldOfView = isMobile ? "50deg" : fieldOfView;
 
-  // Use the scrollY prop for controlled rotation if rotateOnScroll is true
-  useEffect(() => {
-    if (!rotateOnScroll || !isScriptLoaded || !containerRef.current) return;
+  // Create a throttled rotation update to improve performance
+  const updateRotation = useCallback((newScrollY: number) => {
+    if (!isScriptLoaded || !containerRef.current) return;
     
     const modelViewer = containerRef.current.querySelector('model-viewer');
     if (!modelViewer) return;
     
-    // Calculate rotation based on scroll position
-    const newRotation = (rotation + (scrollY * 0.1)) % 360;
+    // Calculate rotation based on scroll position with less sensitivity
+    const scrollDiff = newScrollY - lastScrollYRef.current;
+    const newRotation = (rotation + (scrollDiff * rotationMultiplier)) % 360;
     setRotation(newRotation);
+    lastScrollYRef.current = newScrollY;
     
     // Extract the existing camera orbit values
     const orbitParts = isMobile ? mobileCameraOrbit.split(' ') : cameraOrbit.split(' ');
@@ -119,13 +123,36 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     }
     
     modelViewer.setAttribute('camera-orbit', newOrbit);
-  }, [rotateOnScroll, isScriptLoaded, scrollY, isMobile, mobileCameraOrbit, cameraOrbit, rotationAxis, rotation]);
+  }, [isScriptLoaded, rotation, rotationMultiplier, isMobile, mobileCameraOrbit, cameraOrbit, rotationAxis]);
+
+  // Use the scrollY prop for controlled rotation if rotateOnScroll is true
+  useEffect(() => {
+    if (!rotateOnScroll) return;
+    
+    // Use requestAnimationFrame to smooth out rotation updates
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    
+    animationFrameRef.current = requestAnimationFrame(() => {
+      updateRotation(scrollY);
+    });
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [rotateOnScroll, scrollY, updateRotation]);
   
   // Handle model loading events
   useEffect(() => {
     const handleModelLoad = () => {
       setIsModelLoaded(true);
       console.log(`Model loaded successfully: ${modelUrl}`);
+      if (onModelLoad) {
+        onModelLoad();
+      }
     };
     
     const handleModelError = () => {
@@ -149,7 +176,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         }
       }
     };
-  }, [isScriptLoaded, modelUrl]);
+  }, [isScriptLoaded, modelUrl, onModelLoad]);
   
   return (
     <div 
@@ -188,12 +215,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
               style="width: 100%; height: 100%; background-color: rgba(0,0,0,${backgroundAlpha});"
               camera-orbit="${isMobile ? mobileCameraOrbit : cameraOrbit}"
               orientation="${angleX} ${angleY} ${angleZ}"
+              preload
+              reveal="interaction"
+              loading="eager"
               ar
               ar-modes="webxr scene-viewer quick-look"
-              poster="https://via.placeholder.com/600x400?text=Loading+3D+Model"
-              loading="lazy"
-              reveal="auto"
-              onError="document.dispatchEvent(new CustomEvent('model-error', {}))"
             ></model-viewer>
           `
         }}

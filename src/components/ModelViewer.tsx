@@ -1,6 +1,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ModelViewerProps {
   modelUrl: string;
@@ -18,6 +19,7 @@ interface ModelViewerProps {
   position?: 'absolute' | 'relative' | 'fixed';
   zIndex?: number;
   skyboxImage?: string;
+  backgroundImage?: string;
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
@@ -35,13 +37,15 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   height = "100%",
   position = "relative",
   zIndex = 0,
-  skyboxImage
+  skyboxImage,
+  backgroundImage
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState(0);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const lastScrollYRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
+  const isMobile = useIsMobile();
   
   // Load model-viewer script
   useEffect(() => {
@@ -60,6 +64,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       // Don't remove the script on unmount as it might be used by other components
     };
   }, []);
+
+  // Apply mobile-specific scaling
+  const mobileScale = isMobile ? "0.8 0.8 0.8" : scale;
+  const mobileCameraOrbit = isMobile ? "0deg 75deg 150%" : cameraOrbit;
+  const mobileFieldOfView = isMobile ? "50deg" : fieldOfView;
 
   // Handle smooth scroll-based rotation with requestAnimationFrame
   useEffect(() => {
@@ -83,7 +92,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         const modelViewer = containerRef.current.querySelector('model-viewer');
         if (modelViewer) {
           // Extract the existing camera orbit values
-          const orbitParts = cameraOrbit.split(' ');
+          const orbitParts = isMobile ? mobileCameraOrbit.split(' ') : cameraOrbit.split(' ');
           // Replace only the first part (rotation)
           const newOrbit = `${(currentRotation + delta)}deg ${orbitParts[1]} ${orbitParts[2]}`;
           modelViewer.setAttribute('camera-orbit', newOrbit);
@@ -101,7 +110,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [rotateOnScroll, isScriptLoaded, rotation, rotationMultiplier, cameraOrbit]);
+  }, [rotateOnScroll, isScriptLoaded, rotation, rotationMultiplier, cameraOrbit, isMobile, mobileCameraOrbit]);
   
   // Fallback for when model URL is invalid or can't be loaded
   useEffect(() => {
@@ -117,7 +126,14 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     <div 
       ref={containerRef} 
       className={cn("model-container", className)}
-      style={{ position, zIndex, height }}
+      style={{ 
+        position, 
+        zIndex, 
+        height,
+        backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
     >
       <div
         dangerouslySetInnerHTML={{
@@ -132,10 +148,10 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
               exposure="${exposure}"
               shadow-softness="1"
               environment-image="${skyboxImage || 'neutral'}"
-              scale="${scale}"
-              field-of-view="${fieldOfView}"
+              scale="${isMobile ? mobileScale : scale}"
+              field-of-view="${isMobile ? mobileFieldOfView : fieldOfView}"
               style="width: 100%; height: 100%; background-color: rgba(0,0,0,${backgroundAlpha});"
-              camera-orbit="${cameraOrbit}"
+              camera-orbit="${isMobile ? mobileCameraOrbit : cameraOrbit}"
               ar
               ar-modes="webxr scene-viewer quick-look"
               poster="https://via.placeholder.com/600x400?text=Loading+3D+Model"

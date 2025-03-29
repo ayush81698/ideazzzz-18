@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -7,12 +8,14 @@ import ModelViewer from '@/components/ModelViewer';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Box, ShoppingBag, Calendar } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     async function fetchFeaturedModels() {
@@ -87,7 +90,7 @@ const Index = () => {
   return (
     <div className="relative">
       {/* Hero Section with 3D Model */}
-      <section className="relative py-20 md:py-28 min-h-[85vh] overflow-hidden">
+      <section className="relative py-10 md:py-28 min-h-[85vh] overflow-hidden">
         {/* 3D Model Background */}
         <div className="absolute inset-0 w-full z-0">
           {loading ? (
@@ -102,32 +105,33 @@ const Index = () => {
                 autoRotate={false}
                 className="w-full bg-gradient-to-b from-ideazzz-purple/5 to-transparent"
                 cameraControls={true}
-                backgroundAlpha={0}
+                backgroundAlpha={0.2}
                 rotateOnScroll={true}
                 rotationMultiplier={0.1}
-                cameraOrbit="0deg 65deg 120%"
-                scale="1.5 1.5 1.5"
-                fieldOfView="40deg"
+                cameraOrbit={isMobile ? "0deg 65deg 150%" : "0deg 65deg 120%"}
+                scale={isMobile ? "1.2 1.2 1.2" : "1.5 1.5 1.5"}
+                fieldOfView={isMobile ? "50deg" : "40deg"}
                 exposure="1"
                 height="100vh"
                 position="absolute"
                 zIndex={-1}
+                backgroundImage="/lovable-uploads/e878763e-514f-4b8d-9415-d20319b19995.png"
               />
             ))
           )}
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 items-center min-h-[70vh] md:min-h-0">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="order-2 lg:order-1"
+              className="order-2 lg:order-1 flex flex-col justify-center"
             >
               <Badge className="mb-4 bg-ideazzz-purple px-4 py-1 text-white">Premium Craftsmanship</Badge>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
-              <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8">
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-white">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
+              <p className="text-base md:text-xl text-gray-200 dark:text-gray-300 mb-6 md:mb-8">
                 Experience the artistry of sculpting and 3D printing that transforms your concepts into tangible masterpieces.
               </p>
               <div className="flex flex-wrap gap-4">
@@ -135,7 +139,7 @@ const Index = () => {
                   <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">Explore Shop</Button>
                 </Link>
                 <Link to="/booking">
-                  <Button size="lg" variant="outline">Book a 3D Scan</Button>
+                  <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-ideazzz-purple">Book a 3D Scan</Button>
                 </Link>
               </div>
             </motion.div>
@@ -147,18 +151,18 @@ const Index = () => {
               className="order-1 lg:order-2"
             >
               {/* This div is now just a spacer since the model is in the background */}
-              <div className="h-[300px] lg:h-[450px]"></div>
+              <div className={isMobile ? "h-[150px] lg:h-[450px]" : "h-[300px] lg:h-[450px]"}></div>
             </motion.div>
           </div>
         </div>
       </section>
       
       {/* Featured Products Section */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-900">
+      <section className="py-12 md:py-16 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-10">
+          <div className="text-center mb-8 md:mb-10">
             <Badge className="mb-2 bg-ideazzz-pink px-4 py-1 text-white">Special Offers</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold">Featured Products</h2>
+            <h2 className="text-2xl md:text-4xl font-bold">Featured Products</h2>
             <p className="text-gray-600 dark:text-gray-300 mt-2">
               Explore our handpicked collection of premium 3D models and services
             </p>
@@ -169,7 +173,7 @@ const Index = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ideazzz-purple"></div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
               {featuredProducts.map((product) => (
                 <motion.div 
                   key={product.id}
@@ -177,7 +181,7 @@ const Index = () => {
                   className="relative"
                 >
                   <Card className="overflow-hidden h-full">
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-36 md:h-48 overflow-hidden">
                       <img 
                         src={product.imageUrl} 
                         alt={product.name}
@@ -189,13 +193,13 @@ const Index = () => {
                         </div>
                       )}
                     </div>
-                    <CardContent className="p-5">
-                      <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-3 text-sm">
+                    <CardContent className="p-4 md:p-5">
+                      <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">{product.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-2 md:mb-3 text-xs md:text-sm">
                         {product.description}
                       </p>
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-bold">₹{product.price.toLocaleString()}</span>
+                        <span className="text-base md:text-lg font-bold">₹{product.price.toLocaleString()}</span>
                         <Button 
                           variant="outline" 
                           size="sm"
@@ -203,7 +207,7 @@ const Index = () => {
                           asChild
                         >
                           <Link to={`/shop/${product.id}`}>
-                            <ShoppingBag className="h-4 w-4 mr-1" /> View
+                            <ShoppingBag className="h-3 w-3 md:h-4 md:w-4 mr-1" /> View
                           </Link>
                         </Button>
                       </div>
@@ -214,7 +218,7 @@ const Index = () => {
             </div>
           )}
           
-          <div className="mt-10 text-center">
+          <div className="mt-8 md:mt-10 text-center">
             <Link to="/shop">
               <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">
                 View All Products

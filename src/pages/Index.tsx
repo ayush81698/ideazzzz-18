@@ -1,17 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
-import ModelViewer from '@/components/ModelViewer';
 import FloatingModels from '@/components/FloatingModels';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
-import { Box, ShoppingBag, Calendar } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Define the type for position data to avoid TypeScript errors
 interface PositionData {
   top?: string;
   left?: string;
@@ -25,9 +22,35 @@ interface PositionData {
   angleZ?: string;
 }
 
+interface Model {
+  id: string;
+  name: string;
+  description: string;
+  model_url: string;
+  is_featured: boolean;
+  position?: string;
+}
+
+interface FloatingModel {
+  id: string;
+  url: string;
+  position: {
+    top?: string;
+    left?: string;
+    right?: string;
+    bottom?: string;
+  };
+  scale: string;
+  rotationAxis: 'x' | 'y' | 'z';
+  initialRotation: string;
+  zIndex: number;
+  angleX?: string;
+  angleY?: string;
+  angleZ?: string;
+}
+
 const Index = () => {
-  const [models, setModels] = useState([]);
-  const [floatingModels, setFloatingModels] = useState([]);
+  const [floatingModels, setFloatingModels] = useState<FloatingModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -45,53 +68,37 @@ const Index = () => {
         if (error) throw error;
         
         if (data && data.length > 0) {
-          // Use the first model as the main model if needed
-          setModels(data.slice(0, 1));
-          
-          // Create floating model configuration from fetched models
-          if (data.length > 1) {
-            const floatingModelData = data.map((model, index) => {
-              // Parse position data from string to object if it exists
-              let positionData: PositionData = {}; // Use our defined type
-              try {
-                if (model.position && typeof model.position === 'string') {
-                  positionData = JSON.parse(model.position) as PositionData;
-                }
-              } catch (e) {
-                console.error('Failed to parse position data:', e);
+          const floatingModelData = data.map((model, index) => {
+            let positionData: PositionData = {};
+            try {
+              if (model.position && typeof model.position === 'string') {
+                positionData = JSON.parse(model.position) as PositionData;
               }
-              
-              // Extract position data or use defaults
-              const defaultPositions = getPositionForIndex(index);
-              
-              return {
-                id: model.id || `model-${index}`,
-                url: model.model_url,
-                position: {
-                  top: positionData?.top || defaultPositions.top,
-                  left: positionData?.left || defaultPositions.left,
-                  right: positionData?.right || defaultPositions.right,
-                  bottom: positionData?.bottom || defaultPositions.bottom,
-                },
-                scale: positionData?.scale || (isMobile ? "0.6 0.6 0.6" : "1 1 1"),
-                rotationAxis: "y",
-                initialRotation: positionData?.rotation || `${index * 120}deg`,
-                zIndex: positionData?.zIndex || (2 - index),
-                angleX: positionData?.angleX || "0deg",
-                angleY: positionData?.angleY || `${index * 60}deg`,
-                angleZ: positionData?.angleZ || "0deg"
-              };
-            });
-            setFloatingModels(floatingModelData);
-          }
-        } else {
-          // If no models are found, use defaults
-          setModels([{
-            id: 'default',
-            name: 'Sculpture Sample',
-            description: 'A beautiful example of our craftsmanship',
-            model_url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb'
-          }]);
+            } catch (e) {
+              console.error('Failed to parse position data:', e);
+            }
+            
+            const defaultPositions = getPositionForIndex(index);
+            
+            return {
+              id: model.id || `model-${index}`,
+              url: model.model_url,
+              position: {
+                top: positionData?.top || defaultPositions.top,
+                left: positionData?.left || defaultPositions.left,
+                right: positionData?.right || defaultPositions.right,
+                bottom: positionData?.bottom || defaultPositions.bottom,
+              },
+              scale: positionData?.scale || (isMobile ? "0.6 0.6 0.6" : "1 1 1"),
+              rotationAxis: "y",
+              initialRotation: positionData?.rotation || `${index * 120}deg`,
+              zIndex: positionData?.zIndex || (3 - index),
+              angleX: positionData?.angleX || "0deg",
+              angleY: positionData?.angleY || `${index * 60}deg`,
+              angleZ: positionData?.angleZ || "0deg"
+            };
+          });
+          setFloatingModels(floatingModelData);
         }
       } catch (error) {
         console.error('Error fetching models:', error);
@@ -102,7 +109,6 @@ const Index = () => {
     
     async function fetchFeaturedProducts() {
       try {
-        // In a real app, this would fetch from the products table with a featured flag
         setFeaturedProducts([
           {
             id: 1,
@@ -140,21 +146,18 @@ const Index = () => {
     fetchFeaturedProducts();
   }, [isMobile]);
 
-  // Helper function to position models based on index
-  const getPositionForIndex = (index) => {
+  const getPositionForIndex = (index: number) => {
     const positions = [
-      { top: isMobile ? '5%' : '10%', right: isMobile ? '10%' : '20%' },
-      { bottom: isMobile ? '25%' : '20%', left: isMobile ? '5%' : '15%' },
-      { top: isMobile ? '30%' : '40%', left: isMobile ? '35%' : '40%' }
+      { top: isMobile ? '15%' : '20%', left: isMobile ? '5%' : '10%' },
+      { top: isMobile ? '5%' : '10%', right: isMobile ? '5%' : '15%' },
+      { bottom: isMobile ? '20%' : '25%', right: isMobile ? '15%' : '25%' }
     ];
     return positions[index % positions.length];
   };
 
   return (
     <div className="relative">
-      {/* Hero Section with 3D Models */}
       <section className="relative py-8 md:py-20 min-h-[85vh] overflow-hidden">
-        {/* 3D Model Background with multiple floating models */}
         <div className="absolute inset-0 w-full z-0">
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
@@ -199,14 +202,12 @@ const Index = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
-              {/* Empty div to maintain grid layout while floating models display in background */}
               <div className={isMobile ? "h-[50px]" : "h-[300px]"}></div>
             </motion.div>
           </div>
         </div>
       </section>
       
-      {/* Featured Products Section */}
       <section className="py-12 md:py-16 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 md:mb-10">
@@ -277,7 +278,6 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Services Section */}
       <section className="py-16 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -288,7 +288,6 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Service Card 1 */}
             <motion.div 
               whileHover={{ y: -10 }}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
@@ -312,7 +311,6 @@ const Index = () => {
               </div>
             </motion.div>
             
-            {/* Service Card 2 */}
             <motion.div 
               whileHover={{ y: -10 }}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
@@ -336,7 +334,6 @@ const Index = () => {
               </div>
             </motion.div>
             
-            {/* Service Card 3 */}
             <motion.div 
               whileHover={{ y: -10 }}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"

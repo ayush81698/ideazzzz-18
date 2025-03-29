@@ -57,43 +57,43 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
       id: 'model1',
       url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
       position: {
-        top: '5%',
-        right: isMobile ? '10%' : '20%',
+        top: isMobile ? '15%' : '20%',
+        left: isMobile ? '5%' : '10%',
       },
-      scale: isMobile ? '0.6 0.6 0.6' : '1 1 1',
+      scale: isMobile ? '0.7 0.7 0.7' : '1 1 1',
       rotationAxis: 'y',
       initialRotation: '45deg',
-      zIndex: 1,
-      angleX: '0deg',
-      angleY: '60deg',
-      angleZ: '0deg'
+      zIndex: 3,
+      angleX: '10deg',
+      angleY: '45deg',
+      angleZ: '5deg'
     },
     {
       id: 'model2',
       url: 'https://modelviewer.dev/shared-assets/models/RobotExpressive.glb',
       position: {
-        bottom: '15%',
-        left: isMobile ? '5%' : '15%',
+        top: isMobile ? '5%' : '10%',
+        right: isMobile ? '5%' : '15%',
       },
-      scale: isMobile ? '0.4 0.4 0.4' : '0.7 0.7 0.7',
+      scale: isMobile ? '0.5 0.5 0.5' : '0.8 0.8 0.8',
       rotationAxis: 'y',
       initialRotation: '180deg',
-      zIndex: 3,
-      angleX: '10deg',
+      zIndex: 2,
+      angleX: '0deg',
       angleY: '-30deg',
-      angleZ: '5deg'
+      angleZ: '0deg'
     },
     {
       id: 'model3',
       url: 'https://modelviewer.dev/shared-assets/models/Mixer.glb',
       position: {
-        top: '30%',
-        left: isMobile ? '20%' : '35%',
+        bottom: isMobile ? '20%' : '25%',
+        right: isMobile ? '15%' : '25%',
       },
       scale: isMobile ? '0.3 0.3 0.3' : '0.5 0.5 0.5',
       rotationAxis: 'y',
       initialRotation: '90deg',
-      zIndex: 2,
+      zIndex: 1,
       angleX: '-5deg',
       angleY: '120deg',
       angleZ: '0deg'
@@ -103,7 +103,13 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
   const displayModels = models.length > 0 ? models : defaultModels;
   
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute inset-0 overflow-hidden"
+         style={{
+           backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+           backgroundSize: 'cover',
+           backgroundPosition: 'center',
+           backgroundRepeat: 'no-repeat'
+         }}>
       {displayModels.map((model) => (
         <ModelViewer
           key={model.id}
@@ -122,7 +128,6 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
           autoRotate={false}
           cameraControls={false}
           backgroundAlpha={0}
-          backgroundImage={backgroundImage}
           rotationMultiplier={0.15}
           height={isMobile ? "60%" : "70%"}
           width={isMobile ? "60%" : "50%"}

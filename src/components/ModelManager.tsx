@@ -19,6 +19,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Pencil, Trash2, Plus, X, Upload, RotateCw } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface PositionData {
   top?: string;
@@ -74,6 +75,7 @@ const ModelManager = () => {
   const [editingModel, setEditingModel] = useState<Model | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [modelSourceType, setModelSourceType] = useState<'file' | 'url'>('file');
   const { toast: useToastFn } = useToast();
 
   useEffect(() => {
@@ -197,17 +199,19 @@ const ModelManager = () => {
 
       let modelUrl = newModel.model_url;
       
-      if (selectedFile) {
+      if (modelSourceType === 'file') {
+        if (!selectedFile) {
+          toast.error('Please select a 3D model file to upload');
+          return;
+        }
         const uploadedUrl = await uploadModelFile();
         if (uploadedUrl) {
           modelUrl = uploadedUrl;
         } else {
           return;
         }
-      }
-
-      if (!modelUrl) {
-        toast.error('Please provide a model URL or upload a file');
+      } else if (!modelUrl) {
+        toast.error('Please provide a model URL');
         return;
       }
 
@@ -246,6 +250,7 @@ const ModelManager = () => {
         }
       });
       setIsDialogOpen(false);
+      setModelSourceType('file');
       
       toast.success('Model added successfully');
     } catch (error) {
@@ -263,17 +268,15 @@ const ModelManager = () => {
 
       let modelUrl = editingModel.model_url;
       
-      if (selectedFile) {
+      if (modelSourceType === 'file' && selectedFile) {
         const uploadedUrl = await uploadModelFile();
         if (uploadedUrl) {
           modelUrl = uploadedUrl;
         } else {
           return;
         }
-      }
-
-      if (!modelUrl) {
-        toast.error('Please provide a model URL or upload a file');
+      } else if (modelSourceType === 'url' && !modelUrl) {
+        toast.error('Please provide a model URL');
         return;
       }
 
@@ -297,6 +300,7 @@ const ModelManager = () => {
       setModels(models.map(model => model.id === editingModel.id ? modelToUpdate : model));
       setEditingModel(null);
       setIsDialogOpen(false);
+      setModelSourceType('file');
       
       toast.success('Model updated successfully');
     } catch (error) {
@@ -324,28 +328,28 @@ const ModelManager = () => {
   };
 
   const openEditDialog = (model: Model) => {
-    setEditingModel(model);
+    let modelWithPositionData = {...model};
+    
+    if (model.position && !model.position_data) {
+      try {
+        const positionData = JSON.parse(model.position) as PositionData;
+        modelWithPositionData.position_data = positionData;
+      } catch (e) {
+        console.error('Failed to parse position data:', e);
+        modelWithPositionData.position_data = {};
+      }
+    }
+    
+    setEditingModel(modelWithPositionData);
+    setModelSourceType('url');
     setIsDialogOpen(true);
   };
 
   const openAddDialog = () => {
     setEditingModel(null);
+    setModelSourceType('file');
     setIsDialogOpen(true);
   };
-
-  useEffect(() => {
-    if (editingModel && editingModel.position && !editingModel.position_data) {
-      try {
-        const positionData = JSON.parse(editingModel.position) as PositionData;
-        setEditingModel({
-          ...editingModel,
-          position_data: positionData
-        });
-      } catch (e) {
-        console.error('Failed to parse position data:', e);
-      }
-    }
-  }, [editingModel]);
 
   return (
     <div className="space-y-6">
@@ -424,7 +428,10 @@ const ModelManager = () => {
                     <Switch 
                       id={`featured-${model.id}`} 
                       checked={model.is_featured}
-                      disabled
+                      onCheckedChange={(checked) => {
+                        const updatedModel = {...model, is_featured: checked};
+                        updateModelFeatureStatus(updatedModel);
+                      }}
                     />
                   </div>
                 </div>
@@ -476,41 +483,67 @@ const ModelManager = () => {
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="model_url" className="text-right">
-                Model URL
-              </Label>
-              <Input
-                id="model_url"
-                name="model_url"
-                value={editingModel?.model_url || newModel.model_url}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="https://example.com/model.glb"
-              />
-            </div>
-
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="model-file" className="text-right">
-                Upload File
+              <Label className="text-right">
+                Model Source
               </Label>
               <div className="col-span-3">
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="model-file"
-                    type="file"
-                    accept=".glb,.gltf"
-                    onChange={handleFileChange}
-                    className="flex-1"
-                  />
-                  {uploading && (
-                    <RotateCw className="h-4 w-4 animate-spin" />
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Upload a 3D model file (.glb or .gltf format)
-                </p>
+                <RadioGroup
+                  value={modelSourceType}
+                  onValueChange={(value) => setModelSourceType(value as 'file' | 'url')}
+                  className="flex flex-col space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="file" id="source-file" />
+                    <Label htmlFor="source-file">Upload a 3D model file</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="url" id="source-url" />
+                    <Label htmlFor="source-url">Use a URL</Label>
+                  </div>
+                </RadioGroup>
               </div>
             </div>
+            
+            {modelSourceType === 'file' && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="model-file" className="text-right">
+                  Upload File
+                </Label>
+                <div className="col-span-3">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="model-file"
+                      type="file"
+                      accept=".glb,.gltf"
+                      onChange={handleFileChange}
+                      className="flex-1"
+                    />
+                    {uploading && (
+                      <RotateCw className="h-4 w-4 animate-spin" />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Upload a 3D model file (.glb or .gltf format)
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {modelSourceType === 'url' && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="model_url" className="text-right">
+                  Model URL
+                </Label>
+                <Input
+                  id="model_url"
+                  name="model_url"
+                  value={editingModel?.model_url || newModel.model_url}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                  placeholder="https://example.com/model.glb"
+                />
+              </div>
+            )}
             
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">
@@ -557,6 +590,34 @@ const ModelManager = () => {
                     onChange={handleInputChange}
                     className="mt-1"
                     placeholder="e.g., 20%"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="position_right" className="text-xs">
+                    Right Position
+                  </Label>
+                  <Input
+                    id="position_right"
+                    name="position_data.right"
+                    value={editingModel?.position_data?.right || newModel.position_data?.right || ''}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                    placeholder="e.g., 20%"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="position_bottom" className="text-xs">
+                    Bottom Position
+                  </Label>
+                  <Input
+                    id="position_bottom"
+                    name="position_data.bottom"
+                    value={editingModel?.position_data?.bottom || newModel.position_data?.bottom || ''}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                    placeholder="e.g., 10%"
                   />
                 </div>
                 
@@ -671,6 +732,23 @@ const ModelManager = () => {
       </Dialog>
     </div>
   );
+  
+  async function updateModelFeatureStatus(model: Model) {
+    try {
+      const { error } = await supabase
+        .from('models')
+        .update({ is_featured: model.is_featured })
+        .eq('id', model.id);
+
+      if (error) throw error;
+
+      setModels(models.map(m => m.id === model.id ? model : m));
+      toast.success(`Model ${model.is_featured ? 'added to' : 'removed from'} homepage`);
+    } catch (error) {
+      console.error('Error updating model feature status:', error);
+      toast.error('Failed to update model feature status');
+    }
+  }
 };
 
 export default ModelManager;

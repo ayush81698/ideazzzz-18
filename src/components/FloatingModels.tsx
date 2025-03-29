@@ -70,7 +70,7 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
     },
     {
       id: 'model2',
-      url: 'https://modelviewer.dev/shared-assets/models/RobotExpressive.glb',
+      url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
       position: {
         top: isMobile ? '5%' : '10%',
         right: isMobile ? '5%' : '15%',
@@ -85,7 +85,7 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
     },
     {
       id: 'model3',
-      url: 'https://modelviewer.dev/shared-assets/models/Mixer.glb',
+      url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
       position: {
         bottom: isMobile ? '20%' : '25%',
         right: isMobile ? '15%' : '25%',

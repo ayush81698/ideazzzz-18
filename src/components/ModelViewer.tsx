@@ -16,10 +16,17 @@ interface ModelViewerProps {
   cameraOrbit?: string;
   exposure?: string;
   height?: string;
+  width?: string;
   position?: 'absolute' | 'relative' | 'fixed';
+  top?: string;
+  left?: string;
+  right?: string;
+  bottom?: string;
   zIndex?: number;
   skyboxImage?: string;
   backgroundImage?: string;
+  initialRotation?: string;
+  rotationAxis?: 'x' | 'y' | 'z';
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
@@ -35,14 +42,22 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   cameraOrbit = "0deg 75deg 105%",
   exposure = "0.75",
   height = "100%",
+  width = "100%",
   position = "relative",
+  top,
+  left,
+  right,
+  bottom,
   zIndex = 0,
   skyboxImage,
-  backgroundImage
+  backgroundImage,
+  initialRotation = "0deg",
+  rotationAxis = "y"
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [rotation, setRotation] = useState(0);
+  const [rotation, setRotation] = useState(parseInt(initialRotation) || 0);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
   const lastScrollYRef = useRef(0);
   const animationFrameRef = useRef<number | null>(null);
   const isMobile = useIsMobile();
@@ -72,29 +87,60 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
   // Handle smooth scroll-based rotation with requestAnimationFrame
   useEffect(() => {
-    if (!rotateOnScroll) return;
+    if (!rotateOnScroll || !isScriptLoaded) return;
     
-    const updateRotation = () => {
+    let lastTime = 0;
+    let scrollSpeed = 0;
+    let idleTimer: NodeJS.Timeout | null = null;
+
+    const updateRotation = (timestamp: number) => {
+      // Calculate time delta for consistent animation speed
+      const delta = timestamp - lastTime;
+      lastTime = timestamp;
+      
+      // Get current scroll position
       const scrollY = window.scrollY;
-      // Use a smaller multiplier for smoother rotation
-      const targetRotation = scrollY * rotationMultiplier % 360;
+      const scrollDiff = scrollY - lastScrollYRef.current;
       
-      // Smooth transition between current and target rotation
-      const currentRotation = rotation;
-      const delta = (targetRotation - currentRotation) * 0.1; // Smoothing factor
+      // Update scroll speed with decay
+      if (Math.abs(scrollDiff) > 0) {
+        scrollSpeed = scrollDiff * rotationMultiplier;
+        // Clear previous idle timer
+        if (idleTimer) clearTimeout(idleTimer);
+        
+        // Set new idle timer to gradually stop rotation
+        idleTimer = setTimeout(() => {
+          scrollSpeed = 0;
+        }, 1000);
+      } else {
+        // Apply decay when not scrolling
+        scrollSpeed *= 0.95;
+        if (Math.abs(scrollSpeed) < 0.01) scrollSpeed = 0;
+      }
       
-      if (Math.abs(delta) > 0.01) {
-        setRotation(currentRotation + delta);
+      // Update rotation based on scroll speed
+      if (Math.abs(scrollSpeed) > 0) {
+        setRotation(prev => (prev + scrollSpeed) % 360);
       }
       
       // Update the model rotation if the model-viewer element exists
-      if (isScriptLoaded && containerRef.current) {
+      if (containerRef.current) {
         const modelViewer = containerRef.current.querySelector('model-viewer');
         if (modelViewer) {
           // Extract the existing camera orbit values
           const orbitParts = isMobile ? mobileCameraOrbit.split(' ') : cameraOrbit.split(' ');
-          // Replace only the first part (rotation)
-          const newOrbit = `${(currentRotation + delta)}deg ${orbitParts[1]} ${orbitParts[2]}`;
+          
+          // Use the appropriate rotation axis
+          let newOrbit;
+          if (rotationAxis === 'y') {
+            newOrbit = `${rotation}deg ${orbitParts[1]} ${orbitParts[2]}`;
+          } else if (rotationAxis === 'x') {
+            newOrbit = `${orbitParts[0]} ${rotation}deg ${orbitParts[2]}`;
+          } else {
+            // For 'z' axis, we'd need to use a different approach
+            newOrbit = `${orbitParts[0]} ${orbitParts[1]} ${orbitParts[2]}`;
+          }
+          
           modelViewer.setAttribute('camera-orbit', newOrbit);
         }
       }
@@ -109,18 +155,41 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
+      if (idleTimer) {
+        clearTimeout(idleTimer);
+      }
     };
-  }, [rotateOnScroll, isScriptLoaded, rotation, rotationMultiplier, cameraOrbit, isMobile, mobileCameraOrbit]);
+  }, [rotateOnScroll, isScriptLoaded, rotation, rotationMultiplier, cameraOrbit, isMobile, mobileCameraOrbit, rotationAxis]);
   
-  // Fallback for when model URL is invalid or can't be loaded
+  // Handle model loading events
   useEffect(() => {
+    const handleModelLoad = () => {
+      setIsModelLoaded(true);
+      console.log(`Model loaded successfully: ${modelUrl}`);
+    };
+    
     const handleModelError = () => {
       console.error(`Failed to load model from URL: ${modelUrl}`);
     };
     
-    document.addEventListener('model-error', handleModelError);
-    return () => document.removeEventListener('model-error', handleModelError);
-  }, [modelUrl]);
+    if (isScriptLoaded && containerRef.current) {
+      const modelViewer = containerRef.current.querySelector('model-viewer');
+      if (modelViewer) {
+        modelViewer.addEventListener('load', handleModelLoad);
+        modelViewer.addEventListener('error', handleModelError);
+      }
+    }
+    
+    return () => {
+      if (isScriptLoaded && containerRef.current) {
+        const modelViewer = containerRef.current.querySelector('model-viewer');
+        if (modelViewer) {
+          modelViewer.removeEventListener('load', handleModelLoad);
+          modelViewer.removeEventListener('error', handleModelError);
+        }
+      }
+    };
+  }, [isScriptLoaded, modelUrl]);
   
   return (
     <div 
@@ -130,9 +199,15 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         position, 
         zIndex, 
         height,
+        width,
+        top,
+        left,
+        right,
+        bottom,
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
         backgroundSize: 'cover',
-        backgroundPosition: 'center'
+        backgroundPosition: 'center',
+        overflow: 'hidden'
       }}
     >
       <div

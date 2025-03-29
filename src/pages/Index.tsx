@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import ModelViewer from '@/components/ModelViewer';
+import FloatingModels from '@/components/FloatingModels';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Box, ShoppingBag, Calendar } from 'lucide-react';
@@ -12,6 +13,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const [models, setModels] = useState([]);
+  const [floatingModels, setFloatingModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -24,14 +26,29 @@ const Index = () => {
           .from('models')
           .select('*')
           .eq('is_featured', true)
-          .limit(1);
+          .limit(3);
         
         if (error) throw error;
         
         if (data && data.length > 0) {
-          setModels(data);
+          // Use the first model as the main model
+          setModels(data.slice(0, 1));
+          
+          // Create floating model configuration from fetched models
+          if (data.length > 1) {
+            const floatingModelData = data.map((model, index) => ({
+              id: model.id || `model-${index}`,
+              url: model.model_url,
+              position: getPositionForIndex(index),
+              scale: isMobile ? "0.6 0.6 0.6" : "1 1 1",
+              rotationAxis: "y" as 'y',
+              initialRotation: `${index * 120}deg`,
+              zIndex: 2 - index
+            }));
+            setFloatingModels(floatingModelData);
+          }
         } else {
-          // If no featured models, use default model
+          // If no models are found, use defaults
           setModels([{
             id: 'default',
             name: 'Sculpture Sample',
@@ -49,7 +66,6 @@ const Index = () => {
     async function fetchFeaturedProducts() {
       try {
         // In a real app, this would fetch from the products table with a featured flag
-        // Since we're using mock data, we'll simulate fetching featured products
         setFeaturedProducts([
           {
             id: 1,
@@ -85,39 +101,34 @@ const Index = () => {
     
     fetchFeaturedModels();
     fetchFeaturedProducts();
-  }, []);
+  }, [isMobile]);
+
+  // Helper function to position models based on index
+  const getPositionForIndex = (index) => {
+    const positions = [
+      { top: isMobile ? '15%' : '10%', right: isMobile ? '5%' : '15%' },
+      { bottom: isMobile ? '15%' : '10%', left: isMobile ? '5%' : '15%' },
+      { top: isMobile ? '30%' : '40%', left: isMobile ? '35%' : '40%' }
+    ];
+    return positions[index % positions.length];
+  };
 
   return (
     <div className="relative">
-      {/* Hero Section with 3D Model */}
-      <section className="relative py-10 md:py-28 min-h-[85vh] overflow-hidden">
-        {/* 3D Model Background */}
+      {/* Hero Section with 3D Models */}
+      <section className="relative py-10 md:py-20 min-h-[85vh] overflow-hidden">
+        {/* 3D Model Background with multiple floating models */}
         <div className="absolute inset-0 w-full z-0">
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ideazzz-purple"></div>
             </div>
           ) : (
-            models.map((model) => (
-              <ModelViewer
-                key={model.id}
-                modelUrl={model.model_url}
-                autoRotate={false}
-                className="w-full bg-gradient-to-b from-ideazzz-purple/5 to-transparent"
-                cameraControls={true}
-                backgroundAlpha={0.2}
-                rotateOnScroll={true}
-                rotationMultiplier={0.1}
-                cameraOrbit={isMobile ? "0deg 65deg 150%" : "0deg 65deg 120%"}
-                scale={isMobile ? "1.2 1.2 1.2" : "1.5 1.5 1.5"}
-                fieldOfView={isMobile ? "50deg" : "40deg"}
-                exposure="1"
-                height="100vh"
-                position="absolute"
-                zIndex={-1}
-                backgroundImage="/lovable-uploads/e878763e-514f-4b8d-9415-d20319b19995.png"
-              />
-            ))
+            <FloatingModels 
+              models={floatingModels} 
+              backgroundImage="/lovable-uploads/e878763e-514f-4b8d-9415-d20319b19995.png"
+              rotateOnScroll={true}
+            />
           )}
         </div>
         
@@ -127,20 +138,22 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="order-2 lg:order-1 flex flex-col justify-center"
+              className="flex flex-col justify-center items-center lg:items-start text-center lg:text-left"
             >
-              <Badge className="mb-4 bg-ideazzz-purple px-4 py-1 text-white">Premium Craftsmanship</Badge>
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-white">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
-              <p className="text-base md:text-xl text-gray-200 dark:text-gray-300 mb-6 md:mb-8">
-                Experience the artistry of sculpting and 3D printing that transforms your concepts into tangible masterpieces.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link to="/shop">
-                  <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">Explore Shop</Button>
-                </Link>
-                <Link to="/booking">
-                  <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-ideazzz-purple">Book a 3D Scan</Button>
-                </Link>
+              <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 w-full max-w-lg">
+                <Badge className="mb-4 bg-ideazzz-purple px-4 py-1 text-white">Premium Craftsmanship</Badge>
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-white">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
+                <p className="text-base md:text-xl text-gray-200 mb-6 md:mb-8">
+                  Experience the artistry of sculpting and 3D printing that transforms your concepts into tangible masterpieces.
+                </p>
+                <div className="flex flex-wrap justify-center lg:justify-start gap-4">
+                  <Link to="/shop">
+                    <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">Explore Shop</Button>
+                  </Link>
+                  <Link to="/booking">
+                    <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-ideazzz-purple">Book a 3D Scan</Button>
+                  </Link>
+                </div>
               </div>
             </motion.div>
             
@@ -148,10 +161,9 @@ const Index = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="order-1 lg:order-2"
             >
-              {/* This div is now just a spacer since the model is in the background */}
-              <div className={isMobile ? "h-[150px] lg:h-[450px]" : "h-[300px] lg:h-[450px]"}></div>
+              {/* Empty div to maintain grid layout */}
+              <div className={isMobile ? "h-[100px]" : "h-[300px]"}></div>
             </motion.div>
           </div>
         </div>
@@ -180,7 +192,7 @@ const Index = () => {
                   whileHover={{ y: -10 }}
                   className="relative"
                 >
-                  <Card className="overflow-hidden h-full">
+                  <Card className="overflow-hidden h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <div className="relative h-36 md:h-48 overflow-hidden">
                       <img 
                         src={product.imageUrl} 
@@ -194,12 +206,12 @@ const Index = () => {
                       )}
                     </div>
                     <CardContent className="p-4 md:p-5">
-                      <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">{product.name}</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-2 md:mb-3 text-xs md:text-sm">
+                      <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">{product.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-2 md:mb-3 text-xs">
                         {product.description}
                       </p>
                       <div className="flex justify-between items-center">
-                        <span className="text-base md:text-lg font-bold">₹{product.price.toLocaleString()}</span>
+                        <span className="text-sm md:text-base font-bold">₹{product.price.toLocaleString()}</span>
                         <Button 
                           variant="outline" 
                           size="sm"

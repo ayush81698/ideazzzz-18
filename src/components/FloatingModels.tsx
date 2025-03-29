@@ -111,7 +111,7 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
         bottom: isMobile ? '15%' : '20%',
         right: isMobile ? '20%' : '30%',
       },
-      scale: isMobile ? '0.4 0.4 0.4' : '0.6 0.6 0.6',
+      scale: isMobile ? '0.2 0.2 0.2' : '0.3 0.3 0.3',
       rotationAxis: 'y',
       initialRotation: '90deg',
       zIndex: 1,

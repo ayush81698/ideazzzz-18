@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +17,8 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Pencil, Trash2, Plus, X } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Pencil, Trash2, Plus, X, Upload, RotateCw } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Model {
@@ -32,6 +34,10 @@ interface Model {
     bottom?: string;
     scale?: string;
     rotation?: string;
+    angleX?: string;
+    angleY?: string;
+    angleZ?: string;
+    zIndex?: number;
   };
 }
 
@@ -46,6 +52,7 @@ interface SupabaseModel {
 const ModelManager = () => {
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [newModel, setNewModel] = useState<Partial<Model>>({
     name: '',
     description: '',
@@ -55,12 +62,17 @@ const ModelManager = () => {
       top: '',
       left: '',
       scale: '1 1 1',
-      rotation: '0deg'
+      rotation: '0deg',
+      angleX: '0deg',
+      angleY: '0deg',
+      angleZ: '0deg',
+      zIndex: 1
     }
   });
   const [editingModel, setEditingModel] = useState<Model | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { toast } = useToast();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { toast: useToastFn } = useToast();
 
   useEffect(() => {
     fetchModels();
@@ -78,7 +90,7 @@ const ModelManager = () => {
       setModels(data || []);
     } catch (error) {
       console.error('Error fetching models:', error);
-      toast({
+      useToastFn({
         title: 'Error',
         description: 'Failed to load models',
         variant: 'destructive',
@@ -88,7 +100,7 @@ const ModelManager = () => {
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
     if (name.includes('position_data.')) {
@@ -128,14 +140,77 @@ const ModelManager = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const uploadModelFile = async () => {
+    if (!selectedFile) {
+      toast.error('Please select a file to upload');
+      return null;
+    }
+
+    try {
+      setUploading(true);
+      toast.info('Uploading model file, please wait...');
+
+      // Create a unique file path
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `models/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('models')
+        .upload(filePath, selectedFile);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('models')
+        .getPublicUrl(filePath);
+
+      toast.success('File uploaded successfully');
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error('Failed to upload file');
+      return null;
+    } finally {
+      setUploading(false);
+      setSelectedFile(null);
+      // Reset the file input
+      const fileInput = document.getElementById('model-file') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+    }
+  };
+
   const addModel = async () => {
     try {
-      if (!newModel.name || !newModel.model_url) {
-        toast({
-          title: 'Validation Error',
-          description: 'Model name and URL are required',
-          variant: 'destructive',
-        });
+      if (!newModel.name) {
+        toast.error('Model name is required');
+        return;
+      }
+
+      let modelUrl = newModel.model_url;
+      
+      // If a file was selected, upload it first
+      if (selectedFile) {
+        const uploadedUrl = await uploadModelFile();
+        if (uploadedUrl) {
+          modelUrl = uploadedUrl;
+        } else {
+          return; // Stop if upload failed
+        }
+      }
+
+      if (!modelUrl) {
+        toast.error('Please provide a model URL or upload a file');
         return;
       }
 
@@ -143,7 +218,7 @@ const ModelManager = () => {
       const modelToInsert: SupabaseModel = {
         name: newModel.name,
         description: newModel.description,
-        model_url: newModel.model_url,
+        model_url: modelUrl,
         is_featured: newModel.is_featured,
         position_data: newModel.position_data
       };
@@ -165,58 +240,67 @@ const ModelManager = () => {
           top: '',
           left: '',
           scale: '1 1 1',
-          rotation: '0deg'
+          rotation: '0deg',
+          angleX: '0deg',
+          angleY: '0deg',
+          angleZ: '0deg',
+          zIndex: 1
         }
       });
       setIsDialogOpen(false);
       
-      toast({
-        title: 'Success',
-        description: 'Model added successfully',
-      });
+      toast.success('Model added successfully');
     } catch (error) {
       console.error('Error adding model:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to add model',
-        variant: 'destructive',
-      });
+      toast.error('Failed to add model');
     }
   };
 
   const updateModel = async () => {
     try {
-      if (!editingModel || !editingModel.name || !editingModel.model_url) {
-        toast({
-          title: 'Validation Error',
-          description: 'Model name and URL are required',
-          variant: 'destructive',
-        });
+      if (!editingModel || !editingModel.name) {
+        toast.error('Model name is required');
         return;
       }
 
+      let modelUrl = editingModel.model_url;
+      
+      // If a file was selected, upload it first
+      if (selectedFile) {
+        const uploadedUrl = await uploadModelFile();
+        if (uploadedUrl) {
+          modelUrl = uploadedUrl;
+        } else {
+          return; // Stop if upload failed
+        }
+      }
+
+      if (!modelUrl) {
+        toast.error('Please provide a model URL or upload a file');
+        return;
+      }
+
+      // Update the model URL if a new file was uploaded
+      const modelToUpdate = {
+        ...editingModel,
+        model_url: modelUrl
+      };
+
       const { error } = await supabase
         .from('models')
-        .update(editingModel)
+        .update(modelToUpdate)
         .eq('id', editingModel.id);
 
       if (error) throw error;
 
-      setModels(models.map(model => model.id === editingModel.id ? editingModel : model));
+      setModels(models.map(model => model.id === editingModel.id ? modelToUpdate : model));
       setEditingModel(null);
       setIsDialogOpen(false);
       
-      toast({
-        title: 'Success',
-        description: 'Model updated successfully',
-      });
+      toast.success('Model updated successfully');
     } catch (error) {
       console.error('Error updating model:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update model',
-        variant: 'destructive',
-      });
+      toast.error('Failed to update model');
     }
   };
 
@@ -231,17 +315,10 @@ const ModelManager = () => {
 
       setModels(models.filter(model => model.id !== id));
       
-      toast({
-        title: 'Success',
-        description: 'Model deleted successfully',
-      });
+      toast.success('Model deleted successfully');
     } catch (error) {
       console.error('Error deleting model:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete model',
-        variant: 'destructive',
-      });
+      toast.error('Failed to delete model');
     }
   };
 
@@ -372,13 +449,14 @@ const ModelManager = () => {
               <Label htmlFor="description" className="text-right">
                 Description
               </Label>
-              <Input
+              <Textarea
                 id="description"
                 name="description"
                 value={editingModel?.description || newModel.description}
                 onChange={handleInputChange}
                 className="col-span-3"
                 placeholder="Model description"
+                rows={3}
               />
             </div>
             
@@ -394,6 +472,29 @@ const ModelManager = () => {
                 className="col-span-3"
                 placeholder="https://example.com/model.glb"
               />
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="model-file" className="text-right">
+                Upload File
+              </Label>
+              <div className="col-span-3">
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="model-file"
+                    type="file"
+                    accept=".glb,.gltf"
+                    onChange={handleFileChange}
+                    className="flex-1"
+                  />
+                  {uploading && (
+                    <RotateCw className="h-4 w-4 animate-spin" />
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Upload a 3D model file (.glb or .gltf format)
+                </p>
+              </div>
             </div>
             
             <div className="grid grid-cols-4 items-center gap-4">
@@ -413,7 +514,7 @@ const ModelManager = () => {
             </div>
             
             <div className="border-t pt-4 mt-2">
-              <h4 className="text-sm font-medium mb-2">Position Settings (Optional)</h4>
+              <h4 className="text-sm font-medium mb-2">Position & Rotation Settings</h4>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -471,6 +572,63 @@ const ModelManager = () => {
                     placeholder="e.g., 45deg"
                   />
                 </div>
+
+                <div>
+                  <Label htmlFor="angleX" className="text-xs">
+                    X Angle
+                  </Label>
+                  <Input
+                    id="angleX"
+                    name="position_data.angleX"
+                    value={editingModel?.position_data?.angleX || newModel.position_data?.angleX || '0deg'}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                    placeholder="e.g., 10deg"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="angleY" className="text-xs">
+                    Y Angle
+                  </Label>
+                  <Input
+                    id="angleY"
+                    name="position_data.angleY"
+                    value={editingModel?.position_data?.angleY || newModel.position_data?.angleY || '0deg'}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                    placeholder="e.g., 60deg"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="angleZ" className="text-xs">
+                    Z Angle
+                  </Label>
+                  <Input
+                    id="angleZ"
+                    name="position_data.angleZ"
+                    value={editingModel?.position_data?.angleZ || newModel.position_data?.angleZ || '0deg'}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                    placeholder="e.g., 5deg"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="zIndex" className="text-xs">
+                    Z-Index
+                  </Label>
+                  <Input
+                    id="zIndex"
+                    name="position_data.zIndex"
+                    type="number"
+                    value={editingModel?.position_data?.zIndex || newModel.position_data?.zIndex || 1}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                    placeholder="e.g., 1"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -482,8 +640,16 @@ const ModelManager = () => {
             <Button 
               className="bg-ideazzz-purple hover:bg-ideazzz-purple/90"
               onClick={editingModel ? updateModel : addModel}
+              disabled={uploading}
             >
-              {editingModel ? 'Update' : 'Add'} Model
+              {uploading ? (
+                <>
+                  <RotateCw className="h-4 w-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>{editingModel ? 'Update' : 'Add'} Model</>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

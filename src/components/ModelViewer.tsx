@@ -27,6 +27,10 @@ interface ModelViewerProps {
   backgroundImage?: string;
   initialRotation?: string;
   rotationAxis?: 'x' | 'y' | 'z';
+  angleX?: string;
+  angleY?: string;
+  angleZ?: string;
+  scrollY?: number;
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
@@ -52,7 +56,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   skyboxImage,
   backgroundImage,
   initialRotation = "0deg",
-  rotationAxis = "y"
+  rotationAxis = "y",
+  angleX = "0deg",
+  angleY = "0deg",
+  angleZ = "0deg",
+  scrollY = 0
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [rotation, setRotation] = useState(parseInt(initialRotation) || 0);
@@ -85,81 +93,33 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const mobileCameraOrbit = isMobile ? "0deg 75deg 150%" : cameraOrbit;
   const mobileFieldOfView = isMobile ? "50deg" : fieldOfView;
 
-  // Handle smooth scroll-based rotation with requestAnimationFrame
+  // Use the scrollY prop for controlled rotation if rotateOnScroll is true
   useEffect(() => {
-    if (!rotateOnScroll || !isScriptLoaded) return;
+    if (!rotateOnScroll || !isScriptLoaded || !containerRef.current) return;
     
-    let lastTime = 0;
-    let scrollSpeed = 0;
-    let idleTimer: NodeJS.Timeout | null = null;
-
-    const updateRotation = (timestamp: number) => {
-      // Calculate time delta for consistent animation speed
-      const delta = timestamp - lastTime;
-      lastTime = timestamp;
-      
-      // Get current scroll position
-      const scrollY = window.scrollY;
-      const scrollDiff = scrollY - lastScrollYRef.current;
-      
-      // Update scroll speed with decay
-      if (Math.abs(scrollDiff) > 0) {
-        scrollSpeed = scrollDiff * rotationMultiplier;
-        // Clear previous idle timer
-        if (idleTimer) clearTimeout(idleTimer);
-        
-        // Set new idle timer to gradually stop rotation
-        idleTimer = setTimeout(() => {
-          scrollSpeed = 0;
-        }, 1000);
-      } else {
-        // Apply decay when not scrolling
-        scrollSpeed *= 0.95;
-        if (Math.abs(scrollSpeed) < 0.01) scrollSpeed = 0;
-      }
-      
-      // Update rotation based on scroll speed
-      if (Math.abs(scrollSpeed) > 0) {
-        setRotation(prev => (prev + scrollSpeed) % 360);
-      }
-      
-      // Update the model rotation if the model-viewer element exists
-      if (containerRef.current) {
-        const modelViewer = containerRef.current.querySelector('model-viewer');
-        if (modelViewer) {
-          // Extract the existing camera orbit values
-          const orbitParts = isMobile ? mobileCameraOrbit.split(' ') : cameraOrbit.split(' ');
-          
-          // Use the appropriate rotation axis
-          let newOrbit;
-          if (rotationAxis === 'y') {
-            newOrbit = `${rotation}deg ${orbitParts[1]} ${orbitParts[2]}`;
-          } else if (rotationAxis === 'x') {
-            newOrbit = `${orbitParts[0]} ${rotation}deg ${orbitParts[2]}`;
-          } else {
-            // For 'z' axis, we'd need to use a different approach
-            newOrbit = `${orbitParts[0]} ${orbitParts[1]} ${orbitParts[2]}`;
-          }
-          
-          modelViewer.setAttribute('camera-orbit', newOrbit);
-        }
-      }
-      
-      lastScrollYRef.current = scrollY;
-      animationFrameRef.current = requestAnimationFrame(updateRotation);
-    };
+    const modelViewer = containerRef.current.querySelector('model-viewer');
+    if (!modelViewer) return;
     
-    animationFrameRef.current = requestAnimationFrame(updateRotation);
+    // Calculate rotation based on scroll position
+    const newRotation = (rotation + (scrollY * 0.1)) % 360;
+    setRotation(newRotation);
     
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (idleTimer) {
-        clearTimeout(idleTimer);
-      }
-    };
-  }, [rotateOnScroll, isScriptLoaded, rotation, rotationMultiplier, cameraOrbit, isMobile, mobileCameraOrbit, rotationAxis]);
+    // Extract the existing camera orbit values
+    const orbitParts = isMobile ? mobileCameraOrbit.split(' ') : cameraOrbit.split(' ');
+    
+    // Use the appropriate rotation axis
+    let newOrbit;
+    if (rotationAxis === 'y') {
+      newOrbit = `${newRotation}deg ${orbitParts[1]} ${orbitParts[2]}`;
+    } else if (rotationAxis === 'x') {
+      newOrbit = `${orbitParts[0]} ${newRotation}deg ${orbitParts[2]}`;
+    } else {
+      // For 'z' axis, we'd need to use a different approach
+      newOrbit = `${orbitParts[0]} ${orbitParts[1]} ${orbitParts[2]}`;
+    }
+    
+    modelViewer.setAttribute('camera-orbit', newOrbit);
+  }, [rotateOnScroll, isScriptLoaded, scrollY, isMobile, mobileCameraOrbit, cameraOrbit, rotationAxis, rotation]);
   
   // Handle model loading events
   useEffect(() => {
@@ -227,6 +187,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
               field-of-view="${isMobile ? mobileFieldOfView : fieldOfView}"
               style="width: 100%; height: 100%; background-color: rgba(0,0,0,${backgroundAlpha});"
               camera-orbit="${isMobile ? mobileCameraOrbit : cameraOrbit}"
+              orientation="${angleX} ${angleY} ${angleZ}"
               ar
               ar-modes="webxr scene-viewer quick-look"
               poster="https://via.placeholder.com/600x400?text=Loading+3D+Model"

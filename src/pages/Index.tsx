@@ -31,20 +31,34 @@ const Index = () => {
         if (error) throw error;
         
         if (data && data.length > 0) {
-          // Use the first model as the main model
+          // Use the first model as the main model if needed
           setModels(data.slice(0, 1));
           
           // Create floating model configuration from fetched models
           if (data.length > 1) {
-            const floatingModelData = data.map((model, index) => ({
-              id: model.id || `model-${index}`,
-              url: model.model_url,
-              position: getPositionForIndex(index),
-              scale: isMobile ? "0.6 0.6 0.6" : "1 1 1",
-              rotationAxis: "y" as 'y',
-              initialRotation: `${index * 120}deg`,
-              zIndex: 2 - index
-            }));
+            const floatingModelData = data.map((model, index) => {
+              // Extract position data from the model or use defaults
+              const position = model.position_data || {};
+              const defaultPositions = getPositionForIndex(index);
+              
+              return {
+                id: model.id || `model-${index}`,
+                url: model.model_url,
+                position: {
+                  top: position.top || defaultPositions.top,
+                  left: position.left || defaultPositions.left,
+                  right: position.right || defaultPositions.right,
+                  bottom: position.bottom || defaultPositions.bottom,
+                },
+                scale: position.scale || (isMobile ? "0.6 0.6 0.6" : "1 1 1"),
+                rotationAxis: "y",
+                initialRotation: position.rotation || `${index * 120}deg`,
+                zIndex: position.zIndex || (2 - index),
+                angleX: position.angleX || "0deg",
+                angleY: position.angleY || `${index * 60}deg`,
+                angleZ: position.angleZ || "0deg"
+              };
+            });
             setFloatingModels(floatingModelData);
           }
         } else {
@@ -106,8 +120,8 @@ const Index = () => {
   // Helper function to position models based on index
   const getPositionForIndex = (index) => {
     const positions = [
-      { top: isMobile ? '15%' : '10%', right: isMobile ? '5%' : '15%' },
-      { bottom: isMobile ? '15%' : '10%', left: isMobile ? '5%' : '15%' },
+      { top: isMobile ? '5%' : '10%', right: isMobile ? '10%' : '20%' },
+      { bottom: isMobile ? '25%' : '20%', left: isMobile ? '5%' : '15%' },
       { top: isMobile ? '30%' : '40%', left: isMobile ? '35%' : '40%' }
     ];
     return positions[index % positions.length];
@@ -116,7 +130,7 @@ const Index = () => {
   return (
     <div className="relative">
       {/* Hero Section with 3D Models */}
-      <section className="relative py-10 md:py-20 min-h-[85vh] overflow-hidden">
+      <section className="relative py-8 md:py-20 min-h-[85vh] overflow-hidden">
         {/* 3D Model Background with multiple floating models */}
         <div className="absolute inset-0 w-full z-0">
           {loading ? (
@@ -133,14 +147,14 @@ const Index = () => {
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 items-center min-h-[70vh] md:min-h-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 items-center min-h-[60vh] md:min-h-0">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               className="flex flex-col justify-center items-center lg:items-start text-center lg:text-left"
             >
-              <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 w-full max-w-lg">
+              <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 shadow-lg w-full max-w-lg">
                 <Badge className="mb-4 bg-ideazzz-purple px-4 py-1 text-white">Premium Craftsmanship</Badge>
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-white">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
                 <p className="text-base md:text-xl text-gray-200 mb-6 md:mb-8">
@@ -162,8 +176,8 @@ const Index = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
             >
-              {/* Empty div to maintain grid layout */}
-              <div className={isMobile ? "h-[100px]" : "h-[300px]"}></div>
+              {/* Empty div to maintain grid layout while floating models display in background */}
+              <div className={isMobile ? "h-[50px]" : "h-[300px]"}></div>
             </motion.div>
           </div>
         </div>
@@ -207,7 +221,7 @@ const Index = () => {
                     </div>
                     <CardContent className="p-4 md:p-5">
                       <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">{product.name}</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-2 md:mb-3 text-xs">
+                      <p className="text-gray-600 dark:text-gray-300 mb-2 md:mb-3 text-xs md:text-sm">
                         {product.description}
                       </p>
                       <div className="flex justify-between items-center">

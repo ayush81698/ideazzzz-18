@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +26,7 @@ interface Model {
   description: string;
   model_url: string;
   is_featured: boolean;
+  position?: string;
   position_data?: {
     top?: string;
     left?: string;
@@ -46,7 +46,7 @@ interface SupabaseModel {
   description?: string;
   model_url: string;
   is_featured?: boolean;
-  position_data?: any;
+  position?: string;
 }
 
 const ModelManager = () => {
@@ -214,13 +214,16 @@ const ModelManager = () => {
         return;
       }
 
+      // Convert position_data to a JSON string for storage
+      const positionJson = newModel.position_data ? JSON.stringify(newModel.position_data) : null;
+
       // Create a properly typed object for Supabase
       const modelToInsert: SupabaseModel = {
         name: newModel.name,
         description: newModel.description,
         model_url: modelUrl,
         is_featured: newModel.is_featured,
-        position_data: newModel.position_data
+        position: positionJson
       };
 
       const { data, error } = await supabase
@@ -280,11 +283,18 @@ const ModelManager = () => {
         return;
       }
 
+      // Convert position_data to a JSON string for storage
+      const positionJson = editingModel.position_data ? JSON.stringify(editingModel.position_data) : null;
+
       // Update the model URL if a new file was uploaded
       const modelToUpdate = {
         ...editingModel,
-        model_url: modelUrl
+        model_url: modelUrl,
+        position: positionJson,
       };
+
+      // Remove position_data as it's not in the database schema
+      delete modelToUpdate.position_data;
 
       const { error } = await supabase
         .from('models')
@@ -331,6 +341,20 @@ const ModelManager = () => {
     setEditingModel(null);
     setIsDialogOpen(true);
   };
+
+  useEffect(() => {
+    if (editingModel && editingModel.position && !editingModel.position_data) {
+      try {
+        const positionData = JSON.parse(editingModel.position);
+        setEditingModel({
+          ...editingModel,
+          position_data: positionData
+        });
+      } catch (e) {
+        console.error('Failed to parse position data:', e);
+      }
+    }
+  }, [editingModel]);
 
   return (
     <div className="space-y-6">

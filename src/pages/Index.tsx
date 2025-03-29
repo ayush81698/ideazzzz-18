@@ -37,26 +37,35 @@ const Index = () => {
           // Create floating model configuration from fetched models
           if (data.length > 1) {
             const floatingModelData = data.map((model, index) => {
-              // Extract position data from the model or use defaults
-              const position = model.position_data || {};
+              // Parse position data from string to object if it exists
+              let positionData = {};
+              try {
+                if (model.position && typeof model.position === 'string') {
+                  positionData = JSON.parse(model.position);
+                }
+              } catch (e) {
+                console.error('Failed to parse position data:', e);
+              }
+              
+              // Extract position data or use defaults
               const defaultPositions = getPositionForIndex(index);
               
               return {
                 id: model.id || `model-${index}`,
                 url: model.model_url,
                 position: {
-                  top: position.top || defaultPositions.top,
-                  left: position.left || defaultPositions.left,
-                  right: position.right || defaultPositions.right,
-                  bottom: position.bottom || defaultPositions.bottom,
+                  top: positionData.top || defaultPositions.top,
+                  left: positionData.left || defaultPositions.left,
+                  right: positionData.right || defaultPositions.right,
+                  bottom: positionData.bottom || defaultPositions.bottom,
                 },
-                scale: position.scale || (isMobile ? "0.6 0.6 0.6" : "1 1 1"),
+                scale: positionData.scale || (isMobile ? "0.6 0.6 0.6" : "1 1 1"),
                 rotationAxis: "y",
-                initialRotation: position.rotation || `${index * 120}deg`,
-                zIndex: position.zIndex || (2 - index),
-                angleX: position.angleX || "0deg",
-                angleY: position.angleY || `${index * 60}deg`,
-                angleZ: position.angleZ || "0deg"
+                initialRotation: positionData.rotation || `${index * 120}deg`,
+                zIndex: positionData.zIndex || (2 - index),
+                angleX: positionData.angleX || "0deg",
+                angleY: positionData.angleY || `${index * 60}deg`,
+                angleZ: positionData.angleZ || "0deg"
               };
             });
             setFloatingModels(floatingModelData);

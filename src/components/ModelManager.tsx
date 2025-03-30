@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -17,7 +16,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Pencil, Trash2, Plus, X, Upload, RotateCw, Model } from 'lucide-react';
+import { Pencil, Trash2, Plus, X, Upload, RotateCw, Cube3d } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from '@/components/ui/progress';
@@ -189,20 +188,37 @@ const ModelManager = () => {
       const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('models')
-        .upload(filePath, selectedFile, {
-          cacheControl: '3600',
-          upsert: false,
-          onProgress: (progress) => {
-            const percent = Math.round((progress.loaded / progress.total) * 100);
-            setUploadProgress(percent);
-          }
-        });
+      // Track upload progress manually since onProgress isn't supported
+      const uploadTask = async () => {
+        const { error: uploadError } = await supabase.storage
+          .from('models')
+          .upload(filePath, selectedFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-      if (uploadError) {
-        throw uploadError;
-      }
+        if (uploadError) {
+          throw uploadError;
+        }
+      };
+
+      // Show progress animation
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          // Simulate progress from 0 to 95%
+          if (prev < 95) {
+            return prev + 5;
+          }
+          return prev;
+        });
+      }, 200);
+
+      // Perform the upload
+      await uploadTask();
+      
+      // Complete the progress
+      clearInterval(progressInterval);
+      setUploadProgress(100);
 
       const { data: { publicUrl } } = supabase.storage
         .from('models')
@@ -216,7 +232,9 @@ const ModelManager = () => {
       return null;
     } finally {
       setUploading(false);
-      setUploadProgress(0);
+      setTimeout(() => {
+        setUploadProgress(0);
+      }, 500);
       setSelectedFile(null);
       const fileInput = document.getElementById('model-file') as HTMLInputElement;
       if (fileInput) fileInput.value = '';

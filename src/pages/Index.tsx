@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -70,6 +69,7 @@ const Index = () => {
               console.error('Failed to parse position data:', e);
             }
             
+            // Use consistent position data for each index
             const defaultPositions = getPositionForIndex(index);
             
             // Determine rotation axis, defaulting to 'y' if invalid
@@ -78,13 +78,16 @@ const Index = () => {
               if (['x', 'y', 'z'].includes(positionData.rotationAxis)) {
                 rotationAxis = positionData.rotationAxis as 'x' | 'y' | 'z';
               }
-            } else if (positionData?.rotation) {
-              if (positionData.rotation.includes('X')) {
-                rotationAxis = 'x';
-              } else if (positionData.rotation.includes('Z')) {
-                rotationAxis = 'z';
-              }
             }
+
+            // Each model gets a unique rotation angle for variety
+            const angleVariations = [
+              { x: "10deg", y: "45deg", z: "0deg" },
+              { x: "0deg", y: "-45deg", z: "0deg" },
+              { x: "30deg", y: "0deg", z: "0deg" }
+            ];
+            
+            const angle = angleVariations[index % angleVariations.length];
 
             return {
               id: model.id || `model-${index}`,
@@ -95,13 +98,13 @@ const Index = () => {
                 right: positionData?.right || defaultPositions.right,
                 bottom: positionData?.bottom || defaultPositions.bottom,
               },
-              scale: positionData?.scale || (isMobile ? "0.6 0.6 0.6" : "1 1 1"),
+              scale: positionData?.scale || (isMobile ? "0.45 0.45 0.45" : "0.65 0.65 0.65"),
               rotationAxis,
-              initialRotation: positionData?.rotation || `${index * 120}deg`,
+              initialRotation: positionData?.rotation || `${index * 45}deg`,
               zIndex: positionData?.zIndex || (3 - index),
-              angleX: positionData?.angleX || (index === 0 ? "10deg" : index === 1 ? "0deg" : "-5deg"),
-              angleY: positionData?.angleY || (index === 0 ? "45deg" : index === 1 ? "-30deg" : "120deg"),
-              angleZ: positionData?.angleZ || (index === 0 ? "5deg" : index === 1 ? "0deg" : "0deg")
+              angleX: positionData?.angleX || angle.x,
+              angleY: positionData?.angleY || angle.y,
+              angleZ: positionData?.angleZ || angle.z
             };
           });
           
@@ -158,25 +161,26 @@ const Index = () => {
     fetchFeaturedProducts();
   }, [isMobile]);
 
+  // Define consistent positions for models based on index
   const getPositionForIndex = (index: number) => {
     const positions = [
-      { 
-        top: isMobile ? '15%' : '20%', 
+      { // First model - left side
+        top: isMobile ? '25%' : '30%', 
         left: isMobile ? '5%' : '15%',
         right: undefined,
         bottom: undefined
       },
-      { 
-        top: isMobile ? '5%' : '10%', 
-        right: isMobile ? '10%' : '20%',
+      { // Second model - right side
+        top: isMobile ? '15%' : '20%', 
+        right: isMobile ? '5%' : '15%',
         left: undefined,
         bottom: undefined  
       },
-      { 
+      { // Third model - bottom center
         bottom: isMobile ? '15%' : '20%', 
-        right: isMobile ? '15%' : '30%',
+        left: isMobile ? '30%' : '40%',
         top: undefined,
-        left: undefined
+        right: undefined
       }
     ];
     return positions[index % positions.length];
@@ -184,7 +188,7 @@ const Index = () => {
 
   return (
     <div className="relative">
-      <section className="relative py-8 md:py-20 min-h-[85vh] overflow-hidden">
+      <section className="relative py-8 md:py-20 min-h-[85vh] overflow-hidden flex items-center justify-center">
         <div className="absolute inset-0 w-full z-0">
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
@@ -193,27 +197,26 @@ const Index = () => {
           ) : (
             <FloatingModels 
               models={floatingModels} 
-              backgroundImage="/lovable-uploads/e878763e-514f-4b8d-9415-d20319b19995.png"
               rotateOnScroll={true}
             />
           )}
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 items-center min-h-[60vh] md:min-h-0">
+          <div className="flex justify-center items-center min-h-[60vh] md:min-h-0">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="flex flex-col justify-center items-center lg:items-start text-center lg:text-left"
+              className="flex flex-col justify-center items-center text-center"
             >
-              <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 shadow-lg w-full max-w-lg">
+              <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 shadow-lg w-full max-w-lg mx-auto">
                 <Badge className="mb-4 bg-ideazzz-purple px-4 py-1 text-white">Premium Craftsmanship</Badge>
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-white">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
                 <p className="text-base md:text-xl text-gray-200 mb-6 md:mb-8">
                   Experience the artistry of sculpting and 3D printing that transforms your concepts into tangible masterpieces.
                 </p>
-                <div className="flex flex-wrap justify-center lg:justify-start gap-4">
+                <div className="flex flex-wrap justify-center gap-4">
                   <Link to="/shop">
                     <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">Explore Shop</Button>
                   </Link>
@@ -222,14 +225,6 @@ const Index = () => {
                   </Link>
                 </div>
               </div>
-            </motion.div>
-            
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-            >
-              <div className={isMobile ? "h-[50px]" : "h-[300px]"}></div>
             </motion.div>
           </div>
         </div>
@@ -322,7 +317,7 @@ const Index = () => {
               <div className="p-8">
                 <div className="w-14 h-14 bg-ideazzz-purple/10 rounded-lg flex items-center justify-center mb-6">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-ideazzz-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Custom Design</h3>

@@ -40,8 +40,8 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
   
   useEffect(() => {
     const handleScroll = () => {
-      // Use requestAnimationFrame for smoother scroll handling
-      requestAnimationFrame(() => {
+      // Limit scroll updates for smoother performance
+      window.requestAnimationFrame(() => {
         setScrollY(window.scrollY);
       });
     };
@@ -72,51 +72,51 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
     });
   };
   
-  // Default models if none provided
+  // Default models if none provided - ensuring different angles
   const defaultModels: FloatingModel[] = [
     {
       id: 'model1',
       url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
       position: {
-        top: isMobile ? '15%' : '20%',
+        top: isMobile ? '25%' : '30%',
         left: isMobile ? '5%' : '15%',
       },
-      scale: isMobile ? '0.4 0.4 0.4' : '1 1 1',
+      scale: isMobile ? '0.4 0.4 0.4' : '0.7 0.7 0.7',
       rotationAxis: 'y',
       initialRotation: '45deg',
       zIndex: 3,
       angleX: '10deg',
       angleY: '45deg',
-      angleZ: '5deg'
+      angleZ: '0deg'
     },
     {
       id: 'model2',
       url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
       position: {
-        top: isMobile ? '5%' : '10%',
-        right: isMobile ? '40%' : '80%',
+        top: isMobile ? '15%' : '20%',
+        right: isMobile ? '5%' : '15%',
       },
-      scale: isMobile ? '0.3 0.3 0.3' : '0.4 0.4 0.4',
+      scale: isMobile ? '0.3 0.3 0.3' : '0.6 0.6 0.6',
       rotationAxis: 'y',
       initialRotation: '180deg',
       zIndex: 2,
       angleX: '0deg',
-      angleY: '-30deg',
+      angleY: '-45deg',
       angleZ: '0deg'
     },
     {
       id: 'model3',
-      url: 'https://modelviewer.dev/shared-assets/models/NeilArmstrong.glb',
+      url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
       position: {
         bottom: isMobile ? '15%' : '20%',
-        right: isMobile ? '20%' : '30%',
+        left: isMobile ? '30%' : '40%',
       },
-      scale: isMobile ? '0.2 0.2 0.2' : '0.3 0.3 0.3',
-      rotationAxis: 'y',
-      initialRotation: '90deg',
+      scale: isMobile ? '0.35 0.35 0.35' : '0.65 0.65 0.65',
+      rotationAxis: 'x',
+      initialRotation: '30deg',
       zIndex: 1,
-      angleX: '-5deg',
-      angleY: '120deg',
+      angleX: '30deg',
+      angleY: '0deg',
       angleZ: '0deg'
     }
   ];
@@ -124,15 +124,7 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
   const displayModels = models.length > 0 ? models : defaultModels;
 
   return (
-    <div 
-      className="absolute inset-0 overflow-hidden"
-      style={{
-        backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-    >
+    <div className="absolute inset-0 overflow-hidden">
       {isLoading && displayModels.length > 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-50">
           <div className="text-white mb-4">Loading 3D Models...</div>
@@ -161,9 +153,9 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
           autoRotate={false}
           cameraControls={false}
           backgroundAlpha={0}
-          rotationMultiplier={0.05} // Reduced for smoother rotation
-          height={isMobile ? "55%" : "65%"}
-          width={isMobile ? "55%" : "45%"}
+          rotationMultiplier={0.01} // Reduced for smoother rotation
+          height={isMobile ? "60%" : "70%"}
+          width={isMobile ? "60%" : "50%"}
           angleX={model.angleX}
           angleY={model.angleY}
           angleZ={model.angleZ}

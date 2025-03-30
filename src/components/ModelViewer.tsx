@@ -155,8 +155,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
       }
     };
     
-    const handleModelError = () => {
-      console.error(`Failed to load model from URL: ${modelUrl}`);
+    const handleModelError = (event: any) => {
+      console.error(`Failed to load model from URL: ${modelUrl}`, event);
     };
     
     if (isScriptLoaded && containerRef.current) {
@@ -191,9 +191,6 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         left,
         right,
         bottom,
-        backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
         overflow: 'hidden'
       }}
     >
@@ -216,7 +213,6 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
               camera-orbit="${isMobile ? mobileCameraOrbit : cameraOrbit}"
               orientation="${angleX} ${angleY} ${angleZ}"
               preload
-              reveal="interaction"
               loading="eager"
               ar
               ar-modes="webxr scene-viewer quick-look"

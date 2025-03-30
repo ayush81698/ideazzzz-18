@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -841,7 +840,7 @@ const ModelManager = () => {
       </Dialog>
     </div>
   );
-  
+
   async function updateModelFeatureStatus(model: Model) {
     try {
       const { error } = await supabase

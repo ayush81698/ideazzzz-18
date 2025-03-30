@@ -24,13 +24,11 @@ export interface FloatingModel {
 
 interface FloatingModelsProps {
   models: FloatingModel[];
-  backgroundImage?: string;
   rotateOnScroll?: boolean;
 }
 
 const FloatingModels: React.FC<FloatingModelsProps> = ({ 
   models = [], 
-  backgroundImage,
   rotateOnScroll = true
 }) => {
   const isMobile = useIsMobile();

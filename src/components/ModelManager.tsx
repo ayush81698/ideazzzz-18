@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -94,6 +95,8 @@ const ModelManager = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      
+      console.info('Models data received:', data);
       
       if (data && data.length > 0) {
         setModels(data);

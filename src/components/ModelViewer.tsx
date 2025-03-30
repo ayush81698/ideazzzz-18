@@ -24,7 +24,6 @@ interface ModelViewerProps {
   bottom?: string;
   zIndex?: number;
   skyboxImage?: string;
-  backgroundImage?: string;
   initialRotation?: string;
   rotationAxis?: 'x' | 'y' | 'z';
   angleX?: string;
@@ -55,7 +54,6 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   bottom,
   zIndex = 0,
   skyboxImage,
-  backgroundImage,
   initialRotation = "0deg",
   rotationAxis = "y",
   angleX = "0deg",

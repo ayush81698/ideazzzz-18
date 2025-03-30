@@ -69,7 +69,7 @@ const Index = () => {
               console.error('Failed to parse position data:', e);
             }
             
-            // Use consistent position data for each index
+            // Use consistent position data for each index if not specified in the model
             const defaultPositions = getPositionForIndex(index);
             
             // Determine rotation axis, defaulting to 'y' if invalid
@@ -80,7 +80,7 @@ const Index = () => {
               }
             }
 
-            // Each model gets a unique rotation angle for variety
+            // Each model gets a unique rotation angle for variety if not specified
             const angleVariations = [
               { x: "10deg", y: "45deg", z: "0deg" },
               { x: "0deg", y: "-45deg", z: "0deg" },

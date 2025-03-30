@@ -75,9 +75,7 @@ const Index = () => {
               <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 shadow-lg w-full">
                 <Badge className="mb-4 bg-ideazzz-purple px-4 py-1 text-white">Premium Craftsmanship</Badge>
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-white">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
-                <p className="text-base md:text-xl text-gray-200 mb-6 md:mb-8">
-                  Experience the artistry of sculpting and 3D printing that transforms your concepts into tangible masterpieces.
-                </p>
+               
                 <div className="flex flex-wrap gap-4">
                   <Link to="/shop">
                     <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">Explore Shop</Button>

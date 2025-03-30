@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -17,7 +16,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Pencil, Trash2, Plus, X, Upload, RotateCw, Box } from 'lucide-react';
+import { Pencil, Trash2, Plus, X, Upload, RotateCw, Box } from 'lucide-react'; // Changed Cube3d to Box
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from '@/components/ui/progress';

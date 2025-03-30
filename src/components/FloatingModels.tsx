@@ -25,11 +25,13 @@ export interface FloatingModel {
 interface FloatingModelsProps {
   models: FloatingModel[];
   rotateOnScroll?: boolean;
+  singleModelMode?: boolean; // New prop to enable single model mode
 }
 
 const FloatingModels: React.FC<FloatingModelsProps> = ({ 
   models = [], 
-  rotateOnScroll = true
+  rotateOnScroll = true,
+  singleModelMode = false
 }) => {
   const isMobile = useIsMobile();
   const [scrollY, setScrollY] = useState(0);
@@ -69,63 +71,27 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
       return newSet;
     });
   };
+
+  // For single model mode, we only show the first model
+  const displayModels = singleModelMode && models.length > 0 ? [models[0]] : models;
   
-  // Default models if none provided - ensuring different angles
-  const defaultModels: FloatingModel[] = [
-    {
-      id: 'model1',
-      url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-      position: {
-        top: isMobile ? '25%' : '30%',
-        left: isMobile ? '5%' : '15%',
-      },
-      scale: isMobile ? '0.4 0.4 0.4' : '0.7 0.7 0.7',
-      rotationAxis: 'y',
-      initialRotation: '45deg',
-      zIndex: 3,
-      angleX: '10deg',
-      angleY: '45deg',
-      angleZ: '0deg'
-    },
-    {
-      id: 'model2',
-      url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-      position: {
-        top: isMobile ? '15%' : '20%',
-        right: isMobile ? '5%' : '15%',
-      },
-      scale: isMobile ? '0.3 0.3 0.3' : '0.6 0.6 0.6',
-      rotationAxis: 'y',
-      initialRotation: '180deg',
-      zIndex: 2,
-      angleX: '0deg',
-      angleY: '-45deg',
-      angleZ: '0deg'
-    },
-    {
-      id: 'model3',
-      url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
-      position: {
-        bottom: isMobile ? '15%' : '20%',
-        left: isMobile ? '30%' : '40%',
-      },
-      scale: isMobile ? '0.35 0.35 0.35' : '0.65 0.65 0.65',
-      rotationAxis: 'x',
-      initialRotation: '30deg',
-      zIndex: 1,
-      angleX: '30deg',
-      angleY: '0deg',
-      angleZ: '0deg'
-    }
-  ];
-  
-  const displayModels = models.length > 0 ? models : defaultModels;
+  // Single model position for homepage
+  const getSingleModelProps = () => {
+    return {
+      position: 'absolute',
+      right: isMobile ? '0' : '0',
+      top: isMobile ? '20%' : '10%',
+      height: isMobile ? '70%' : '80%',
+      width: isMobile ? '100%' : '50%',
+      zIndex: 0
+    };
+  };
 
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div className={`absolute inset-0 ${singleModelMode ? 'pointer-events-none' : ''} overflow-hidden`}>
       {isLoading && displayModels.length > 0 && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-50">
-          <div className="text-white mb-4">Loading 3D Models...</div>
+          <div className="text-white mb-4">Loading 3D Model...</div>
           <Progress 
             value={Math.round((loadedModels.size / displayModels.length) * 100)} 
             className="w-64 h-2"
@@ -138,12 +104,12 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
           key={model.id}
           modelUrl={model.url}
           position="absolute"
-          top={model.position.top}
-          left={model.position.left}
-          right={model.position.right}
-          bottom={model.position.bottom}
+          top={singleModelMode ? undefined : model.position.top}
+          left={singleModelMode ? undefined : model.position.left}
+          right={singleModelMode ? getSingleModelProps().right : model.position.right}
+          bottom={singleModelMode ? undefined : model.position.bottom}
           scale={model.scale}
-          zIndex={model.zIndex}
+          zIndex={singleModelMode ? getSingleModelProps().zIndex : model.zIndex}
           rotationAxis={model.rotationAxis}
           initialRotation={model.initialRotation}
           rotateOnScroll={rotateOnScroll}
@@ -151,9 +117,9 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
           autoRotate={false}
           cameraControls={false}
           backgroundAlpha={0}
-          rotationMultiplier={0.01} // Reduced for smoother rotation
-          height={isMobile ? "60%" : "70%"}
-          width={isMobile ? "60%" : "50%"}
+          rotationMultiplier={0.005} // Reduced for smoother rotation
+          height={singleModelMode ? getSingleModelProps().height : (isMobile ? "60%" : "70%")}
+          width={singleModelMode ? getSingleModelProps().width : (isMobile ? "60%" : "50%")}
           angleX={model.angleX}
           angleY={model.angleY}
           angleZ={model.angleZ}

@@ -48,18 +48,17 @@ const Index = () => {
           .from('models')
           .select('*')
           .eq('is_featured', true)
-          .limit(3);
+          .limit(1);
         
         if (error) throw error;
         
         if (data && data.length > 0) {
-          const floatingModelData = data.map((model, index) => {
+          const floatingModelData = data.map((model) => {
             let positionData: PositionData = {};
             
             try {
               if (model.position && typeof model.position === 'string') {
                 if (model.position === 'homepage') {
-                  // Default position for homepage
                   positionData = {};
                 } else {
                   positionData = JSON.parse(model.position) as PositionData;
@@ -69,10 +68,8 @@ const Index = () => {
               console.error('Failed to parse position data:', e);
             }
             
-            // Use consistent position data for each index if not specified in the model
-            const defaultPositions = getPositionForIndex(index);
+            const scale = positionData?.scale || (isMobile ? "0.8 0.8 0.8" : "1 1 1");
             
-            // Determine rotation axis, defaulting to 'y' if invalid
             let rotationAxis: 'x' | 'y' | 'z' = 'y';
             if (positionData?.rotationAxis) {
               if (['x', 'y', 'z'].includes(positionData.rotationAxis)) {
@@ -80,37 +77,27 @@ const Index = () => {
               }
             }
 
-            // Each model gets a unique rotation angle for variety if not specified
-            const angleVariations = [
-              { x: "10deg", y: "45deg", z: "0deg" },
-              { x: "0deg", y: "-45deg", z: "0deg" },
-              { x: "30deg", y: "0deg", z: "0deg" }
-            ];
-            
-            const angle = angleVariations[index % angleVariations.length];
-
             return {
-              id: model.id || `model-${index}`,
+              id: model.id || `model-homepage`,
               url: model.model_url,
               position: {
-                top: positionData?.top || defaultPositions.top,
-                left: positionData?.left || defaultPositions.left,
-                right: positionData?.right || defaultPositions.right,
-                bottom: positionData?.bottom || defaultPositions.bottom,
+                top: positionData?.top || undefined,
+                left: positionData?.left || undefined,
+                right: positionData?.right || undefined,
+                bottom: positionData?.bottom || undefined,
               },
-              scale: positionData?.scale || (isMobile ? "0.45 0.45 0.45" : "0.65 0.65 0.65"),
+              scale: scale,
               rotationAxis,
-              initialRotation: positionData?.rotation || `${index * 45}deg`,
-              zIndex: positionData?.zIndex || (3 - index),
-              angleX: positionData?.angleX || angle.x,
-              angleY: positionData?.angleY || angle.y,
-              angleZ: positionData?.angleZ || angle.z
+              initialRotation: positionData?.rotation || "0deg",
+              zIndex: positionData?.zIndex || 0,
+              angleX: positionData?.angleX || "0deg",
+              angleY: positionData?.angleY || "0deg",
+              angleZ: positionData?.angleZ || "0deg"
             };
           });
           
           setFloatingModels(floatingModelData);
         } else {
-          // If no models, use defaults
           setFloatingModels([]);
         }
       } catch (error) {
@@ -161,34 +148,9 @@ const Index = () => {
     fetchFeaturedProducts();
   }, [isMobile]);
 
-  // Define consistent positions for models based on index
-  const getPositionForIndex = (index: number) => {
-    const positions = [
-      { // First model - left side
-        top: isMobile ? '25%' : '30%', 
-        left: isMobile ? '5%' : '15%',
-        right: undefined,
-        bottom: undefined
-      },
-      { // Second model - right side
-        top: isMobile ? '15%' : '20%', 
-        right: isMobile ? '5%' : '15%',
-        left: undefined,
-        bottom: undefined  
-      },
-      { // Third model - bottom center
-        bottom: isMobile ? '15%' : '20%', 
-        left: isMobile ? '30%' : '40%',
-        top: undefined,
-        right: undefined
-      }
-    ];
-    return positions[index % positions.length];
-  };
-
   return (
     <div className="relative">
-      <section className="relative py-8 md:py-20 min-h-[85vh] overflow-hidden flex items-center justify-center">
+      <section className="relative py-8 md:py-20 min-h-[85vh] overflow-hidden flex items-center">
         <div className="absolute inset-0 w-full z-0">
           {loading ? (
             <div className="w-full h-full flex items-center justify-center">
@@ -198,25 +160,26 @@ const Index = () => {
             <FloatingModels 
               models={floatingModels} 
               rotateOnScroll={true}
+              singleModelMode={true}
             />
           )}
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex justify-center items-center min-h-[60vh] md:min-h-0">
+          <div className="flex justify-start items-center min-h-[60vh] md:min-h-0">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="flex flex-col justify-center items-center text-center"
+              className="flex flex-col justify-center items-start text-left max-w-md"
             >
-              <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 shadow-lg w-full max-w-lg mx-auto">
+              <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 shadow-lg w-full">
                 <Badge className="mb-4 bg-ideazzz-purple px-4 py-1 text-white">Premium Craftsmanship</Badge>
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-white">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
                 <p className="text-base md:text-xl text-gray-200 mb-6 md:mb-8">
                   Experience the artistry of sculpting and 3D printing that transforms your concepts into tangible masterpieces.
                 </p>
-                <div className="flex flex-wrap justify-center gap-4">
+                <div className="flex flex-wrap gap-4">
                   <Link to="/shop">
                     <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">Explore Shop</Button>
                   </Link>

@@ -11,15 +11,43 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import ModelManager from '@/components/ModelManager';
 
+// Add admin credentials to the database on component mount
+const addAdminUserIfNotExists = async () => {
+  try {
+    // Check if admin user exists
+    const { data: existingAdmin } = await supabase
+      .from('admin_users')
+      .select('*')
+      .eq('email', 'ayushkava1@gmail.com')
+      .maybeSingle();
+    
+    // If admin doesn't exist, create it
+    if (!existingAdmin) {
+      await supabase.from('admin_users').insert({
+        email: 'ayushkava1@gmail.com',
+        password: '88888888',
+        created_at: new Date().toISOString()
+      });
+      console.info('Admin user created successfully');
+    }
+  } catch (error) {
+    console.error('Error checking/creating admin user:', error);
+  }
+};
+
 const Admin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [bookings, setBookings] = useState([]);
-  const [activeTab, setActiveTab] = useState('bookings');
+  const [activeTab, setActiveTab] = useState('models'); // Changed default tab to models
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Add admin user on mount
+    addAdminUserIfNotExists();
+    
+    // Check if user is already logged in
     checkAdminSession();
   }, []);
 
@@ -185,7 +213,7 @@ const Admin = () => {
                   type="email" 
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
+                  placeholder="ayushkava1@gmail.com"
                   required
                 />
               </div>
@@ -201,6 +229,11 @@ const Admin = () => {
               </div>
               <Button type="submit" className="w-full">Log In</Button>
             </form>
+            <div className="mt-4 text-sm text-center text-muted-foreground">
+              <p>Demo credentials:</p>
+              <p>Email: ayushkava1@gmail.com</p>
+              <p>Password: 88888888</p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -216,11 +249,15 @@ const Admin = () => {
       
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-4">
-          <TabsTrigger value="bookings">Bookings</TabsTrigger>
           <TabsTrigger value="models">3D Models</TabsTrigger>
+          <TabsTrigger value="bookings">Bookings</TabsTrigger>
           <TabsTrigger value="shop">Shop</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="models">
+          <ModelManager />
+        </TabsContent>
         
         <TabsContent value="bookings" className="space-y-4">
           <h2 className="text-2xl font-bold">Customer Bookings</h2>

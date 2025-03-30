@@ -3,112 +3,19 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
-import FloatingModels from '@/components/FloatingModels';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { ShoppingBag } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
-import type { FloatingModel } from '@/components/FloatingModels';
-
-interface PositionData {
-  top?: string;
-  left?: string;
-  right?: string;
-  bottom?: string;
-  scale?: string;
-  rotation?: string;
-  zIndex?: number;
-  angleX?: string;
-  angleY?: string;
-  angleZ?: string;
-  rotationAxis?: 'x' | 'y' | 'z';
-}
-
-interface Model {
-  id: string;
-  name: string;
-  description: string;
-  model_url: string;
-  is_featured: boolean;
-  position?: string;
-}
+import SplineModel from '@/components/SplineModel';
 
 const Index = () => {
-  const [floatingModels, setFloatingModels] = useState<FloatingModel[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    async function fetchFeaturedModels() {
-      try {
-        const { data, error } = await supabase
-          .from('models')
-          .select('*')
-          .eq('is_featured', true)
-          .limit(1);
-        
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
-          const floatingModelData = data.map((model) => {
-            let positionData: PositionData = {};
-            
-            try {
-              if (model.position && typeof model.position === 'string') {
-                if (model.position === 'homepage') {
-                  positionData = {};
-                } else {
-                  positionData = JSON.parse(model.position) as PositionData;
-                }
-              }
-            } catch (e) {
-              console.error('Failed to parse position data:', e);
-            }
-            
-            const scale = positionData?.scale || (isMobile ? "0.8 0.8 0.8" : "1 1 1");
-            
-            let rotationAxis: 'x' | 'y' | 'z' = 'y';
-            if (positionData?.rotationAxis) {
-              if (['x', 'y', 'z'].includes(positionData.rotationAxis)) {
-                rotationAxis = positionData.rotationAxis as 'x' | 'y' | 'z';
-              }
-            }
-
-            return {
-              id: model.id || `model-homepage`,
-              url: model.model_url,
-              position: {
-                top: positionData?.top || undefined,
-                left: positionData?.left || undefined,
-                right: positionData?.right || undefined,
-                bottom: positionData?.bottom || undefined,
-              },
-              scale: scale,
-              rotationAxis,
-              initialRotation: positionData?.rotation || "0deg",
-              zIndex: positionData?.zIndex || 0,
-              angleX: positionData?.angleX || "0deg",
-              angleY: positionData?.angleY || "0deg",
-              angleZ: positionData?.angleZ || "0deg"
-            };
-          });
-          
-          setFloatingModels(floatingModelData);
-        } else {
-          setFloatingModels([]);
-        }
-      } catch (error) {
-        console.error('Error fetching models:', error);
-        toast.error('Failed to load 3D models');
-        setFloatingModels([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
     async function fetchFeaturedProducts() {
       try {
         setFeaturedProducts([
@@ -144,25 +51,17 @@ const Index = () => {
       }
     }
     
-    fetchFeaturedModels();
     fetchFeaturedProducts();
   }, [isMobile]);
 
   return (
     <div className="relative">
       <section className="relative py-8 md:py-20 min-h-[85vh] overflow-hidden flex items-center">
-        <div className="absolute inset-0 w-full z-0">
-          {loading ? (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ideazzz-purple"></div>
-            </div>
-          ) : (
-            <FloatingModels 
-              models={floatingModels} 
-              rotateOnScroll={true}
-              singleModelMode={true}
-            />
-          )}
+        <div className="absolute inset-0 w-full h-full z-0">
+          <SplineModel 
+            scene="https://prod.spline.design/1Z5wJoU64uMhnoR8/scene.splinecode"
+            className="w-full h-full"
+          />
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -171,7 +70,7 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="flex flex-col justify-center items-start text-left max-w-md"
+              className="flex flex-col justify-center items-start text-left max-w-md ml-0"
             >
               <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 shadow-lg w-full">
                 <Badge className="mb-4 bg-ideazzz-purple px-4 py-1 text-white">Premium Craftsmanship</Badge>

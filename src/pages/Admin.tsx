@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +28,13 @@ const addAdminUserIfNotExists = async () => {
         created_at: new Date().toISOString()
       });
       console.info('Admin user created successfully');
+    } else {
+      // Update password if user exists but password might be wrong
+      await supabase
+        .from('admin_users')
+        .update({ password: '88888888' })
+        .eq('email', 'ayushkava1@gmail.com');
+      console.info('Admin user password updated');
     }
   } catch (error) {
     console.error('Error checking/creating admin user:', error);
@@ -86,14 +92,17 @@ const Admin = () => {
     e.preventDefault();
     
     try {
+      console.info('Admin login attempt with:', email, password);
+      
       const { data, error } = await supabase
         .from('admin_users')
         .select('*')
         .eq('email', email)
         .eq('password', password)
-        .single();
+        .maybeSingle();
       
       if (error) {
+        console.error('Login error:', error);
         toast.error('Invalid credentials');
         return;
       }
@@ -103,6 +112,7 @@ const Admin = () => {
         setIsLoggedIn(true);
         toast.success('Admin login successful');
       } else {
+        console.error('Invalid credentials, no matching admin found');
         toast.error('Invalid credentials');
       }
     } catch (error) {

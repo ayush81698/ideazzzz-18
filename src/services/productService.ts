@@ -11,6 +11,7 @@ export interface Product {
   discount?: string;
   category?: string;
   stock?: number;
+  featured?: boolean;  // Changed from discount? to featured?
   created_at?: string;
 }
 

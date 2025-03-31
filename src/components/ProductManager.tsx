@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { 
   Card, 
@@ -54,7 +53,7 @@ const ProductManager = () => {
   const loadProducts = async () => {
     setLoading(true);
     const data = await fetchProducts();
-    setProducts(data);
+    setProducts(data as Product[]);
     setLoading(false);
   };
 
@@ -120,14 +119,14 @@ const ProductManager = () => {
         const updated = await updateProduct(editingProduct.id, formData);
         if (updated) {
           setProducts(prev => 
-            prev.map(product => product.id === editingProduct.id ? updated : product)
+            prev.map(product => product.id === editingProduct.id ? updated as Product : product)
           );
         }
       } else {
         // Add new product
         const newProduct = await addProduct(formData);
         if (newProduct) {
-          setProducts(prev => [newProduct, ...prev]);
+          setProducts(prev => [newProduct as Product, ...prev]);
         }
       }
       

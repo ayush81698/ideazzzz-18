@@ -92,3 +92,24 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
     return false;
   }
 };
+
+// Add a function to fetch a single product by ID
+export const fetchProductById = async (id: string): Promise<Product | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single();
+      
+    if (error) {
+      console.error('Error fetching product by ID:', error);
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error in fetchProductById service:', error);
+    return null;
+  }
+};

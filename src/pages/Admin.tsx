@@ -8,7 +8,7 @@ import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import ModelManager from '@/components/ModelManager';
 import ProductManager from '@/components/ProductManager';
-import { addProduct } from '@/services/productService';
+import { addProduct, fetchProducts } from '@/services/productService';
 import { toast } from 'sonner';
 
 // Sample products for seeding the database
@@ -99,17 +99,13 @@ const Admin = () => {
 
   const checkProducts = async () => {
     try {
-      const { data, error, count } = await supabase
-        .from('products')
-        .select('*', { count: 'exact' });
+      const products = await fetchProducts();
       
-      if (error) {
-        console.error('Error checking products:', error);
-        return;
-      }
-      
-      if (count === 0) {
+      if (!products || products.length === 0) {
         setNeedsProductSeeding(true);
+      } else {
+        console.log("Products found:", products.length);
+        setNeedsProductSeeding(false);
       }
     } catch (error) {
       console.error('Error checking products:', error);

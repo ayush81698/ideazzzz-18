@@ -1,234 +1,113 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Card, CardContent
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle, Camera, Cpu, Printer } from 'lucide-react';
 
 const About = () => {
-  const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
-
   return (
-    <div className="py-10">
+    <div className="py-12 bg-black text-white">
       <div className="container mx-auto px-4">
-        {/* Hero Section */}
-        <motion.div 
-          initial="hidden"
-          animate="visible"
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          variants={fadeInUp}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
-          <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple border-none text-sm py-1 px-3">
-            About Ideazzz
-          </Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Bringing Your Personality Into The Third Dimension
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            We're a team of artists, engineers, and innovators passionate about creating personalized 3D models that capture the essence of individuals and bring them to life.
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">About ADeazzz</h1>
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            Creating personalized 3D figurines from your photos with AI precision
           </p>
         </motion.div>
-        
-        {/* Our Story Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-24">
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.5, delay: 0.1 }}
-            variants={fadeInUp}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-16">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Badge className="mb-4 bg-ideazzz-pink/10 text-ideazzz-pink border-none text-sm py-1 px-3">
-              Our Story
-            </Badge>
-            <h2 className="text-3xl font-bold mb-6">From Idea to Ideazzz</h2>
-            <div className="space-y-4 text-lg">
-              <p>
-                Founded in 2018, Ideazzz began when our founder Ayush Kumar, a 3D artist, realized that the technology to create personalized 3D models was becoming more accessible but remained out of reach for most people.
-              </p>
-              <p>
-                After assembling a team of like-minded artists and engineers, we built our first scanning studio in Mumbai with just 10 cameras. Today, we operate state-of-the-art studios with 30 DSLR cameras for ultra-high-resolution scanning.
-              </p>
-              <p>
-                Our mission is to democratize personalized 3D modeling by making it accessible, affordable, and incredibly detailed. We've served over 500 customers and continue to push the boundaries of what's possible in personalized 3D art.
-              </p>
-            </div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6">Our Story</h2>
+            <p className="text-gray-400 mb-4">
+              ADeazzz was born from a simple idea: to transform ordinary photos into extraordinary 3D models. Our founder, a passionate 3D artist, noticed how difficult it was for people to get custom figurines made without spending a fortune.
+            </p>
+            <p className="text-gray-400 mb-4">
+              In 2023, we developed a proprietary AI-powered 3D modeling system that can accurately recreate human features from just a few photos. This technology has allowed us to democratize custom 3D figurines, making them accessible to everyone.
+            </p>
+            <p className="text-gray-400">
+              Today, we're proud to serve customers across India, delivering handcrafted, personalized 3D figurines for all occasions - from wedding cake toppers to superhero action figures of your children.
+            </p>
           </motion.div>
           
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.5, delay: 0.2 }}
-            variants={fadeInUp}
-            className="relative"
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="relative h-[400px] rounded-lg overflow-hidden"
           >
-            <div className="aspect-video bg-gradient-to-r from-ideazzz-purple/10 to-ideazzz-pink/10 rounded-xl overflow-hidden">
-              <img 
-                src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1000&q=80" 
-                alt="Our journey" 
-                className="w-full h-full object-cover mix-blend-overlay"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-ideazzz-purple/30 to-ideazzz-pink/30 rounded-xl"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-white text-center px-6">
-                  <h3 className="text-2xl md:text-3xl font-bold mb-2">Our Journey</h3>
-                  <p className="text-lg">From 10 cameras to 30, from concept to reality</p>
-                </div>
-              </div>
-            </div>
+            <img 
+              src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800&q=80" 
+              alt="3D printing workshop" 
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
           </motion.div>
         </div>
         
-        {/* Our Process Section */}
-        <motion.div 
-          initial="hidden"
-          animate="visible"
-          transition={{ duration: 0.5, delay: 0.3 }}
-          variants={fadeInUp}
-          className="mb-24"
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="max-w-4xl mx-auto text-center mb-16"
         >
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple border-none text-sm py-1 px-3">
-              Our Process
-            </Badge>
-            <h2 className="text-3xl font-bold mb-6">How We Create Your 3D Model</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our meticulous process ensures every detail is captured and rendered perfectly
+          <h2 className="text-2xl md:text-3xl font-bold mb-6">Our Mission</h2>
+          <p className="text-lg text-gray-400">
+            We believe everyone deserves to see themselves represented in 3D art. Our mission is to make custom 3D figurines accessible, affordable, and of the highest quality, while pushing the boundaries of what's possible with AI-assisted 3D modeling.
+          </p>
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
+        >
+          <div className="bg-gray-900 rounded-lg p-6">
+            <h3 className="text-xl font-bold mb-4">High Quality Materials</h3>
+            <p className="text-gray-400">
+              We use premium PLA and resin to ensure your figurines are durable, detailed, and environmentally friendly.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="border-none shadow-lg overflow-hidden">
-              <div className="h-2 bg-ideazzz-purple"></div>
-              <CardContent className="p-6">
-                <div className="mb-4 h-12 w-12 rounded-full bg-ideazzz-purple/10 flex items-center justify-center">
-                  <Camera className="h-6 w-6 text-ideazzz-purple" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">1. High-Resolution Scanning</h3>
-                <p className="text-muted-foreground">
-                  We use 30 synchronized DSLR cameras to capture you from every angle simultaneously. This provides us with extremely detailed reference images for creating your 3D model.
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-none shadow-lg overflow-hidden">
-              <div className="h-2 bg-ideazzz-pink"></div>
-              <CardContent className="p-6">
-                <div className="mb-4 h-12 w-12 rounded-full bg-ideazzz-pink/10 flex items-center justify-center">
-                  <Cpu className="h-6 w-6 text-ideazzz-pink" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">2. Digital Artistry</h3>
-                <p className="text-muted-foreground">
-                  Our skilled 3D artists use Blender to transform your scan data into a detailed 3D model. We meticulously refine every detail to ensure a perfect likeness.
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-none shadow-lg overflow-hidden">
-              <div className="h-2 bg-ideazzz-purple"></div>
-              <CardContent className="p-6">
-                <div className="mb-4 h-12 w-12 rounded-full bg-ideazzz-purple/10 flex items-center justify-center">
-                  <Printer className="h-6 w-6 text-ideazzz-purple" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">3. Precision 3D Printing</h3>
-                <p className="text-muted-foreground">
-                  Using industrial-grade 3D printers, we bring your digital model into the physical world with incredible detail and durability, followed by expert finishing touches.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </motion.div>
-        
-        {/* Why Choose Us Section */}
-        <motion.div 
-          initial="hidden"
-          animate="visible"
-          transition={{ duration: 0.5, delay: 0.5 }}
-          variants={fadeInUp}
-          className="mb-24"
-        >
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-ideazzz-purple/10 text-ideazzz-purple border-none text-sm py-1 px-3">
-              Why Choose Us
-            </Badge>
-            <h2 className="text-3xl font-bold mb-6">The Ideazzz Advantage</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              What sets us apart from other 3D modeling services
+          <div className="bg-gray-900 rounded-lg p-6">
+            <h3 className="text-xl font-bold mb-4">AI-Powered Modeling</h3>
+            <p className="text-gray-400">
+              Our proprietary AI technology creates accurate 3D models from regular photos with remarkable detail.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {[
-              {
-                title: "Unmatched Resolution",
-                description: "Our 30-camera setup captures details that others miss, from the smallest facial features to clothing textures."
-              },
-              {
-                title: "Artistic Expertise",
-                description: "Our team includes veteran 3D artists who go beyond automation to add the human touch that makes each model special."
-              },
-              {
-                title: "Premium Materials",
-                description: "We use only the highest quality printing materials for durability, detail retention, and beautiful finish."
-              },
-              {
-                title: "Personalized Experience",
-                description: "From your initial consultation to delivery, we provide a premium, personalized experience tailored to your needs."
-              },
-              {
-                title: "Quick Turnaround",
-                description: "Despite our meticulous attention to detail, we deliver most orders within 2-3 weeks."
-              },
-              {
-                title: "Satisfaction Guarantee",
-                description: "We're not happy until you're happy. We'll work with you until your model meets your expectations."
-              }
-            ].map((advantage, index) => (
-              <Card key={index} className="border-none shadow-md">
-                <CardContent className="p-6">
-                  <div className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-ideazzz-pink mr-3 mt-1" />
-                    <div>
-                      <h3 className="text-lg font-bold mb-2">{advantage.title}</h3>
-                      <p className="text-muted-foreground">{advantage.description}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="bg-gray-900 rounded-lg p-6">
+            <h3 className="text-xl font-bold mb-4">Handcrafted Finishing</h3>
+            <p className="text-gray-400">
+              Each figurine is hand-painted by skilled artists who bring the models to life with incredible attention to detail.
+            </p>
           </div>
         </motion.div>
         
-        {/* CTA Section */}
-        <motion.div 
-          initial="hidden"
-          animate="visible"
-          transition={{ duration: 0.5, delay: 0.6 }}
-          variants={fadeInUp}
-          className="bg-gradient-to-r from-ideazzz-purple to-ideazzz-pink rounded-2xl p-8 md:p-12 text-white text-center"
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.0 }}
+          className="text-center"
         >
-          <h2 className="text-3xl font-bold mb-4">Ready to Create Your 3D Model?</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Book your scanning session today and join hundreds of satisfied customers who have experienced the Ideazzz difference.
+          <h2 className="text-2xl md:text-3xl font-bold mb-8">Get In Touch</h2>
+          <p className="text-lg text-gray-400 mb-8 max-w-2xl mx-auto">
+            Have questions about our process or want to discuss a custom order? We'd love to hear from you!
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/booking">
-              <Button size="lg" className="bg-white text-ideazzz-purple hover:bg-gray-100">
-                Book a Scanning Session <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/shop">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                Browse Our Collection
-              </Button>
-            </Link>
+            <a href="mailto:hello@adeazzz.com" className="bg-ideazzz-purple hover:bg-ideazzz-purple/80 text-white px-8 py-3 rounded-lg font-medium">
+              Email Us
+            </a>
+            <a href="/booking" className="bg-transparent border border-ideazzz-purple text-ideazzz-purple hover:bg-ideazzz-purple/10 px-8 py-3 rounded-lg font-medium">
+              Book a Consultation
+            </a>
           </div>
         </motion.div>
       </div>

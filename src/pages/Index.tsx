@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -14,37 +13,55 @@ import SplineModel from '@/components/SplineModel';
 const Index = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setIsModelLoaded(true), 2000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
     async function fetchFeaturedProducts() {
       try {
-        setFeaturedProducts([
-          {
-            id: 1,
-            name: 'Custom Portrait Sculpture',
-            description: 'Personalized 3D printed portrait',
-            price: 2999,
-            imageUrl: 'https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b',
-            discount: '20% OFF'
-          },
-          {
-            id: 2,
-            name: 'Pet Figurine',
-            description: 'Turn your pet into a 3D model',
-            price: 1999,
-            imageUrl: 'https://images.unsplash.com/photo-1487887235947-a955ef187fcc',
-            discount: 'Limited Time'
-          },
-          {
-            id: 3,
-            name: '3D Family Photo Frame',
-            description: 'Create a 3D scene from your family photo',
-            price: 3499,
-            imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
-            discount: 'New Arrival'
-          }
-        ]);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('featured', true)
+          .limit(3);
+          
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          setFeaturedProducts(data);
+        } else {
+          setFeaturedProducts([
+            {
+              id: 1,
+              name: 'Custom Portrait Sculpture',
+              description: 'Personalized 3D printed portrait',
+              price: 2999,
+              imageurl: 'https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b',
+              discount: '20% OFF'
+            },
+            {
+              id: 2,
+              name: 'Pet Figurine',
+              description: 'Turn your pet into a 3D model',
+              price: 1999,
+              imageurl: 'https://images.unsplash.com/photo-1487887235947-a955ef187fcc',
+              discount: 'Limited Time'
+            },
+            {
+              id: 3,
+              name: '3D Family Photo Frame',
+              description: 'Create a 3D scene from your family photo',
+              price: 3499,
+              imageurl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e',
+              discount: 'New Arrival'
+            }
+          ]);
+        }
         setLoadingProducts(false);
       } catch (error) {
         console.error('Error in featured products fetch:', error);
@@ -57,12 +74,21 @@ const Index = () => {
 
   return (
     <div className="relative">
-      <section className="relative py-8 md:py-20 min-h-[85vh] overflow-hidden flex items-center">
-        <div className="absolute inset-0 w-full h-full z-0">
-          <SplineModel 
-            scene="https://prod.spline.design/1Z5wJoU64uMhnoR8/scene.splinecode"
-            className="w-full h-full"
-          />
+      <style jsx>{`
+        .spline-container canvas {
+          image-rendering: pixelated;
+        }
+      `}</style>
+      
+      <section className="relative py-4 md:py-16 min-h-[85vh] overflow-hidden flex items-center">
+        <div className="absolute inset-0 w-full h-full z-0 spline-container">
+          {isModelLoaded && (
+            <SplineModel 
+              scene="https://prod.spline.design/1Z5wJoU64uMhnoR8/scene.splinecode"
+              className="w-full h-full"
+              performance={isMobile}
+            />
+          )}
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -71,12 +97,12 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="flex flex-col justify-center items-center text-center w-full mt-8"
+              className="flex flex-col justify-center items-center text-center w-full mt-2 md:mt-4"
             >
-              <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 shadow-lg max-w-2xl">
-               <h1 className="text-xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6 text-white">
-  Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span>
-</h1>
+              <div className="backdrop-blur-sm bg-black/30 p-4 rounded-lg border border-white/10 shadow-lg max-w-xl">
+                <h1 className="text-sm md:text-xl lg:text-2xl font-bold mb-2 md:mb-3 text-white">
+                  Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span>
+                </h1>
               </div>
             </motion.div>
             
@@ -117,7 +143,7 @@ const Index = () => {
                   <Card className="overflow-hidden h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <div className="relative h-36 md:h-48 overflow-hidden">
                       <img 
-                        src={product.imageUrl} 
+                        src={product.imageurl} 
                         alt={product.name}
                         className="w-full h-full object-cover transform transition-transform hover:scale-110" 
                       />

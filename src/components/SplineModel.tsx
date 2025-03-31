@@ -6,9 +6,10 @@ import { Progress } from '@/components/ui/progress';
 interface SplineModelProps {
   scene: string;
   className?: string;
+  performance?: boolean; // Added performance prop
 }
 
-const SplineModel: React.FC<SplineModelProps> = ({ scene, className }) => {
+const SplineModel: React.FC<SplineModelProps> = ({ scene, className, performance = false }) => {
   const [loading, setLoading] = useState(true);
 
   const handleLoad = () => {
@@ -27,6 +28,7 @@ const SplineModel: React.FC<SplineModelProps> = ({ scene, className }) => {
         scene={scene} 
         onLoad={handleLoad} 
         style={{ width: '100%', height: '100%' }}
+        {...(performance ? { performance: 'economy' } : {})}
       />
     </div>
   );

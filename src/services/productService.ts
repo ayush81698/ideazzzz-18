@@ -1,22 +1,20 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 export interface Product {
   id: string;
   name: string;
   description: string;
   price: number;
-  imageurl: string; // Changed from imageUrl to match database column
-  discount?: string;
+  imageurl: string; // Changed from imageUrl to imageurl to match DB column
   category?: string;
   stock?: number;
+  discount?: string;
   featured?: boolean;
   created_at?: string;
 }
 
-// Fetch all products
-export const fetchProducts = async () => {
+export const fetchProducts = async (): Promise<Product[]> => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -24,62 +22,59 @@ export const fetchProducts = async () => {
       .order('created_at', { ascending: false });
       
     if (error) {
+      console.error('Error fetching products:', error);
       throw error;
     }
     
     return data || [];
   } catch (error) {
-    console.error('Error fetching products:', error);
-    toast.error('Failed to load products');
+    console.error('Error in fetchProducts service:', error);
     return [];
   }
 };
 
-// Add a new product
-export const addProduct = async (product: Omit<Product, 'id'>) => {
+export const addProduct = async (product: Omit<Product, 'id'>): Promise<Product | null> => {
   try {
     const { data, error } = await supabase
       .from('products')
       .insert([product])
-      .select();
+      .select()
+      .single();
       
     if (error) {
+      console.error('Error adding product:', error);
       throw error;
     }
     
-    toast.success('Product added successfully');
-    return data?.[0];
+    return data;
   } catch (error) {
-    console.error('Error adding product:', error);
-    toast.error('Failed to add product');
+    console.error('Error in addProduct service:', error);
     return null;
   }
 };
 
-// Update an existing product
-export const updateProduct = async (id: string, product: Partial<Product>) => {
+export const updateProduct = async (id: string, product: Partial<Product>): Promise<Product | null> => {
   try {
     const { data, error } = await supabase
       .from('products')
       .update(product)
       .eq('id', id)
-      .select();
+      .select()
+      .single();
       
     if (error) {
+      console.error('Error updating product:', error);
       throw error;
     }
     
-    toast.success('Product updated successfully');
-    return data?.[0];
+    return data;
   } catch (error) {
-    console.error('Error updating product:', error);
-    toast.error('Failed to update product');
+    console.error('Error in updateProduct service:', error);
     return null;
   }
 };
 
-// Delete a product
-export const deleteProduct = async (id: string) => {
+export const deleteProduct = async (id: string): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('products')
@@ -87,35 +82,13 @@ export const deleteProduct = async (id: string) => {
       .eq('id', id);
       
     if (error) {
+      console.error('Error deleting product:', error);
       throw error;
     }
     
-    toast.success('Product deleted successfully');
     return true;
   } catch (error) {
-    console.error('Error deleting product:', error);
-    toast.error('Failed to delete product');
+    console.error('Error in deleteProduct service:', error);
     return false;
-  }
-};
-
-// Fetch featured products
-export const fetchFeaturedProducts = async () => {
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('featured', true)
-      .limit(3);
-      
-    if (error) {
-      throw error;
-    }
-    
-    return data || [];
-  } catch (error) {
-    console.error('Error fetching featured products:', error);
-    toast.error('Failed to load featured products');
-    return [];
   }
 };

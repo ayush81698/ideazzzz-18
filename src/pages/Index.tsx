@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -59,33 +60,32 @@ const Index = () => {
       <section className="relative py-8 md:py-20 min-h-[85vh] overflow-hidden flex items-center">
         <div className="absolute inset-0 w-full h-full z-0">
           <SplineModel 
-            scene="https://prod.spline.design/AXqCZid080td1A-X/scene.splinecode"
+            scene="https://prod.spline.design/1Z5wJoU64uMhnoR8/scene.splinecode"
             className="w-full h-full"
           />
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex justify-start items-center min-h-[60vh] md:min-h-0">
+          <div className="flex flex-col justify-between items-center min-h-[70vh]">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="flex flex-col justify-center items-start text-left max-w-md ml-0"
+              className="flex flex-col justify-center items-center text-center w-full mt-8"
             >
-              <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 shadow-lg w-full">
-                <Badge className="mb-4 bg-ideazzz-purple px-4 py-1 text-white">Premium Craftsmanship</Badge>
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-white">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
-               
-                <div className="flex flex-wrap gap-4">
-                  <Link to="/shop">
-                    <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">Explore Shop</Button>
-                  </Link>
-                  <Link to="/booking">
-                    <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-ideazzz-purple">Book a 3D Scan</Button>
-                  </Link>
-                </div>
+              <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 shadow-lg max-w-2xl">
+                <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 text-white">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
               </div>
             </motion.div>
+            
+            <div className="flex flex-wrap gap-4 justify-center mb-10">
+              <Link to="/shop">
+                <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">Explore Shop</Button>
+              </Link>
+              <Link to="/booking">
+                <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-ideazzz-purple">Book a 3D Scan</Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

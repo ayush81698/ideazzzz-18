@@ -1,151 +1,162 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { Model, SupabaseModel } from '@/types/models';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export async function fetchModels() {
+// Fetch all models from the database
+export const fetchModels = async () => {
   try {
     const { data, error } = await supabase
       .from('models')
       .select('*')
       .order('created_at', { ascending: false });
-
-    if (error) throw error;
+      
+    if (error) {
+      throw error;
+    }
     
-    console.info('Models data received:', data);
     return data || [];
   } catch (error) {
     console.error('Error fetching models:', error);
-    throw error;
+    toast.error('Failed to load models');
+    return [];
   }
-}
+};
 
-export async function addModel(modelToInsert: SupabaseModel) {
+// Fetch featured models for the homepage
+export const fetchFeaturedModels = async () => {
   try {
     const { data, error } = await supabase
       .from('models')
-      .insert(modelToInsert)
-      .select();
+      .select('*')
+      .eq('is_featured', true)
+      .limit(1);
+      
+    if (error) {
+      throw error;
+    }
+    
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching featured models:', error);
+    toast.error('Failed to load featured models');
+    return [];
+  }
+};
 
-    if (error) throw error;
-    return data ? data[0] : null;
+// Add a new model to the database
+export const addModel = async (model: SupabaseModel) => {
+  try {
+    const { data, error } = await supabase
+      .from('models')
+      .insert([model])
+      .select();
+      
+    if (error) {
+      throw error;
+    }
+    
+    toast.success('Model added successfully');
+    return data?.[0];
   } catch (error) {
     console.error('Error adding model:', error);
-    throw error;
+    toast.error('Failed to add model');
+    return null;
   }
-}
+};
 
-export async function updateModel(id: string, modelToUpdate: Partial<Model>) {
+// Update an existing model
+export const updateModel = async (id: string, model: Partial<SupabaseModel>) => {
   try {
-    const { position_data, ...modelToSend } = modelToUpdate as any;
-
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('models')
-      .update(modelToSend)
-      .eq('id', id);
-
-    if (error) throw error;
-    return true;
+      .update(model)
+      .eq('id', id)
+      .select();
+      
+    if (error) {
+      throw error;
+    }
+    
+    toast.success('Model updated successfully');
+    return data?.[0];
   } catch (error) {
     console.error('Error updating model:', error);
-    throw error;
+    toast.error('Failed to update model');
+    return null;
   }
-}
+};
 
-export async function deleteModel(id: string) {
+// Delete a model
+export const deleteModel = async (id: string) => {
   try {
     const { error } = await supabase
       .from('models')
       .delete()
       .eq('id', id);
-
-    if (error) throw error;
+      
+    if (error) {
+      throw error;
+    }
+    
+    toast.success('Model deleted successfully');
     return true;
   } catch (error) {
     console.error('Error deleting model:', error);
-    throw error;
+    toast.error('Failed to delete model');
+    return false;
   }
-}
+};
 
-export async function updateModelFeatureStatus(model: Model) {
+// Toggle the featured status of a model
+export const toggleFeaturedStatus = async (id: string, isFeatured: boolean) => {
   try {
-    const { error } = await supabase
-      .from('models')
-      .update({ is_featured: model.is_featured })
-      .eq('id', model.id);
-
-    if (error) throw error;
-    return true;
-  } catch (error) {
-    console.error('Error updating model feature status:', error);
-    throw error;
-  }
-}
-
-export async function uploadModelFile(file: File, onProgressUpdate: (progress: number) => void) {
-  if (!file) {
-    toast.error('Please select a file to upload');
-    return null;
-  }
-
-  try {
-    onProgressUpdate(0);
-    toast.info('Uploading model file, please wait...');
-
-    // Create storage bucket if it doesn't exist
-    const { data: buckets } = await supabase.storage.listBuckets();
-    const modelsBucketExists = buckets?.some(bucket => bucket.name === 'models');
+    // First, if we're setting a model to featured, un-feature any currently featured models
+    if (isFeatured) {
+      await supabase
+        .from('models')
+        .update({ is_featured: false })
+        .eq('is_featured', true);
+    }
     
-    if (!modelsBucketExists) {
-      const { error } = await supabase.storage.createBucket('models', {
-        public: true
-      });
+    // Then update the selected model
+    const { data, error } = await supabase
+      .from('models')
+      .update({ is_featured: isFeatured })
+      .eq('id', id)
+      .select();
       
-      if (error) {
-        throw new Error(`Failed to create storage bucket: ${error.message}`);
-      }
-    }
-
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-    const filePath = `${fileName}`;
-
-    // Simulate progress animation
-    const progressInterval = setInterval(() => {
-      onProgressUpdate(prev => {
-        // Simulate progress from 0 to 95%
-        if (prev < 95) {
-          return prev + 5;
-        }
-        return prev;
-      });
-    }, 200);
-
-    // Upload the file
-    const { error: uploadError } = await supabase.storage
-      .from('models')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
-
-    if (uploadError) {
-      throw uploadError;
+    if (error) {
+      throw error;
     }
     
-    // Complete the progress
-    clearInterval(progressInterval);
-    onProgressUpdate(100);
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('models')
-      .getPublicUrl(filePath);
-
-    toast.success('File uploaded successfully');
-    return publicUrl;
+    toast.success(`Model ${isFeatured ? 'featured' : 'unfeatured'} successfully`);
+    return data?.[0];
   } catch (error) {
-    console.error('Error uploading file:', error);
-    toast.error('Failed to upload file');
+    console.error('Error toggling featured status:', error);
+    toast.error('Failed to update model status');
     return null;
   }
-}
+};
+
+// Update model positions
+export const updateModelPosition = async (id: string, positionData: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('models')
+      .update({ position_data: positionData })
+      .eq('id', id)
+      .select();
+      
+    if (error) {
+      throw error;
+    }
+    
+    toast.success('Model position updated');
+    return data?.[0];
+  } catch (error) {
+    console.error('Error updating model position:', error);
+    toast.error('Failed to update model position');
+    return null;
+  }
+};

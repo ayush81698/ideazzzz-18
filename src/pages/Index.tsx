@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -74,7 +75,7 @@ const Index = () => {
 
   return (
     <div className="relative">
-      <style jsx>{`
+      <style>{`
         .spline-container canvas {
           image-rendering: pixelated;
         }

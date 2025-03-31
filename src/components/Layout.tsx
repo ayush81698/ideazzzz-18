@@ -1,427 +1,292 @@
 
-import React from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  NavigationMenu, 
-  NavigationMenuContent, 
-  NavigationMenuItem, 
-  NavigationMenuLink, 
-  NavigationMenuList, 
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle
-} from '@/components/ui/navigation-menu';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Separator } from '@/components/ui/separator';
-import { Sun, Moon, Menu, User, ShoppingCart } from 'lucide-react';
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useThemeContext } from '@/providers/ThemeProvider';
-import AuthButtons from './AuthButtons';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ShoppingCart, Menu, X } from 'lucide-react';
+import { cartItems } from '@/pages/Shop';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ThemeSwitcher } from '@/hooks/useTheme';
 import { supabase } from '@/integrations/supabase/client';
-import { useEffect, useState } from 'react';
-
-interface NavigationItem {
-  title: string;
-  href: string;
-  description?: string;
-}
+import { AuthButtons } from '@/components/AuthButtons';
 
 const Layout = () => {
-  const isMobile = useIsMobile();
   const location = useLocation();
-  const { theme, toggleTheme } = useThemeContext();
+  const isMobile = useIsMobile();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState(null);
-  const [cartItemCount, setCartItemCount] = useState(0);
-  
+
   useEffect(() => {
-    // Check for user session
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setUser(data.session?.user || null);
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
     };
     
-    checkSession();
+    checkUser();
     
-    // Subscribe to auth changes
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null);
-    });
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null);
+      }
+    );
     
     return () => {
       authListener.subscription.unsubscribe();
     };
   }, []);
 
-  const components: NavigationItem[] = [
-    {
-      title: 'Classical Collection',
-      href: '/shop?category=classical',
-      description: 'Timeless pieces inspired by ancient Greek and Roman art.'
-    },
-    {
-      title: 'Modern Abstracts',
-      href: '/shop?category=modern',
-      description: 'Contemporary sculptures that push artistic boundaries.'
-    },
-    {
-      title: 'Custom Portraits',
-      href: '/shop?category=portraits',
-      description: 'Personalized 3D printed busts and figurines.'
-    },
-    {
-      title: 'Architectural Models',
-      href: '/shop?category=architecture',
-      description: 'Detailed replicas of iconic buildings and structures.'
+  // Update cart count whenever cartItems changes
+  useEffect(() => {
+    const savedCart = localStorage.getItem('cartItems');
+    if (savedCart) {
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        setCartCount(parsedCart.length);
+      } catch (e) {
+        console.error('Error parsing cart data:', e);
+      }
+    } else {
+      setCartCount(0);
     }
-  ];
-  
-  const services: NavigationItem[] = [
-    {
-      title: '3D Scanning',
-      href: '/booking',
-      description: 'Create digital replicas of physical objects with precision.'
-    },
-    {
-      title: 'Custom Sculpting',
-      href: '/booking',
-      description: 'Bring your unique vision to life with our expert sculpting service.'
-    },
-    {
-      title: '3D Printing',
-      href: '/booking',
-      description: 'Transform digital designs into physical objects.'
-    },
-    {
-      title: 'Finishing & Painting',
-      href: '/booking',
-      description: 'Professional finishing touches to elevate your creations.'
-    }
-  ];
-  
+    
+    // Add event listener for storage changes (for multi-tab support)
+    const handleStorageChange = () => {
+      const updatedCart = localStorage.getItem('cartItems');
+      if (updatedCart) {
+        try {
+          const parsedCart = JSON.parse(updatedCart);
+          setCartCount(parsedCart.length);
+        } catch (e) {
+          console.error('Error parsing cart data:', e);
+        }
+      } else {
+        setCartCount(0);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [location.pathname, cartItems]);
+
+  // Check if page is scrolled
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
-    <>
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6 md:gap-10">
-            <Link to="/" className="flex items-center space-x-2">
-              <span className="text-2xl font-bold bg-gradient-to-r from-ideazzz-purple to-ideazzz-pink text-transparent bg-clip-text">ideazzz</span>
-            </Link>
-            
-            {!isMobile && (
-              <NavigationMenu>
-                <NavigationMenuList>
-                  <NavigationMenuItem>
-                    <NavLink to="/" className={({isActive}) => isActive ? "text-primary" : "text-muted-foreground hover:text-primary"}>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Home
-                      </NavigationMenuLink>
-                    </NavLink>
-                  </NavigationMenuItem>
-                  
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger>Shop</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                        {components.map((component) => (
-                          <li key={component.title}>
-                            <NavigationMenuLink asChild>
-                              <Link
-                                to={component.href}
-                                className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                              >
-                                <div className="text-sm font-medium leading-none">{component.title}</div>
-                                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                  {component.description}
-                                </p>
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                  
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger>Services</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                        {services.map((component) => (
-                          <li key={component.title}>
-                            <NavigationMenuLink asChild>
-                              <Link
-                                to={component.href}
-                                className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                              >
-                                <div className="text-sm font-medium leading-none">{component.title}</div>
-                                <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                  {component.description}
-                                </p>
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
-                  
-                  <NavigationMenuItem>
-                    <NavLink to="/about" className={({isActive}) => isActive ? "text-primary" : "text-muted-foreground hover:text-primary"}>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        About
-                      </NavigationMenuLink>
-                    </NavLink>
-                  </NavigationMenuItem>
-                  
-                  <NavigationMenuItem>
-                    <NavLink to="/booking" className={({isActive}) => isActive ? "text-primary" : "text-muted-foreground hover:text-primary"}>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Book Now
-                      </NavigationMenuLink>
-                    </NavLink>
-                  </NavigationMenuItem>
-                </NavigationMenuList>
-              </NavigationMenu>
-            )}
-          </div>
+    <div className="min-h-screen flex flex-col">
+      {/* Updated header with logo instead of text */}
+      <header className={`sticky top-0 z-50 w-full ${isScrolled ? 'bg-white/90 backdrop-blur-md shadow-sm' : 'bg-white'} transition-all duration-300`}>
+        <div className="container mx-auto flex items-center justify-between px-4 h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/e878763e-514f-4b8d-9415-d20319b19995.png" 
+              alt="Ideazzz Logo" 
+              className="h-8 w-auto"
+            />
+          </Link>
           
-          <div className="flex items-center gap-2">
-            {/* Theme Toggle Button */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={toggleTheme}
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
+          {/* Desktop Navigation */}
+          {!isMobile && (
+            <NavigationMenu className="hidden md:flex">
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <Link to="/">
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      Home
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/shop">
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      Shop
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/booking">
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      Book a Session
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/about">
+                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      About
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                {user && (
+                  <NavigationMenuItem>
+                    <Link to="/admin">
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                        Admin
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                )}
+              </NavigationMenuList>
+            </NavigationMenu>
+          )}
+          
+          {/* Right-side icons/actions */}
+          <div className="flex items-center gap-2 md:gap-4">
+            <ThemeSwitcher />
             
-            <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative">
+            <Link to="/cart" className="relative">
+              <Button variant="ghost" size="icon" className="rounded-full">
                 <ShoppingCart className="h-5 w-5" />
-                {cartItemCount > 0 && (
-                  <span className="absolute top-0 right-0 bg-ideazzz-purple text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
-                    {cartItemCount}
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-ideazzz-purple text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {cartCount}
                   </span>
                 )}
               </Button>
             </Link>
             
-            {isMobile ? (
-              <Sheet>
+            <AuthButtons />
+            
+            {/* Mobile Menu */}
+            {isMobile && (
+              <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="md:hidden">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent>
-                  <div className="flex flex-col gap-4 py-4">
-                    <Link 
-                      to="/" 
-                      className={`text-lg font-medium ${location.pathname === '/' ? 'text-primary' : 'text-muted-foreground'}`}
-                    >
-                      Home
-                    </Link>
-                    <Link 
-                      to="/shop" 
-                      className={`text-lg font-medium ${location.pathname === '/shop' ? 'text-primary' : 'text-muted-foreground'}`}
-                    >
-                      Shop
-                    </Link>
-                    <Link 
-                      to="/booking" 
-                      className={`text-lg font-medium ${location.pathname === '/booking' ? 'text-primary' : 'text-muted-foreground'}`}
-                    >
-                      Book Now
-                    </Link>
-                    <Link 
-                      to="/about" 
-                      className={`text-lg font-medium ${location.pathname === '/about' ? 'text-primary' : 'text-muted-foreground'}`}
-                    >
-                      About
-                    </Link>
-                    <Separator />
-                    
-                    {user ? (
-                      <>
-                        <Link 
-                          to="/profile" 
-                          className={`text-lg font-medium ${location.pathname === '/profile' ? 'text-primary' : 'text-muted-foreground'}`}
-                        >
-                          My Profile
-                        </Link>
-                        <Button
-                          onClick={async () => {
-                            await supabase.auth.signOut();
-                          }}
-                          variant="outline"
-                        >
-                          Sign Out
-                        </Button>
-                      </>
-                    ) : (
-                      <Link to="/auth">
-                        <Button className="w-full">Login / Register</Button>
+                <SheetContent side="right" className="p-0">
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-8">
+                      <Link to="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
+                        <img 
+                          src="/lovable-uploads/e878763e-514f-4b8d-9415-d20319b19995.png" 
+                          alt="Ideazzz Logo" 
+                          className="h-8 w-auto"
+                        />
                       </Link>
-                    )}
+                      <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
+                        <X className="h-5 w-5" />
+                      </Button>
+                    </div>
+                    
+                    <div className="flex flex-col space-y-4">
+                      <Link to="/" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start">Home</Button>
+                      </Link>
+                      <Link to="/shop" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start">Shop</Button>
+                      </Link>
+                      <Link to="/booking" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start">Book a Session</Button>
+                      </Link>
+                      <Link to="/about" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start">About</Button>
+                      </Link>
+                      {user && (
+                        <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
+                          <Button variant="ghost" className="w-full justify-start">Admin</Button>
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>
-            ) : (
-              <>
-                {user ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <User className="h-5 w-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <Link to="/profile">
-                        <DropdownMenuItem>
-                          My Profile
-                        </DropdownMenuItem>
-                      </Link>
-                      <Link to="/admin">
-                        <DropdownMenuItem>
-                          Admin Dashboard
-                        </DropdownMenuItem>
-                      </Link>
-                      <DropdownMenuItem 
-                        onClick={async () => {
-                          await supabase.auth.signOut();
-                        }}
-                      >
-                        Sign Out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <AuthButtons />
-                )}
-              </>
             )}
           </div>
         </div>
       </header>
       
-      <main>
-        <Outlet />
+      {/* Main Content */}
+      <main className="flex-1">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
       
-      <footer className="bg-background border-t">
-        <div className="container py-10">
+      {/* Footer */}
+      <footer className="bg-gray-100 py-8">
+        <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-semibold mb-4">About ideazzz</h3>
-              <p className="text-muted-foreground">
-                We transform your ideas into tangible 3D sculptures and prints through expert craftsmanship and cutting-edge technology.
+              <h3 className="font-bold text-lg mb-4">Ideazzz</h3>
+              <p className="text-sm text-muted-foreground">
+                Premium 3D personalized models and figurines from your photos.
               </p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-4">Shop</h3>
+              <h3 className="font-bold text-lg mb-4">Quick Links</h3>
               <ul className="space-y-2">
-                <li>
-                  <Link to="/shop?category=classical" className="text-muted-foreground hover:text-primary">
-                    Classical Collection
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/shop?category=modern" className="text-muted-foreground hover:text-primary">
-                    Modern Abstracts
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/shop?category=portraits" className="text-muted-foreground hover:text-primary">
-                    Custom Portraits
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/shop?category=architecture" className="text-muted-foreground hover:text-primary">
-                    Architectural Models
-                  </Link>
-                </li>
+                <li><Link to="/" className="text-sm text-muted-foreground hover:text-gray-900">Home</Link></li>
+                <li><Link to="/shop" className="text-sm text-muted-foreground hover:text-gray-900">Shop</Link></li>
+                <li><Link to="/booking" className="text-sm text-muted-foreground hover:text-gray-900">Book a Session</Link></li>
+                <li><Link to="/about" className="text-sm text-muted-foreground hover:text-gray-900">About Us</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-4">Services</h3>
+              <h3 className="font-bold text-lg mb-4">Contact</h3>
               <ul className="space-y-2">
-                <li>
-                  <Link to="/booking" className="text-muted-foreground hover:text-primary">
-                    3D Scanning
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/booking" className="text-muted-foreground hover:text-primary">
-                    Custom Sculpting
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/booking" className="text-muted-foreground hover:text-primary">
-                    3D Printing
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/booking" className="text-muted-foreground hover:text-primary">
-                    Finishing & Painting
-                  </Link>
-                </li>
+                <li className="text-sm text-muted-foreground">Email: hello@ideazzz.com</li>
+                <li className="text-sm text-muted-foreground">Phone: +91 98765 43210</li>
+                <li className="text-sm text-muted-foreground">Studio: Mumbai, India</li>
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-4">Contact</h3>
-              <ul className="space-y-2">
-                <li className="text-muted-foreground">
-                  Mumbai, India
-                </li>
-                <li>
-                  <a href="mailto:info@ideazzz.com" className="text-muted-foreground hover:text-primary">
-                    info@ideazzz.com
-                  </a>
-                </li>
-                <li>
-                  <a href="tel:+91-9876543210" className="text-muted-foreground hover:text-primary">
-                    +91 9876543210
-                  </a>
-                </li>
-                <li className="pt-4">
-                  <div className="flex space-x-4">
-                    <a href="#" className="text-muted-foreground hover:text-primary">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                      </svg>
-                    </a>
-                    <a href="#" className="text-muted-foreground hover:text-primary">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                      </svg>
-                    </a>
-                    <a href="#" className="text-muted-foreground hover:text-primary">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                        <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" />
-                      </svg>
-                    </a>
-                  </div>
-                </li>
-              </ul>
+              <h3 className="font-bold text-lg mb-4">Newsletter</h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                Subscribe for updates on new products and special offers.
+              </p>
+              <div className="flex mt-2">
+                <input 
+                  type="email"
+                  placeholder="Your email"
+                  className="px-3 py-2 border border-gray-300 rounded-l-md w-full focus:outline-none focus:ring-1 focus:ring-ideazzz-purple"
+                />
+                <Button className="rounded-l-none">
+                  Subscribe
+                </Button>
+              </div>
             </div>
           </div>
-          <div className="mt-10 pt-6 border-t text-center">
-            <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} ideazzz. All rights reserved.
-            </p>
+          <div className="border-t border-gray-200 mt-8 pt-6 text-center text-sm text-muted-foreground">
+            <p>© {new Date().getFullYear()} Ideazzz. All rights reserved.</p>
           </div>
         </div>
       </footer>
-    </>
+    </div>
   );
 };
 

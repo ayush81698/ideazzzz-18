@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -13,33 +14,6 @@ const About = () => {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 }
   };
-
-  const teamMembers = [
-    {
-      name: 'Ayush Kumar',
-      role: 'Founder & CEO',
-      bio: 'Former 3D artist with 10+ years of experience in the animation industry. Passionate about bringing personalized 3D modeling to everyone.',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80'
-    },
-    {
-      name: 'Priya Sharma',
-      role: 'Head of 3D Design',
-      bio: 'Expert 3D modeler with background in character design for major animation studios. Ensures every model meets our exacting quality standards.',
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80'
-    },
-    {
-      name: 'Rahul Mehta',
-      role: 'Technical Director',
-      bio: 'Hardware specialist responsible for our cutting-edge scanning technology. Previously worked on 3D scanning systems for medical applications.',
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80'
-    },
-    {
-      name: 'Neha Patel',
-      role: 'Customer Experience Manager',
-      bio: 'Ensures every customer has an amazing experience from their first scan to final delivery. Background in luxury retail customer service.',
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80'
-    }
-  ];
 
   return (
     <div className="py-10">
@@ -169,54 +143,6 @@ const About = () => {
                 </p>
               </CardContent>
             </Card>
-          </div>
-        </motion.div>
-        
-        {/* Our Team Section */}
-        <motion.div 
-          initial="hidden"
-          animate="visible"
-          transition={{ duration: 0.5, delay: 0.4 }}
-          variants={fadeInUp}
-          className="mb-24"
-        >
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-ideazzz-pink/10 text-ideazzz-pink border-none text-sm py-1 px-3">
-              Our Team
-            </Badge>
-            <h2 className="text-3xl font-bold mb-6">Meet the Creators</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our team combines artistic vision with technical expertise
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teamMembers.map((member, index) => (
-              <motion.div
-                key={index}
-                initial="hidden"
-                animate="visible"
-                transition={{ duration: 0.5, delay: 0.1 * index }}
-                variants={fadeInUp}
-              >
-                <Card className="border-none shadow-lg overflow-hidden card-hover">
-                  <CardContent className="p-0">
-                    <div className="aspect-square overflow-hidden">
-                      <img 
-                        src={member.image} 
-                        alt={member.name} 
-                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold">{member.name}</h3>
-                      <p className="text-ideazzz-purple mb-2">{member.role}</p>
-                      <p className="text-muted-foreground text-sm">{member.bio}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
           </div>
         </motion.div>
         

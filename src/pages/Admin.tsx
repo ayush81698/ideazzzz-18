@@ -8,14 +8,52 @@ import { Navigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import ModelManager from '@/components/ModelManager';
 import ProductManager from '@/components/ProductManager';
+import { addProduct } from '@/services/productService';
+import { toast } from 'sonner';
+
+// Sample products for seeding the database
+const sampleProducts = [
+  {
+    name: "Superhero Action Figure",
+    description: "Custom superhero action figure with dynamic pose",
+    price: 4999,
+    category: "Action Figures",
+    stock: 15,
+    imageurl: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=800&q=80",
+    discount: "20% OFF",
+    featured: true
+  },
+  {
+    name: "Celebrity Miniature",
+    description: "Highly detailed celebrity figurine with lifelike features",
+    price: 6999,
+    category: "Collectibles",
+    stock: 8,
+    imageurl: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+    discount: "Limited Edition",
+    featured: false
+  },
+  {
+    name: "Wedding Cake Topper",
+    description: "Personalized wedding cake topper from your photos",
+    price: 3499,
+    category: "Special Occasions",
+    stock: 20,
+    imageurl: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&w=800&q=80",
+    discount: "",
+    featured: true
+  }
+];
 
 const Admin = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState(null);
+  const [needsProductSeeding, setNeedsProductSeeding] = useState(false);
 
   useEffect(() => {
     checkAdminAuth();
+    checkProducts();
   }, []);
 
   const checkAdminAuth = async () => {
@@ -55,6 +93,44 @@ const Admin = () => {
     } catch (error) {
       console.error('Error in admin authentication:', error);
       setIsAdmin(false);
+      setIsLoading(false);
+    }
+  };
+
+  const checkProducts = async () => {
+    try {
+      const { data, error, count } = await supabase
+        .from('products')
+        .select('*', { count: 'exact' });
+      
+      if (error) {
+        console.error('Error checking products:', error);
+        return;
+      }
+      
+      if (count === 0) {
+        setNeedsProductSeeding(true);
+      }
+    } catch (error) {
+      console.error('Error checking products:', error);
+    }
+  };
+
+  const seedProducts = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Add each sample product to the database
+      for (const product of sampleProducts) {
+        await addProduct(product);
+      }
+      
+      setNeedsProductSeeding(false);
+      toast.success('Sample products added successfully');
+    } catch (error) {
+      console.error('Error seeding products:', error);
+      toast.error('Failed to add sample products');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -100,6 +176,15 @@ const Admin = () => {
           <Button variant="outline" onClick={handleLogout}>Logout</Button>
         </div>
       </div>
+      
+      {needsProductSeeding && (
+        <Alert className="mb-8">
+          <AlertDescription className="flex items-center justify-between">
+            <span>No products found in the database. Add sample products to get started?</span>
+            <Button onClick={seedProducts}>Add Sample Products</Button>
+          </AlertDescription>
+        </Alert>
+      )}
       
       <Tabs defaultValue="products" className="w-full">
         <TabsList className="mb-8">

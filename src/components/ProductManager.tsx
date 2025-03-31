@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { 
   Card, 
@@ -39,7 +40,7 @@ const ProductManager = () => {
     name: '',
     description: '',
     price: 0,
-    imageUrl: '',
+    imageurl: '', // Changed from imageUrl to match database column
     discount: '',
     category: '',
     stock: 0,
@@ -53,7 +54,7 @@ const ProductManager = () => {
   const loadProducts = async () => {
     setLoading(true);
     const data = await fetchProducts();
-    setProducts(data as Product[]);
+    setProducts(data);
     setLoading(false);
   };
 
@@ -77,7 +78,7 @@ const ProductManager = () => {
       name: '',
       description: '',
       price: 0,
-      imageUrl: '',
+      imageurl: '', // Changed from imageUrl to match database column
       discount: '',
       category: '',
       stock: 0,
@@ -92,7 +93,7 @@ const ProductManager = () => {
       name: product.name,
       description: product.description,
       price: product.price,
-      imageUrl: product.imageUrl,
+      imageurl: product.imageurl, // Changed from imageUrl to match database column
       discount: product.discount || '',
       category: product.category || '',
       stock: product.stock || 0,
@@ -119,14 +120,14 @@ const ProductManager = () => {
         const updated = await updateProduct(editingProduct.id, formData);
         if (updated) {
           setProducts(prev => 
-            prev.map(product => product.id === editingProduct.id ? updated as Product : product)
+            prev.map(product => product.id === editingProduct.id ? updated : product)
           );
         }
       } else {
         // Add new product
         const newProduct = await addProduct(formData);
         if (newProduct) {
-          setProducts(prev => [newProduct as Product, ...prev]);
+          setProducts(prev => [newProduct, ...prev]);
         }
       }
       
@@ -196,11 +197,11 @@ const ProductManager = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="imageUrl">Image URL</Label>
+                <Label htmlFor="imageurl">Image URL</Label>
                 <Input
-                  id="imageUrl"
-                  name="imageUrl"
-                  value={formData.imageUrl}
+                  id="imageurl"
+                  name="imageurl"
+                  value={formData.imageurl}
                   onChange={handleChange}
                   required
                 />
@@ -275,7 +276,7 @@ const ProductManager = () => {
               <Card key={product.id} className="overflow-hidden">
                 <div className="relative h-48 overflow-hidden">
                   <img 
-                    src={product.imageUrl || '/placeholder.svg'}
+                    src={product.imageurl || '/placeholder.svg'} // Changed from imageUrl to match database column
                     alt={product.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {

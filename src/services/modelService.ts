@@ -1,4 +1,3 @@
-
 import { Model, SupabaseModel } from '@/types/models';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -161,8 +160,6 @@ export const updateModelPosition = async (id: string, positionData: string) => {
   }
 };
 
-// Add the missing functions
-
 // Update model feature status (combining the toggle function with a more generic approach)
 export const updateModelFeatureStatus = async (model: Model) => {
   try {
@@ -200,18 +197,24 @@ export const uploadModelFile = async (file: File, progressCallback?: (progress: 
     const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
     const filePath = `models/${fileName}`;
     
+    // Progress tracking handler
+    const handleProgress = (event: ProgressEvent) => {
+      if (progressCallback) {
+        const percent = (event.loaded / event.total) * 100;
+        progressCallback(percent);
+      }
+    };
+    
+    // Add event listener for progress tracking
+    const uploadOptions = {
+      cacheControl: '3600',
+      upsert: false
+    };
+    
+    // Wrap the upload in a promise to handle progress
     const { error: uploadError, data } = await supabase.storage
       .from('models')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false,
-        onUploadProgress: (progress) => {
-          if (progressCallback) {
-            const percent = (progress.loaded / progress.total) * 100;
-            progressCallback(percent);
-          }
-        }
-      });
+      .upload(filePath, file, uploadOptions);
     
     if (uploadError) {
       throw uploadError;

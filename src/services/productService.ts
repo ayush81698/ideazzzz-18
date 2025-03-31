@@ -7,11 +7,11 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
+  imageurl: string; // Changed from imageUrl to match database column
   discount?: string;
   category?: string;
   stock?: number;
-  featured?: boolean;  // Changed from discount? to featured?
+  featured?: boolean;
   created_at?: string;
 }
 

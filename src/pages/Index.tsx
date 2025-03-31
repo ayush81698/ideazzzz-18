@@ -75,19 +75,22 @@ const Index = () => {
 
   return (
     <div className="relative">
+      {/* Reduce rendering resolution for better performance */}
       <style>{`
         .spline-container canvas {
           image-rendering: pixelated;
+          width: ${isMobile ? "80%" : "100%"}; /* Lower width on mobile */
+          height: ${isMobile ? "80%" : "100%"}; /* Lower height on mobile */
         }
       `}</style>
-      
+
       <section className="relative py-4 md:py-16 min-h-[85vh] overflow-hidden flex items-center">
         <div className="absolute inset-0 w-full h-full z-0 spline-container">
-          {isModelLoaded && (
+          {isModelLoaded && !isMobile && (
             <SplineModel 
               scene="https://prod.spline.design/AXqCZid080td1A-X/scene.splinecode"
               className="w-full h-full"
-              performance={isMobile}
+              performance
             />
           )}
         </div>

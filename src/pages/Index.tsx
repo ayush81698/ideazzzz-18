@@ -74,7 +74,9 @@ const Index = () => {
               className="flex flex-col justify-center items-center text-center w-full mt-8"
             >
               <div className="backdrop-blur-sm bg-black/30 p-6 rounded-lg border border-white/10 shadow-lg max-w-2xl">
-                <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 text-white">Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span></h1>
+               <h1 className="text-xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6 text-white">
+  Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span>
+</h1>
               </div>
             </motion.div>
             

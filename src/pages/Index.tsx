@@ -59,7 +59,7 @@ const Index = () => {
       <section className="relative py-8 md:py-20 min-h-[85vh] overflow-hidden flex items-center">
         <div className="absolute inset-0 w-full h-full z-0">
           <SplineModel 
-            scene="https://prod.spline.design/2HOvBbf7MG71-4A2/scene.splinecode"
+            scene="https://prod.spline.design/AXqCZid080td1A-X/scene.splinecode"
             className="w-full h-full"
           />
         </div>

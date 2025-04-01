@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   NavigationMenu,
@@ -12,7 +13,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { ShoppingCart, Menu, X } from 'lucide-react';
+import { ShoppingCart, Menu, X, MapPin } from 'lucide-react';
 import { cartItems } from '@/pages/Shop';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeSwitcher } from '@/hooks/useTheme';
@@ -99,7 +100,7 @@ const Layout = () => {
           <Link to="/" className="flex items-center gap-2">
             <img 
               src="/lovable-uploads/6b787a6d-ec96-492c-9e23-419a0a02a642.png" 
-              alt="ADeazzz Logo" 
+              alt="Ideazzz Logo" 
               className="h-10 w-auto"
             />
           </Link>
@@ -177,7 +178,7 @@ const Layout = () => {
                       <Link to="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
                         <img 
                           src="/lovable-uploads/6b787a6d-ec96-492c-9e23-419a0a02a642.png" 
-                          alt="ADeazzz Logo" 
+                          alt="Ideazzz Logo" 
                           className="h-8 w-auto"
                         />
                       </Link>
@@ -231,7 +232,7 @@ const Layout = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="font-bold text-lg mb-4">ADeazzz</h3>
+              <h3 className="font-bold text-lg mb-4">Ideazzz</h3>
               <p className="text-sm text-gray-400">
                 Premium 3D personalized models and figurines from your photos.
               </p>
@@ -248,9 +249,19 @@ const Layout = () => {
             <div>
               <h3 className="font-bold text-lg mb-4">Contact</h3>
               <ul className="space-y-2">
-                <li className="text-sm text-gray-400">Email: hello@adeazzz.com</li>
+                <li className="text-sm text-gray-400">Email: hello@ideazzz.com</li>
                 <li className="text-sm text-gray-400">Phone: +91 98765 43210</li>
-                <li className="text-sm text-gray-400">Studio: Mumbai, India</li>
+                <li className="text-sm text-gray-400 flex items-center">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  <a
+                    href="https://maps.app.goo.gl/Li4PhiQgrShMnH7w7"
+                    target="_blank"
+                    rel="noopener noreferrer" 
+                    className="hover:text-white hover:underline"
+                  >
+                    Mumbai - Malad Studio
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
@@ -271,7 +282,7 @@ const Layout = () => {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-400">
-            <p>© {new Date().getFullYear()} ADeazzz. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Ideazzz. All rights reserved.</p>
           </div>
         </div>
       </footer>

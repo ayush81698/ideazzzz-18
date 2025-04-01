@@ -1,90 +1,55 @@
 
-import React, { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { useLocation } from 'react-router-dom';
+import React, { ReactNode, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import Lenis from '@studio-freight/lenis';
 
 interface PageTransitionProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
-  const location = useLocation();
-  const pageRef = useRef<HTMLDivElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
-  
-  // Initialize smooth scrolling
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      touchMultiplier: 2,
-    });
+  const lenisRef = useRef<Lenis | null>(null);
 
-    function raf(time: number) {
-      lenis.raf(time);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Initialize lenis for smooth scrolling
+      lenisRef.current = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        direction: 'vertical',
+        gestureDirection: 'vertical',
+        smooth: true,
+        mouseMultiplier: 1,
+        wheelMultiplier: 1,
+        touchMultiplier: 2,
+      });
+
+      // Function to update lenis on animation frame
+      function raf(time: number) {
+        lenisRef.current?.raf(time);
+        requestAnimationFrame(raf);
+      }
+
+      // Start animation loop
       requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf);
-
+    // Cleanup function
     return () => {
-      lenis.destroy();
+      lenisRef.current?.destroy();
     };
   }, []);
 
-  // Page transition effect
-  useEffect(() => {
-    const page = pageRef.current;
-    const overlay = overlayRef.current;
-    
-    if (page && overlay) {
-      // Timeline for page transitions
-      const tl = gsap.timeline();
-      
-      // Initial page load animation
-      tl.fromTo(page, 
-        { opacity: 0, y: 30 }, 
-        { 
-          opacity: 1, 
-          y: 0, 
-          duration: 0.8, 
-          ease: "power2.out" 
-        }
-      );
-      
-      // Animate overlay on route changes
-      gsap.set(overlay, { 
-        y: '100%',
-        opacity: 1 
-      });
-      
-      return () => {
-        tl.kill();
-      };
-    }
-  }, [location.pathname]);
-
   return (
-    <div className="page-transition-wrapper">
-      {/* Transition overlay */}
-      <div 
-        ref={overlayRef}
-        className="fixed inset-0 bg-black pointer-events-none z-50 opacity-0"
-      />
-      
-      {/* Main content */}
-      <div 
-        ref={pageRef} 
-        className="page-content"
-        data-parallax-layers
-      >
-        {children}
-      </div>
-    </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+      className="page-transition-wrapper"
+    >
+      <div className="page-content">{children}</div>
+    </motion.div>
   );
 };
 

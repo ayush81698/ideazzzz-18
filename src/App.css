@@ -1,13 +1,17 @@
 
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   text-align: center;
 }
 
 body {
   cursor: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
 @media (max-width: 768px) {
@@ -124,22 +128,6 @@ body {
   position: absolute;
   bottom: 0;
   width: 100%;
-}
-
-/* Slideshow animation for celebrity photos */
-.slider-item {
-  animation-duration: 30s;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-
-@keyframes slide {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
 }
 
 /* Page transition effects */

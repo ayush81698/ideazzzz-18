@@ -1,6 +1,6 @@
 
-import React, { useEffect, useRef, useState } from 'react';
-import { gsap } from 'gsap';
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -14,7 +14,7 @@ interface PublicFigure {
 const PublicFiguresSlider: React.FC = () => {
   const [figures, setFigures] = useState<PublicFigure[]>([]);
   const [loading, setLoading] = useState(true);
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -90,40 +90,16 @@ const PublicFiguresSlider: React.FC = () => {
     fetchFigures();
   }, []);
 
+  // Rotate through images every 3 seconds
   useEffect(() => {
-    if (!loading && figures.length > 0 && sliderRef.current) {
-      const slider = sliderRef.current;
-      const slides = slider.querySelectorAll('.slider-item');
+    if (!loading && figures.length > 0) {
+      const interval = setInterval(() => {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % figures.length);
+      }, 3000);
       
-      if (slides.length > 0) {
-        // Setup GSAP animation for slides
-        gsap.set(slides, { xPercent: 0, opacity: 0 });
-        
-        slides.forEach((slide, index) => {
-          gsap.to(slide, {
-            opacity: 1,
-            duration: 0.7,
-            delay: index * 0.1,
-            ease: "power2.out"
-          });
-        });
-        
-        // Create infinite slider animation
-        const duration = 20;
-        const slideWidth = slides[0].getBoundingClientRect().width;
-        const totalWidth = slideWidth * slides.length;
-        
-        gsap.to(slides, {
-          xPercent: -100 * (slides.length - (isMobile ? 1 : 3)),
-          ease: "none",
-          duration: duration,
-          repeat: -1,
-          repeatDelay: 1,
-          yoyo: true
-        });
-      }
+      return () => clearInterval(interval);
     }
-  }, [loading, figures, isMobile]);
+  }, [loading, figures.length]);
 
   if (loading) {
     return (
@@ -133,6 +109,10 @@ const PublicFiguresSlider: React.FC = () => {
     );
   }
 
+  if (figures.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-16 overflow-hidden bg-gray-900">
       <div className="container mx-auto px-4">
@@ -140,26 +120,39 @@ const PublicFiguresSlider: React.FC = () => {
           Public Figures We Worked With
         </h2>
         
-        <div className="relative w-full">
-          <div 
-            ref={sliderRef} 
-            className="flex flex-nowrap gap-4 md:gap-6 py-4 overflow-visible"
-          >
-            {figures.map((figure) => (
-              <div key={figure.id} className="slider-item flex-shrink-0 w-80 md:w-96">
-                <Card className="overflow-hidden h-full rounded-lg shadow-xl hover:shadow-2xl transition-all duration-300 bg-black/50 backdrop-blur-sm">
-                  <div className="h-64 md:h-80 relative overflow-hidden">
-                    <img 
-                      src={figure.imageurl} 
-                      alt={figure.name} 
-                      className="w-full h-full object-cover transform transition-transform hover:scale-105 duration-700"
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                      <h3 className="text-xl font-bold text-white">{figure.name}</h3>
-                    </div>
-                  </div>
-                </Card>
+        <div className="relative w-full max-w-4xl mx-auto h-64 md:h-80 overflow-hidden rounded-lg">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={figures[currentIndex].id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.7, ease: "easeInOut" }}
+              className="absolute inset-0"
+            >
+              <div className="relative w-full h-full">
+                <img 
+                  src={figures[currentIndex].imageurl} 
+                  alt={figures[currentIndex].name} 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                  <h3 className="text-xl font-bold text-white">{figures[currentIndex].name}</h3>
+                </div>
               </div>
+            </motion.div>
+          </AnimatePresence>
+          
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-2">
+            {figures.map((_, index) => (
+              <button
+                key={index}
+                className={`w-2 h-2 rounded-full ${
+                  index === currentIndex ? "bg-white" : "bg-white/30"
+                }`}
+                onClick={() => setCurrentIndex(index)}
+                aria-label={`View figure ${index + 1}`}
+              />
             ))}
           </div>
         </div>

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -67,6 +68,7 @@ const ProductPage = () => {
     }
   };
   
+  // Ensure reviews array exists even if we can't get it from product data
   const reviews = [
     {
       id: 1,
@@ -125,6 +127,12 @@ const ProductPage = () => {
     );
   }
 
+  // Ensure product has tags property, if not provide empty array
+  const productTags = product.tags || [];
+  
+  // Ensure product has rating property, if not provide default
+  const productRating = product.rating || 4.5;
+
   return (
     <div className="py-6 md:py-10">
       <div className="container mx-auto px-4">
@@ -149,19 +157,25 @@ const ProductPage = () => {
               </TabsList>
               <TabsContent value="image" className="h-full">
                 <img 
-                  src={product.imageUrl} 
+                  src={product.imageurl} 
                   alt={product.name}
                   className="w-full h-full object-cover rounded-lg"
                 />
               </TabsContent>
               <TabsContent value="model" className="h-full">
                 <div className="h-full">
-                  <ModelViewer 
-                    modelUrl={product.modelUrl} 
-                    className="h-full"
-                    autoRotate={true}
-                    scale={isMobile ? "1.2 1.2 1.2" : "1 1 1"}
-                  />
+                  {product.model_url ? (
+                    <ModelViewer 
+                      modelUrl={product.model_url} 
+                      className="h-full"
+                      autoRotate={true}
+                      scale={isMobile ? "1.2 1.2 1.2" : "1 1 1"}
+                    />
+                  ) : (
+                    <div className="h-full flex items-center justify-center bg-gray-100 text-gray-500">
+                      No 3D model available
+                    </div>
+                  )}
                 </div>
               </TabsContent>
             </Tabs>
@@ -174,7 +188,7 @@ const ProductPage = () => {
             variants={fadeInUp}
           >
             <div className="flex flex-wrap gap-2 mb-3">
-              {product.tags.map((tag: string, i: number) => (
+              {productTags.map((tag: string, i: number) => (
                 <Badge key={i} className="bg-ideazzz-pink text-white border-none">
                   {tag}
                 </Badge>
@@ -188,11 +202,11 @@ const ProductPage = () => {
                 {[...Array(5)].map((_, i) => (
                   <Star 
                     key={i} 
-                    className={`h-4 w-4 md:h-5 md:w-5 ${i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                    className={`h-4 w-4 md:h-5 md:w-5 ${i < Math.floor(productRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
                   />
                 ))}
               </div>
-              <span className="text-sm md:text-base text-muted-foreground">{product.rating} ({reviews.length} reviews)</span>
+              <span className="text-sm md:text-base text-muted-foreground">{productRating} ({reviews.length} reviews)</span>
             </div>
             
             <div className="text-2xl md:text-3xl font-bold text-ideazzz-purple mb-4 md:mb-6">
@@ -220,17 +234,17 @@ const ProductPage = () => {
                 </span>
                 <button 
                   className="px-3 py-1 md:px-4 md:py-2 text-base md:text-lg font-medium border-l"
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                  disabled={quantity >= product.stock}
+                  onClick={() => setQuantity(Math.min(product.stock || 10, quantity + 1))}
+                  disabled={quantity >= (product.stock || 10)}
                 >
                   +
                 </button>
               </div>
               <div className="text-sm md:text-base text-muted-foreground">
-                {product.stock > 0 ? (
+                {(product.stock || 0) > 0 ? (
                   <span className="text-green-600 flex items-center">
                     <span className="h-2 w-2 bg-green-600 rounded-full inline-block mr-2"></span>
-                    In Stock ({product.stock} available)
+                    In Stock ({product.stock || "Limited"} available)
                   </span>
                 ) : (
                   <span className="text-red-600 flex items-center">
@@ -246,7 +260,7 @@ const ProductPage = () => {
                 size={isMobile ? "default" : "lg"} 
                 className="bg-ideazzz-purple hover:bg-ideazzz-dark flex-1 flex items-center justify-center"
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={(product.stock || 0) === 0}
               >
                 <ShoppingCart className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                 Add to Cart
@@ -392,7 +406,7 @@ const ProductPage = () => {
                         {[...Array(5)].map((_, i) => (
                           <Star 
                             key={i} 
-                            className={`h-5 w-5 ${i < Math.floor(product.rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                            className={`h-5 w-5 ${i < Math.floor(productRating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
                           />
                         ))}
                       </div>
@@ -550,16 +564,22 @@ const ProductPage = () => {
                 <Card className="overflow-hidden card-hover border-none shadow-md h-full">
                   <div className="h-[120px] md:h-[200px] relative bg-gradient-to-br from-ideazzz-purple/5 to-ideazzz-pink/5 overflow-hidden">
                     <img 
-                      src={relatedProduct.imageUrl} 
+                      src={relatedProduct.imageurl} 
                       alt={relatedProduct.name}
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute top-2 left-2">
-                      {relatedProduct.tags.slice(0, 1).map((tag: string, i: number) => (
-                        <Badge key={i} className="bg-ideazzz-pink text-white border-none text-xs">
-                          {tag}
+                      {relatedProduct.tags && relatedProduct.tags.length > 0 ? (
+                        relatedProduct.tags.slice(0, 1).map((tag: string, i: number) => (
+                          <Badge key={i} className="bg-ideazzz-pink text-white border-none text-xs">
+                            {tag}
+                          </Badge>
+                        ))
+                      ) : (
+                        <Badge className="bg-ideazzz-pink text-white border-none text-xs">
+                          Featured
                         </Badge>
-                      ))}
+                      )}
                     </div>
                   </div>
                   <CardContent className="p-3 md:p-4">
@@ -569,7 +589,7 @@ const ProductPage = () => {
                       <span className="font-bold text-ideazzz-purple text-sm md:text-base">₹{relatedProduct.price.toLocaleString()}</span>
                       <div className="flex items-center">
                         <Star className="h-3 w-3 md:h-4 md:w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                        <span className="text-xs md:text-sm">{relatedProduct.rating}</span>
+                        <span className="text-xs md:text-sm">{relatedProduct.rating || "4.5"}</span>
                       </div>
                     </div>
                   </CardContent>

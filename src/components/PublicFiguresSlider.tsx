@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 interface PublicFigure {
   id: string;
   name: string;
-  imageurl: string; // Changed from imageUrl to imageurl to match DB column
+  imageurl: string;
 }
 
 const PublicFiguresSlider: React.FC = () => {
@@ -20,9 +20,8 @@ const PublicFiguresSlider: React.FC = () => {
   useEffect(() => {
     const fetchFigures = async () => {
       try {
-        // Try querying the public_figures table directly
-        // Note: This will work after we add the type definition
-        const { data, error } = await supabase
+        // Use type assertion to allow accessing the public_figures table
+        const { data, error } = await (supabase as any)
           .from('public_figures')
           .select('*');
         
@@ -32,13 +31,7 @@ const PublicFiguresSlider: React.FC = () => {
         }
         
         if (data && data.length > 0) {
-          // Ensure we use the correct property names matching the DB columns
-          const mappedData = data.map((item: any) => ({
-            id: item.id,
-            name: item.name,
-            imageurl: item.imageurl
-          }));
-          setFigures(mappedData);
+          setFigures(data);
         } else {
           // Fallback to placeholder data
           setFigures([

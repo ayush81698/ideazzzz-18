@@ -25,7 +25,7 @@ import { Trash2, Edit, Plus } from 'lucide-react';
 interface PublicFigure {
   id: string;
   name: string;
-  imageurl: string; // Changed from imageUrl to imageurl to match DB column
+  imageurl: string;
 }
 
 const PublicFiguresManager = () => {
@@ -47,8 +47,7 @@ const PublicFiguresManager = () => {
       
       // Check if the table exists before querying
       try {
-        // Check if public_figures table exists by querying it directly with a try/catch
-        // Using type 'any' as a workaround for the type checking issue
+        // Use type assertion to bypass TypeScript restrictions
         const { data, error } = await (supabase as any)
           .from('public_figures')
           .select('*');

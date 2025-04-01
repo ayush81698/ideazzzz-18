@@ -101,3 +101,61 @@ body {
   }
 }
 
+/* Parallax and Sliding Animations */
+.parallax__content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  position: relative;
+}
+
+.parallax__layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translateY(0);
+}
+
+.parallax__fade {
+  background: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, transparent 100%);
+  height: 20%;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+/* Slideshow animation for celebrity photos */
+.slider-item {
+  animation-duration: 30s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Page transition effects */
+.page-transition-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.page-content {
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .page-content {
+    transition: opacity 0.4s ease;
+  }
+}

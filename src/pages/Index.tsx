@@ -9,6 +9,7 @@ import { ShoppingBag } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import SplineModel from '@/components/SplineModel';
+import PublicFiguresSlider from '@/components/PublicFiguresSlider';
 
 const Index = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -72,8 +73,8 @@ const Index = () => {
     fetchFeaturedProducts();
   }, [isMobile]);
 
- return (
-    <div className="relative">
+  return (
+    <div className="relative" data-parallax-layers>
       <style>{`
         .spline-container canvas {
           image-rendering: crisp-edges;
@@ -84,7 +85,7 @@ const Index = () => {
       `}</style>
 
       <section className="relative py-4 md:py-16 min-h-[85vh] overflow-hidden flex items-center">
-        <div className="absolute inset-0 w-full h-full z-0 spline-container">
+        <div className="absolute inset-0 w-full h-full z-0 spline-container parallax__layer" data-parallax-layer="1">
           {isModelLoaded ? (
             <SplineModel 
               scene="https://prod.spline.design/AXqCZid080td1A-X/scene.splinecode"
@@ -127,6 +128,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+      
+      <PublicFiguresSlider />
       
       <section className="py-12 md:py-16 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4">

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   NavigationMenu,
@@ -18,7 +17,7 @@ import { cartItems } from '@/pages/Shop';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeSwitcher } from '@/hooks/useTheme';
 import { supabase } from '@/integrations/supabase/client';
-import { AuthButtons } from '@/components/AuthButtons';
+import AuthButtons from '@/components/AuthButtons';
 
 const Layout = () => {
   const location = useLocation();
@@ -47,7 +46,6 @@ const Layout = () => {
     };
   }, []);
 
-  // Update cart count whenever cartItems changes
   useEffect(() => {
     const savedCart = localStorage.getItem('cartItems');
     if (savedCart) {
@@ -61,7 +59,6 @@ const Layout = () => {
       setCartCount(0);
     }
     
-    // Add event listener for storage changes (for multi-tab support)
     const handleStorageChange = () => {
       const updatedCart = localStorage.getItem('cartItems');
       if (updatedCart) {
@@ -83,7 +80,6 @@ const Layout = () => {
     };
   }, [location.pathname, cartItems]);
 
-  // Check if page is scrolled
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -98,10 +94,8 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen flex flex-col dark">
-      {/* Updated header with the new logo */}
       <header className={`sticky top-0 z-50 w-full ${isScrolled ? 'bg-black/90 backdrop-blur-md shadow-sm' : 'bg-black'} transition-all duration-300`}>
         <div className="container mx-auto flex items-center justify-between px-4 h-16">
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <img 
               src="/lovable-uploads/6b787a6d-ec96-492c-9e23-419a0a02a642.png" 
@@ -110,7 +104,6 @@ const Layout = () => {
             />
           </Link>
           
-          {/* Desktop Navigation */}
           {!isMobile && (
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList>
@@ -155,7 +148,6 @@ const Layout = () => {
             </NavigationMenu>
           )}
           
-          {/* Right-side icons/actions */}
           <div className="flex items-center gap-2 md:gap-4">
             <ThemeSwitcher />
             
@@ -172,7 +164,6 @@ const Layout = () => {
             
             <AuthButtons />
             
-            {/* Mobile Menu */}
             {isMobile && (
               <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <SheetTrigger asChild>
@@ -222,7 +213,6 @@ const Layout = () => {
         </div>
       </header>
       
-      {/* Main Content */}
       <main className="flex-1 bg-black text-white">
         <AnimatePresence mode="wait">
           <motion.div
@@ -237,7 +227,6 @@ const Layout = () => {
         </AnimatePresence>
       </main>
       
-      {/* Footer */}
       <footer className="bg-gray-900 text-white py-8">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

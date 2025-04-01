@@ -9,33 +9,51 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Card, CardContent, CardHeader, CardTitle, CardDescription 
 } from '@/components/ui/card';
-import { products, addToCart } from './Shop';
+import { addToCart } from './Shop';
 import ModelViewer from '@/components/ModelViewer';
 import { 
   ShoppingCart, ArrowLeft, Star, Truck, Package, RotateCcw, MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { fetchProducts } from '@/services/productService';
 
 const ProductPage = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<any>(null);
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
   useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-      if (id) {
-        const productId = parseInt(id);
-        const foundProduct = products.find(p => p.id === productId);
-        setProduct(foundProduct);
+    const loadProduct = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch products from the service
+        const allProducts = await fetchProducts();
+        
+        if (id) {
+          const foundProduct = allProducts.find(p => p.id === id);
+          setProduct(foundProduct || null);
+          
+          // Set related products (excluding current product)
+          const related = allProducts
+            .filter(p => p.id !== id)
+            .slice(0, isMobile ? 2 : 4);
+          setRelatedProducts(related);
+        }
+      } catch (error) {
+        console.error("Error loading product:", error);
+        toast.error("Failed to load product");
+      } finally {
         setIsLoading(false);
       }
-    }, 300);
-  }, [id]);
+    };
+    
+    loadProduct();
+  }, [id, isMobile]);
   
   const handleAddToCart = () => {
     if (product) {
@@ -106,10 +124,6 @@ const ProductPage = () => {
       </div>
     );
   }
-
-  const relatedProducts = products
-    .filter(p => p.id !== product.id)
-    .slice(0, isMobile ? 2 : 4);
 
   return (
     <div className="py-6 md:py-10">

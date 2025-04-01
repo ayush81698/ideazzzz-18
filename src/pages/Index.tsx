@@ -88,7 +88,7 @@ const Index = () => {
         <div className="absolute inset-0 w-full h-full z-0 spline-container parallax__layer" data-parallax-layer="1">
           {isModelLoaded ? (
             <SplineModel 
-              scene="https://prod.spline.design/AXqCZid080td1A-X/scene.splinecode"
+              scene="https://prod.spline.design/1Z5wJoU64uMhnoR8/scene.splinecode"
               className="w-full h-full"
               performance={true}
               quality={isMobile ? 'low' : 'medium'}

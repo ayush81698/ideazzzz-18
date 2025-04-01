@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, Mail, Calendar, ArrowUpDown } from "lucide-react";
 
-interface User {
+// Renamed to AdminUser to avoid conflicts with Supabase's User type
+interface AdminUser {
   id: string;
   email: string;
   created_at: string;
@@ -31,8 +32,8 @@ interface User {
 }
 
 const UsersManager = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<{ field: string; direction: 'asc' | 'desc' }>({ 
@@ -57,8 +58,19 @@ const UsersManager = () => {
       
       if (error) throw error;
       
-      setUsers(users || []);
-      setFilteredUsers(users || []);
+      // Type conversion from Supabase User[] to AdminUser[]
+      const adminUsers: AdminUser[] = users ? users.map(user => ({
+        id: user.id,
+        email: user.email || '',  // Handle optional email
+        created_at: user.created_at,
+        last_sign_in_at: user.last_sign_in_at,
+        phone: user.phone,
+        app_metadata: user.app_metadata,
+        user_metadata: user.user_metadata
+      })) : [];
+      
+      setUsers(adminUsers);
+      setFilteredUsers(adminUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users. Make sure you have admin privileges.');

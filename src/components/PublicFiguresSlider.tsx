@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 interface PublicFigure {
   id: string;
   name: string;
-  imageUrl: string;
+  imageurl: string; // Changed from imageUrl to imageurl to match DB column
 }
 
 const PublicFiguresSlider: React.FC = () => {
@@ -35,7 +35,7 @@ const PublicFiguresSlider: React.FC = () => {
           const mappedData = data.map((item: any) => ({
             id: item.id,
             name: item.name,
-            imageUrl: item.imageUrl
+            imageurl: item.imageurl || item.imageUrl // Handle both column names for compatibility
           }));
           setFigures(mappedData);
         } else {
@@ -44,27 +44,27 @@ const PublicFiguresSlider: React.FC = () => {
             { 
               id: '1', 
               name: 'Amitabh Bachchan', 
-              imageUrl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9' 
+              imageurl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9' 
             },
             { 
               id: '2', 
               name: 'Priyanka Chopra', 
-              imageUrl: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04' 
+              imageurl: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04' 
             },
             { 
               id: '3', 
               name: 'Virat Kohli', 
-              imageUrl: 'https://images.unsplash.com/photo-1582562124811-c09040d0a901' 
+              imageurl: 'https://images.unsplash.com/photo-1582562124811-c09040d0a901' 
             },
             { 
               id: '4', 
               name: 'Deepika Padukone', 
-              imageUrl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9' 
+              imageurl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9' 
             },
             { 
               id: '5', 
               name: 'Shah Rukh Khan', 
-              imageUrl: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04' 
+              imageurl: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04' 
             }
           ]);
         }
@@ -76,17 +76,17 @@ const PublicFiguresSlider: React.FC = () => {
           { 
             id: '1', 
             name: 'Amitabh Bachchan', 
-            imageUrl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9' 
+            imageurl: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9' 
           },
           { 
             id: '2', 
             name: 'Priyanka Chopra', 
-            imageUrl: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04' 
+            imageurl: 'https://images.unsplash.com/photo-1721322800607-8c38375eef04' 
           },
           { 
             id: '3', 
             name: 'Virat Kohli', 
-            imageUrl: 'https://images.unsplash.com/photo-1582562124811-c09040d0a901' 
+            imageurl: 'https://images.unsplash.com/photo-1582562124811-c09040d0a901' 
           }
         ]);
         setLoading(false);
@@ -156,7 +156,7 @@ const PublicFiguresSlider: React.FC = () => {
                 <Card className="overflow-hidden h-full rounded-lg shadow-xl hover:shadow-2xl transition-all duration-300 bg-black/50 backdrop-blur-sm">
                   <div className="h-64 md:h-80 relative overflow-hidden">
                     <img 
-                      src={figure.imageUrl} 
+                      src={figure.imageurl} 
                       alt={figure.name} 
                       className="w-full h-full object-cover transform transition-transform hover:scale-105 duration-700"
                     />

@@ -177,12 +177,36 @@ export type Database = {
         }
         Relationships: []
       }
+      public_figures: {
+        Row: {
+          created_at: string
+          id: string
+          imageurl: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          imageurl: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          imageurl?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_public_figures_table: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

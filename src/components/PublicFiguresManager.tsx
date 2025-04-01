@@ -25,7 +25,7 @@ import { Trash2, Edit, Plus } from 'lucide-react';
 interface PublicFigure {
   id: string;
   name: string;
-  imageUrl: string;
+  imageurl: string; // Changed from imageUrl to imageurl to match DB column
 }
 
 const PublicFiguresManager = () => {
@@ -47,6 +47,7 @@ const PublicFiguresManager = () => {
       
       // Check if the table exists before querying
       try {
+        // Check if public_figures table exists by querying it directly with a try/catch
         const { data, error } = await supabase
           .from('public_figures')
           .select('*');
@@ -56,7 +57,7 @@ const PublicFiguresManager = () => {
           const mappedData = (data || []).map((item: any) => ({
             id: item.id,
             name: item.name,
-            imageUrl: item.imageUrl
+            imageurl: item.imageurl || item.imageUrl // Handle both column names for compatibility
           }));
           setFigures(mappedData);
         } else {
@@ -80,7 +81,7 @@ const PublicFiguresManager = () => {
     if (figure) {
       setCurrentFigure(figure);
       setName(figure.name);
-      setImageUrl(figure.imageUrl);
+      setImageUrl(figure.imageurl);
       setIsEditing(true);
     } else {
       setCurrentFigure(null);
@@ -112,7 +113,7 @@ const PublicFiguresManager = () => {
           .from('public_figures')
           .update({
             name,
-            imageUrl
+            imageurl: imageUrl // Use imageurl to match DB column
           })
           .eq('id', currentFigure.id);
 
@@ -128,7 +129,7 @@ const PublicFiguresManager = () => {
           .insert([
             {
               name,
-              imageUrl
+              imageurl: imageUrl // Use imageurl to match DB column
             }
           ]);
 
@@ -202,7 +203,7 @@ const PublicFiguresManager = () => {
                     <TableCell>
                       <div className="h-16 w-16 overflow-hidden rounded-md">
                         <img 
-                          src={figure.imageUrl} 
+                          src={figure.imageurl} 
                           alt={figure.name} 
                           className="h-full w-full object-cover"
                         />

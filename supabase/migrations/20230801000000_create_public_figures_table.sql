@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS public_figures (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
-  imageUrl TEXT NOT NULL,
+  imageurl TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );
 
@@ -18,7 +18,7 @@ BEGIN
   CREATE TABLE IF NOT EXISTS public_figures (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     name TEXT NOT NULL,
-    imageUrl TEXT NOT NULL,
+    imageurl TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
   );
 END;

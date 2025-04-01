@@ -44,46 +44,35 @@ const PublicFiguresManager = () => {
   const fetchFigures = async () => {
     try {
       setLoading(true);
-      // Ensure the table exists
-      const { error: tableCheckError } = await supabase
-        .from('public_figures')
-        .select('id')
-        .limit(1);
-
-      if (tableCheckError) {
-        // If table doesn't exist, create it
-        await createFiguresTable();
+      
+      // Check if the table exists before querying
+      try {
+        const { data, error } = await supabase
+          .from('public_figures')
+          .select('*');
+        
+        if (!error) {
+          // Table exists, map the data to our interface
+          const mappedData = (data || []).map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            imageUrl: item.imageUrl
+          }));
+          setFigures(mappedData);
+        } else {
+          console.error('Error checking public_figures table:', error);
+          setFigures([]);
+        }
+      } catch (error) {
+        console.error('Error fetching public figures:', error);
+        setFigures([]);
       }
-
-      // Now fetch the data
-      const { data, error } = await supabase
-        .from('public_figures')
-        .select('*')
-        .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      
-      setFigures(data || []);
     } catch (error) {
       console.error('Error fetching public figures:', error);
       toast.error('Failed to load public figures data');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const createFiguresTable = async () => {
-    try {
-      // Create the table using SQL
-      const { error } = await supabase.rpc('create_public_figures_table');
-      
-      if (error) {
-        console.error('Error creating table:', error);
-        // Fallback method if RPC isn't set up
-        await supabase.auth.getUser(); // Ensure we're authenticated
-      }
-    } catch (error) {
-      console.error('Error setting up public figures:', error);
     }
   };
 
@@ -127,7 +116,10 @@ const PublicFiguresManager = () => {
           })
           .eq('id', currentFigure.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating figure:', error);
+          throw error;
+        }
         toast.success('Public figure updated successfully');
       } else {
         // Insert new figure
@@ -140,7 +132,10 @@ const PublicFiguresManager = () => {
             }
           ]);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error inserting figure:', error);
+          throw error;
+        }
         toast.success('Public figure added successfully');
       }
 

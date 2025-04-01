@@ -20,15 +20,24 @@ const PublicFiguresSlider: React.FC = () => {
   useEffect(() => {
     const fetchFigures = async () => {
       try {
-        // Try to fetch from Supabase if table exists
+        // Check if the table exists and fetch data
         const { data, error } = await supabase
           .from('public_figures')
           .select('*');
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching from public_figures:', error);
+          throw error;
+        }
         
         if (data && data.length > 0) {
-          setFigures(data);
+          // Make sure to map the data to match our PublicFigure interface
+          const mappedData = data.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            imageUrl: item.imageUrl
+          }));
+          setFigures(mappedData);
         } else {
           // Fallback to placeholder data
           setFigures([

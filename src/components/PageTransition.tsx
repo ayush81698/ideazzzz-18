@@ -18,8 +18,8 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      direction: 'vertical',
-      gestureDirection: 'vertical',
+      orientation: 'vertical', // Changed from 'direction' to 'orientation'
+      gestureOrientation: 'vertical', // Changed from 'gestureDirection' to 'gestureOrientation'
       smooth: true,
       smoothTouch: false,
       touchMultiplier: 2,

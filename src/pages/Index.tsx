@@ -91,7 +91,7 @@ const Index = () => {
               scene="https://prod.spline.design/YybVyU99k1HX88Ef/scene.splinecode"
               className="w-full h-full"
               performance={true}
-              quality={isMobile ? 'medium' : 'medium'}
+              quality={isMobile ? 'low' : 'medium'}
             />
           ) : (
             <img 

@@ -1,17 +1,27 @@
-
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { Navigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Edit, Trash2, Check, X, Search } from 'lucide-react';
 import ModelManager from '@/components/ModelManager';
 import ProductManager from '@/components/ProductManager';
 import { addProduct, fetchProducts } from '@/services/productService';
 import { toast } from 'sonner';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from '@/components/ui/input';
+import BookingsManager from '@/components/BookingsManager';
+import UsersManager from '@/components/UsersManager';
 
-// Sample products for seeding the database
 const sampleProducts = [
   {
     name: "Superhero Action Figure",
@@ -69,7 +79,6 @@ const Admin = () => {
       
       setUser(session.user);
       
-      // Check if the user's email is in the admin_users table
       if (session.user?.email === 'ayushkava1@gmail.com') {
         setIsAdmin(true);
         setIsLoading(false);
@@ -116,7 +125,6 @@ const Admin = () => {
     try {
       setIsLoading(true);
       
-      // Add each sample product to the database
       for (const product of sampleProducts) {
         await addProduct(product);
       }
@@ -199,17 +207,11 @@ const Admin = () => {
         </TabsContent>
         
         <TabsContent value="bookings" className="space-y-4">
-          <h2 className="text-2xl font-bold">Booking Management</h2>
-          <p className="text-muted-foreground">
-            Manage customer bookings and appointments here. This section is under development.
-          </p>
+          <BookingsManager />
         </TabsContent>
         
         <TabsContent value="users" className="space-y-4">
-          <h2 className="text-2xl font-bold">User Management</h2>
-          <p className="text-muted-foreground">
-            Manage user accounts and permissions here. This section is under development.
-          </p>
+          <UsersManager />
         </TabsContent>
       </Tabs>
     </div>

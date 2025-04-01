@@ -16,6 +16,7 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import CustomCursor from "@/components/CustomCursor";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <CustomCursor />
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<Layout />}>

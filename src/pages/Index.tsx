@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,7 @@ const Index = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    const timeout = setTimeout(() => setIsModelLoaded(true), 2000);
+    const timeout = setTimeout(() => setIsModelLoaded(true), 1000);
     return () => clearTimeout(timeout);
   }, []);
 
@@ -75,7 +74,6 @@ const Index = () => {
 
  return (
     <div className="relative">
-      {/* Force lower resolution for better performance */}
       <style>{`
         .spline-container canvas {
           image-rendering: crisp-edges;
@@ -87,12 +85,12 @@ const Index = () => {
 
       <section className="relative py-4 md:py-16 min-h-[85vh] overflow-hidden flex items-center">
         <div className="absolute inset-0 w-full h-full z-0 spline-container">
-          {/* Only load Spline on desktop, use an image on mobile */}
-          {isModelLoaded && !isMobile ? (
+          {isModelLoaded ? (
             <SplineModel 
               scene="https://prod.spline.design/AXqCZid080td1A-X/scene.splinecode"
               className="w-full h-full"
-              performance
+              performance={true}
+              quality={isMobile ? 'low' : 'medium'}
             />
           ) : (
             <img 

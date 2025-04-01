@@ -20,7 +20,8 @@ const PublicFiguresSlider: React.FC = () => {
   useEffect(() => {
     const fetchFigures = async () => {
       try {
-        // Check if the table exists and fetch data
+        // Try querying the public_figures table directly
+        // Note: This will work after we add the type definition
         const { data, error } = await supabase
           .from('public_figures')
           .select('*');
@@ -31,11 +32,11 @@ const PublicFiguresSlider: React.FC = () => {
         }
         
         if (data && data.length > 0) {
-          // Make sure to map the data to match our PublicFigure interface
+          // Ensure we use the correct property names matching the DB columns
           const mappedData = data.map((item: any) => ({
             id: item.id,
             name: item.name,
-            imageurl: item.imageurl || item.imageUrl // Handle both column names for compatibility
+            imageurl: item.imageurl
           }));
           setFigures(mappedData);
         } else {

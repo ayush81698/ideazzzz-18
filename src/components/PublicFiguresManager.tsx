@@ -48,7 +48,8 @@ const PublicFiguresManager = () => {
       // Check if the table exists before querying
       try {
         // Check if public_figures table exists by querying it directly with a try/catch
-        const { data, error } = await supabase
+        // Using type 'any' as a workaround for the type checking issue
+        const { data, error } = await (supabase as any)
           .from('public_figures')
           .select('*');
         
@@ -57,7 +58,7 @@ const PublicFiguresManager = () => {
           const mappedData = (data || []).map((item: any) => ({
             id: item.id,
             name: item.name,
-            imageurl: item.imageurl || item.imageUrl // Handle both column names for compatibility
+            imageurl: item.imageurl
           }));
           setFigures(mappedData);
         } else {
@@ -109,7 +110,7 @@ const PublicFiguresManager = () => {
 
       if (isEditing && currentFigure) {
         // Update existing figure
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('public_figures')
           .update({
             name,
@@ -124,7 +125,7 @@ const PublicFiguresManager = () => {
         toast.success('Public figure updated successfully');
       } else {
         // Insert new figure
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('public_figures')
           .insert([
             {
@@ -151,7 +152,7 @@ const PublicFiguresManager = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('public_figures')
         .delete()
         .eq('id', id);

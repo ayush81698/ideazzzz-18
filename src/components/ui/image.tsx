@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   width?: number;
   height?: number;
+  objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+  priority?: boolean;
 }
 
 export const Image = React.memo(({
@@ -13,6 +15,8 @@ export const Image = React.memo(({
   width,
   height,
   loading = 'lazy',
+  objectFit = 'cover',
+  priority = false,
   ...props
 }: ImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -22,7 +26,15 @@ export const Image = React.memo(({
     // Reset state when src changes
     setIsLoaded(false);
     setError(false);
-  }, [src]);
+    
+    // If priority is true, preload the image
+    if (priority && src) {
+      const img = new window.Image();
+      img.src = src;
+      img.onload = () => setIsLoaded(true);
+      img.onerror = () => setError(true);
+    }
+  }, [src, priority]);
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -33,7 +45,13 @@ export const Image = React.memo(({
   };
 
   return (
-    <div className={`relative overflow-hidden ${className}`} style={{ width, height }}>
+    <div 
+      className={`relative overflow-hidden ${className}`} 
+      style={{ 
+        width: width ? `${width}px` : '100%',
+        height: height ? `${height}px` : '100%',
+      }}
+    >
       {!isLoaded && !error && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-200 animate-pulse">
           <span className="sr-only">Loading...</span>
@@ -47,8 +65,9 @@ export const Image = React.memo(({
       <img
         src={src}
         alt={alt || ''}
-        className={`${className} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
-        loading={loading}
+        className={`${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 h-full w-full`}
+        style={{ objectFit }}
+        loading={priority ? 'eager' : loading}
         onLoad={handleLoad}
         onError={handleError}
         {...props}
@@ -56,3 +75,5 @@ export const Image = React.memo(({
     </div>
   );
 });
+
+Image.displayName = 'Image';

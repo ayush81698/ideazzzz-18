@@ -92,7 +92,7 @@ const OptimizedPublicFiguresSlider = () => {
     }
 
     return (
-      <div className="relative overflow-hidden w-full h-[400px]">
+      <div className="relative overflow-hidden w-full h-[500px] md:h-[600px]">
         {figures.map((figure, index) => (
           <div
             key={figure.id}
@@ -109,16 +109,13 @@ const OptimizedPublicFiguresSlider = () => {
                 src={figure.imageurl}
                 alt={figure.name}
                 className="w-full h-full object-cover"
-                loading="lazy"
-                width={800}
-                height={400}
-                onError={(e) => {
-                  // Fallback image on error
-                  (e.target as HTMLImageElement).src = "https://placehold.co/600x400?text=Image+Not+Found";
-                }}
+                objectFit="cover"
+                priority={index === activeIndex}
+                width={1200}
+                height={600}
               />
-              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
-                <h3 className="text-white font-semibold text-xl">{figure.name}</h3>
+              <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                <h3 className="text-white font-semibold text-2xl md:text-3xl lg:text-4xl">{figure.name}</h3>
               </div>
             </div>
           </div>
@@ -126,12 +123,12 @@ const OptimizedPublicFiguresSlider = () => {
         
         {/* Navigation dots */}
         {figures.length > 1 && (
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
+          <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-20">
             {figures.map((_, index) => (
               <button
                 key={index}
-                className={`w-2 h-2 rounded-full ${
-                  index === activeIndex ? 'bg-white' : 'bg-white/50'
+                className={`w-3 h-3 rounded-full transition-all ${
+                  index === activeIndex ? 'bg-white scale-125' : 'bg-white/50'
                 }`}
                 onClick={() => setActiveIndex(index)}
                 aria-label={`Go to slide ${index + 1}`}

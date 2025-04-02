@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +10,11 @@ import UsersManager from '@/components/UsersManager';
 import PublicFiguresManager from '@/components/PublicFiguresManager';
 
 // Explicitly define admin emails for type safety
-const ADMIN_EMAILS: string[] = ['admin@ideazzz.com', 'ayuxx770@gmail.com'];
+const ADMIN_EMAILS: string[] = [
+  'admin@ideazzz.com', 
+  'ayuxx770@gmail.com',
+  'ayushkava1@gmail.com' // Added the new admin email
+];
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);

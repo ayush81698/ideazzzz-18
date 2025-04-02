@@ -27,18 +27,34 @@ const Layout = () => {
   const [cartCount, setCartCount] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+      
+      // Check if user is admin
+      if (user?.email) {
+        const adminEmails = ['admin@ideazzz.com', 'ayuxx770@gmail.com']; // Add admin emails here
+        setIsAdmin(adminEmails.includes(user.email));
+      }
     };
     
     checkUser();
     
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        setUser(session?.user || null);
+        const newUser = session?.user || null;
+        setUser(newUser);
+        
+        // Check if user is admin
+        if (newUser?.email) {
+          const adminEmails = ['admin@ideazzz.com', 'ayuxx770@gmail.com']; // Add admin emails here
+          setIsAdmin(adminEmails.includes(newUser.email));
+        } else {
+          setIsAdmin(false);
+        }
       }
     );
     
@@ -136,7 +152,7 @@ const Layout = () => {
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
-                {user && (
+                {isAdmin && (
                   <NavigationMenuItem>
                     <Link to="/admin">
                       <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -200,7 +216,7 @@ const Layout = () => {
                       <Link to="/about" onClick={() => setIsMenuOpen(false)}>
                         <Button variant="ghost" className="w-full justify-start">About</Button>
                       </Link>
-                      {user && (
+                      {isAdmin && (
                         <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
                           <Button variant="ghost" className="w-full justify-start">Admin</Button>
                         </Link>

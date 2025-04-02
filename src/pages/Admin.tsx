@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +11,7 @@ import PublicFiguresManager from '@/components/PublicFiguresManager';
 
 const Admin = () => {
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,27 +25,18 @@ const Admin = () => {
           return;
         }
         
-        // Check if user is admin - for now, we'll just check if the user exists
-        // since we don't have a profiles table with roles yet
-        setLoading(false);
+        // For now, we'll check if the user's email is an admin email
+        // In a production environment, you should use a proper roles system
+        const adminEmails = ['admin@ideazzz.com', 'ayuxx770@gmail.com']; // Add admin emails here
         
-        // Uncomment this when you have a profiles table with role field
-        /*
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        
-        if (error) throw error;
-        
-        if (!data || data.role !== 'admin') {
+        if (adminEmails.includes(user.email || '')) {
+          setIsAdmin(true);
+          setLoading(false);
+        } else {
           toast.error('You do not have admin privileges');
           navigate('/');
           return;
         }
-        */
-        
       } catch (error) {
         console.error('Admin check error:', error);
         toast.error('Error verifying admin status');
@@ -62,6 +53,10 @@ const Admin = () => {
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-ideazzz-purple"></div>
       </div>
     );
+  }
+
+  if (!isAdmin) {
+    return null; // This shouldn't render since we navigate away, but as a safeguard
   }
 
   return (

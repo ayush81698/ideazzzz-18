@@ -1,8 +1,4 @@
-
-import React, { useEffect, useState } from 'react';
-import ModelViewer from './ModelViewer';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Progress } from '@/components/ui/progress';
+import React from 'react';
 
 export interface FloatingModel {
   id: string;
@@ -25,36 +21,12 @@ export interface FloatingModel {
 interface FloatingModelsProps {
   models: FloatingModel[];
   rotateOnScroll?: boolean;
-  singleModelMode?: boolean; // New prop to enable single model mode
+  singleModelMode?: boolean;
 }
 
-const FloatingModels: React.FC<FloatingModelsProps> = ({ 
-  models = [], 
-  rotateOnScroll = true,
-  singleModelMode = false
-}) => {
-  const isMobile = useIsMobile();
-  const [scrollY, setScrollY] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadedModels, setLoadedModels] = useState<Set<string>>(new Set());
-  
-  // No models to display by default
-  const displayModels: FloatingModel[] = [];
-  
-  // Handle model load events
-  const handleModelLoad = (modelId: string) => {
-    setLoadedModels(prev => {
-      const newSet = new Set(prev);
-      newSet.add(modelId);
-      return newSet;
-    });
-  };
-
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {/* Loading UI is kept but will never show since we're not displaying models */}
-    </div>
-  );
+// This component has been simplified to not render any models to improve performance
+const FloatingModels: React.FC<FloatingModelsProps> = () => {
+  return null;
 };
 
 export default FloatingModels;

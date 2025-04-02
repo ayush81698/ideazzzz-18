@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
@@ -23,6 +23,8 @@ import "./App.css";
 const queryClient = new QueryClient();
 
 const App = () => {
+  const location = useLocation();
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -31,7 +33,7 @@ const App = () => {
         <CustomCursor />
         <PageTransition>
           <AnimatePresence mode="wait">
-            <Routes>
+            <Routes location={location} key={location.pathname}>
               <Route path="/" element={<Layout />}>
                 <Route index element={<Index />} />
                 <Route path="shop" element={<Shop />} />

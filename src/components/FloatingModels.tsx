@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect, useRef, memo } from 'react';
 
 export interface FloatingModel {
   id: string;
@@ -24,9 +25,9 @@ interface FloatingModelsProps {
   singleModelMode?: boolean;
 }
 
-// This component has been simplified to not render any models to improve performance
+// This component is optimized to not render any models to improve performance
 const FloatingModels: React.FC<FloatingModelsProps> = () => {
   return null;
 };
 
-export default FloatingModels;
+export default memo(FloatingModels);

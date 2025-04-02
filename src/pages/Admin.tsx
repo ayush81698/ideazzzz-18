@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,42 +10,46 @@ import BookingsManager from '@/components/BookingsManager';
 import UsersManager from '@/components/UsersManager';
 import PublicFiguresManager from '@/components/PublicFiguresManager';
 
+// Explicitly define admin emails for type safety
+const ADMIN_EMAILS: string[] = ['admin@ideazzz.com', 'ayuxx770@gmail.com'];
+
 const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAdmin = async () => {
+    const checkAdminStatus = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error) throw error;
         
         if (!user) {
           toast.error('You must be logged in to access the admin panel');
-          navigate('/auth');
+          navigate('/auth', { replace: true });
           return;
         }
         
-        // For now, we'll check if the user's email is an admin email
-        // In a production environment, you should use a proper roles system
-        const adminEmails = ['admin@ideazzz.com', 'ayuxx770@gmail.com']; // Add admin emails here
+        const userEmail = user.email?.toLowerCase() || '';
         
-        if (adminEmails.includes(user.email || '')) {
-          setIsAdmin(true);
-          setLoading(false);
-        } else {
+        if (!ADMIN_EMAILS.includes(userEmail)) {
           toast.error('You do not have admin privileges');
-          navigate('/');
+          navigate('/', { replace: true });
           return;
         }
+        
+        // User is authenticated and has admin privileges
+        setIsAdmin(true);
+        setLoading(false);
       } catch (error) {
         console.error('Admin check error:', error);
         toast.error('Error verifying admin status');
-        navigate('/');
+        navigate('/', { replace: true });
       }
     };
     
-    checkAdmin();
+    checkAdminStatus();
   }, [navigate]);
 
   if (loading) {
@@ -56,7 +61,19 @@ const Admin = () => {
   }
 
   if (!isAdmin) {
-    return null; // This shouldn't render since we navigate away, but as a safeguard
+    // This is an extra safety measure in case navigation fails
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col">
+        <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+        <p className="mb-4">You do not have permission to access this page.</p>
+        <button 
+          onClick={() => navigate('/')} 
+          className="px-4 py-2 bg-ideazzz-purple text-white rounded hover:bg-ideazzz-purple/90"
+        >
+          Return to Home
+        </button>
+      </div>
+    );
   }
 
   return (

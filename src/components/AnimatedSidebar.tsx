@@ -89,7 +89,7 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
       {/* Toggle Button */}
       <button 
         onClick={toggleSidebar}
-        className="menu-button fixed top-4 right-4 z-[120] p-3 rounded-full bg-black/70 backdrop-blur-lg border border-white/10 shadow-lg"
+        className="menu-button fixed top-4 right-4 z-[120] p-3 rounded-full bg-purple-600/80 backdrop-blur-lg border border-purple-400/40 shadow-lg hover:bg-purple-700"
         aria-label={isOpen ? "Close menu" : "Open menu"}
       >
         <div className="menu-button-text">
@@ -118,13 +118,13 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
         {/* Menu Container */}
         <div 
           ref={menuRef} 
-          className="menu h-full w-full md:w-[35em] ml-auto relative overflow-auto"
+          className="menu h-full w-full md:w-[35em] ml-auto relative overflow-auto bg-black/90"
           style={{ paddingTop: 'calc(3 * var(--menu-padding, 2em))', paddingBottom: 'var(--menu-padding, 2em)' }}
         >
           {/* Menu Background */}
           <div className="menu-bg absolute inset-0">
-            <div className="bg-panel first absolute inset-0 rounded-l-[1.25em]"></div>
-            <div className="bg-panel second absolute inset-0 rounded-l-[1.25em] translate-x-1 translate-y-1"></div>
+            <div className="bg-panel first absolute inset-0 rounded-l-[1.25em] bg-black/90"></div>
+            <div className="bg-panel second absolute inset-0 rounded-l-[1.25em] translate-x-1 translate-y-1 bg-gray-900/80"></div>
           </div>
 
           {/* Menu Content */}
@@ -135,23 +135,23 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
                 <li 
                   key={item.id} 
                   ref={el => itemsRef.current[index] = el}
-                  className="menu-list-item"
+                  className="menu-list-item mb-4"
                 >
                   <Link 
                     to={item.path} 
-                    className="menu-link w-full flex gap-3 py-3 px-[var(--menu-padding,2em)]"
+                    className="menu-link group w-full flex gap-3 py-3 px-[var(--menu-padding,2em)] relative rounded-md hover:bg-purple-600/20"
                     onClick={toggleSidebar}
                   >
-                    <div className="menu-link-bg absolute inset-0 bg-black/80 origin-bottom"></div>
+                    <div className="menu-link-bg absolute inset-0 bg-black/60 origin-bottom rounded-md"></div>
                     <div className="flex flex-col z-1">
                       {item.eyebrow && (
-                        <span className="eyebrow text-xs uppercase mb-1">{item.eyebrow}</span>
+                        <span className="eyebrow text-xs uppercase mb-1 text-purple-300">{item.eyebrow}</span>
                       )}
-                      <h2 className="menu-link-heading text-[2.5rem] md:text-[5.625rem] uppercase font-bold leading-[0.75]">
+                      <h2 className="menu-link-heading text-[2.5rem] md:text-[5.625rem] uppercase font-bold leading-[0.75] text-white">
                         {item.label}
                       </h2>
                     </div>
-                    <ChevronRight className="ml-auto self-center opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ChevronRight className="ml-auto self-center text-purple-300 opacity-60 group-hover:opacity-100 transition-opacity" />
                   </Link>
                 </li>
               ))}
@@ -159,15 +159,15 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
 
             {/* Menu Footer */}
             <div className="menu-details flex flex-col gap-5 px-[var(--menu-padding,2em)]">
-              <p className="p-small opacity-70">Connect with us</p>
+              <p className="p-small text-purple-200">Connect with us</p>
               <div className="socials-row flex gap-6">
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-large text-link">
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-large text-link text-white hover:text-purple-300">
                   Twitter
                 </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-large text-link">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-large text-link text-white hover:text-purple-300">
                   Instagram
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="p-large text-link">
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="p-large text-link text-white hover:text-purple-300">
                   LinkedIn
                 </a>
               </div>

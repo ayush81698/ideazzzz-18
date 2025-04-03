@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   NavigationMenu,
@@ -123,28 +124,28 @@ const Layout = () => {
                 <NavigationMenuList>
                   <NavigationMenuItem>
                     <Link to="/">
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} text-white hover:text-white hover:bg-purple-600/50`}>
                         Home
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <Link to="/shop">
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} text-white hover:text-white hover:bg-purple-600/50`}>
                         Shop
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <Link to="/booking">
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} text-white hover:text-white hover:bg-purple-600/50`}>
                         Book a Session
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <Link to="/about">
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} text-white hover:text-white hover:bg-purple-600/50`}>
                         About
                       </NavigationMenuLink>
                     </Link>
@@ -158,7 +159,7 @@ const Layout = () => {
             <AuthButtons />
             
             <Link to="/cart" className="relative">
-              <Button variant="ghost" size="icon" className="rounded-full">
+              <Button variant="ghost" size="icon" className="rounded-full text-white hover:bg-purple-600/50">
                 <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
@@ -171,7 +172,7 @@ const Layout = () => {
             {isMobile && (
               <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden">
+                  <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-purple-600/50">
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
@@ -185,27 +186,27 @@ const Layout = () => {
                           className="h-8 w-auto"
                         />
                       </Link>
-                      <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)} className="text-white hover:bg-purple-600/50">
                         <X className="h-5 w-5" />
                       </Button>
                     </div>
                     
                     <div className="flex flex-col space-y-4">
                       <Link to="/" onClick={() => setIsMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start">Home</Button>
+                        <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">Home</Button>
                       </Link>
                       <Link to="/shop" onClick={() => setIsMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start">Shop</Button>
+                        <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">Shop</Button>
                       </Link>
                       <Link to="/booking" onClick={() => setIsMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start">Book a Session</Button>
+                        <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">Book a Session</Button>
                       </Link>
                       <Link to="/about" onClick={() => setIsMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start">About</Button>
+                        <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">About</Button>
                       </Link>
                       {isAdmin && (
                         <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
-                          <Button variant="ghost" className="w-full justify-start">Admin</Button>
+                          <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">Admin</Button>
                         </Link>
                       )}
                     </div>

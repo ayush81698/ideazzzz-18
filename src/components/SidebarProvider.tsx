@@ -42,7 +42,7 @@ interface SidebarProviderProps {
 
 const SidebarProvider: React.FC<SidebarProviderProps> = ({ children }) => {
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-black">
       <AnimatedSidebar menuItems={navigationItems} />
       {children}
     </div>

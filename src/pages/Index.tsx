@@ -10,11 +10,13 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import SplineModel from '@/components/SplineModel';
 import PublicFiguresSlider from '@/components/PublicFiguresSlider';
+import { Image } from '@/components/ui/image';
 
 const Index = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
+  const [splineError, setSplineError] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -73,20 +75,35 @@ const Index = () => {
     fetchFeaturedProducts();
   }, [isMobile]);
 
+  const handleSplineError = () => {
+    console.log('Spline error detected, showing fallback');
+    setSplineError(true);
+  };
+
   return (
     <div className="relative" data-parallax-layers>
       <style>{`
         .spline-container canvas {
           image-rendering: crisp-edges;
-          width: 70%; /* Reduce rendering size */
-          height: 70%;
-          filter: blur(1px); /* Adds slight blur to reduce detail */
+          width: ${isMobile ? '100%' : '70%'};
+          height: ${isMobile ? '100%' : '70%'};
+          filter: ${splineError ? 'none' : 'blur(1px)'};
+        }
+        
+        .hero-background {
+          background-image: url('/fallback-image.jpg');
+          background-size: cover;
+          background-position: center;
+          opacity: ${splineError ? '0.7' : '0.3'};
+          transition: opacity 0.5s ease;
         }
       `}</style>
 
       <section className="relative py-4 md:py-16 min-h-[85vh] overflow-hidden flex items-center">
+        <div className="absolute inset-0 w-full h-full z-0 hero-background"></div>
+        
         <div className="absolute inset-0 w-full h-full z-0 spline-container parallax__layer" data-parallax-layer="1">
-          {isModelLoaded ? (
+          {isModelLoaded && !splineError ? (
             <SplineModel 
               scene="https://prod.spline.design/AXqCZid080td1A-X/scene.splinecode"
               className="w-full h-full"
@@ -94,11 +111,7 @@ const Index = () => {
               quality={isMobile ? 'low' : 'medium'}
             />
           ) : (
-            <img 
-              src="/fallback-image.jpg" 
-              alt="3D Model Placeholder" 
-              className="w-full h-full object-cover opacity-50"
-            />
+            <div className="w-full h-full bg-gradient-to-br from-ideazzz-purple/10 to-ideazzz-pink/10 opacity-50"></div>
           )}
         </div>
         
@@ -155,10 +168,11 @@ const Index = () => {
                 >
                   <Card className="overflow-hidden h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <div className="relative h-36 md:h-48 overflow-hidden">
-                      <img 
+                      <Image 
                         src={product.imageurl} 
                         alt={product.name}
-                        className="w-full h-full object-cover transform transition-transform hover:scale-110" 
+                        className="w-full h-full object-cover transform transition-transform hover:scale-110"
+                        priority={true}
                       />
                       {product.discount && (
                         <div className="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 text-sm font-semibold">

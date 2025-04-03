@@ -18,17 +18,41 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import CustomCursor from "@/components/CustomCursor";
 import PageTransition from "@/components/PageTransition";
+import LoadingScreen from "@/components/LoadingScreen";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const location = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate checking if all resources are loaded
+    const handleLoad = () => {
+      // Allow some time for all resources to render
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    };
+
+    // Check if the page has already loaded
+    if (document.readyState === 'complete') {
+      handleLoad();
+    } else {
+      window.addEventListener('load', handleLoad);
+      return () => window.removeEventListener('load', handleLoad);
+    }
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <div className="dark">
+          {isLoading && <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />}
           <Toaster />
           <Sonner />
           <CustomCursor />

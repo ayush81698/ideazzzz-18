@@ -46,12 +46,12 @@ const AuthButtons = () => {
     return (
       <div className="flex items-center gap-4">
         <Link to="/profile">
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="flex items-center gap-2 border-white/20 hover:bg-white/10">
             <User size={16} />
             Profile
           </Button>
         </Link>
-        <Button onClick={handleSignOut} variant="outline" size="sm" className="flex items-center gap-2">
+        <Button onClick={handleSignOut} variant="outline" size="sm" className="flex items-center gap-2 border-white/20 hover:bg-white/10">
           <LogOut size={16} />
           Sign Out
         </Button>
@@ -60,9 +60,9 @@ const AuthButtons = () => {
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center">
       <Link to="/auth">
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
+        <Button variant="outline" size="sm" className="flex items-center gap-2 border-white/20 hover:bg-white/10">
           <LogIn size={16} />
           Sign In
         </Button>

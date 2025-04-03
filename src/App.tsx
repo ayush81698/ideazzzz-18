@@ -28,27 +28,29 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <CustomCursor />
-        <PageTransition>
-          <AnimatePresence mode="wait">
-            <Routes location={location} key={location.pathname}>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Index />} />
-                <Route path="shop" element={<Shop />} />
-                <Route path="shop/:id" element={<ProductPage />} />
-                <Route path="booking" element={<Booking />} />
-                <Route path="about" element={<About />} />
-                <Route path="cart" element={<Cart />} />
-                <Route path="admin" element={<Admin />} />
-                <Route path="auth" element={<Auth />} />
-                <Route path="profile" element={<Profile />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </AnimatePresence>
-        </PageTransition>
+        <div className="dark">
+          <Toaster />
+          <Sonner />
+          <CustomCursor />
+          <PageTransition>
+            <AnimatePresence mode="wait">
+              <Routes location={location} key={location.pathname}>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Index />} />
+                  <Route path="shop" element={<Shop />} />
+                  <Route path="shop/:id" element={<ProductPage />} />
+                  <Route path="booking" element={<Booking />} />
+                  <Route path="about" element={<About />} />
+                  <Route path="cart" element={<Cart />} />
+                  <Route path="admin" element={<Admin />} />
+                  <Route path="auth" element={<Auth />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </AnimatePresence>
+          </PageTransition>
+        </div>
       </TooltipProvider>
     </QueryClientProvider>
   );

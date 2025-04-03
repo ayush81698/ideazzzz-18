@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   NavigationMenu,
@@ -34,9 +33,8 @@ const Layout = () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       
-      // Check if user is admin
       if (user?.email) {
-        const adminEmails = ['admin@ideazzz.com', 'ayuxx770@gmail.com']; // Add admin emails here
+        const adminEmails = ['admin@ideazzz.com', 'ayuxx770@gmail.com'];
         setIsAdmin(adminEmails.includes(user.email));
       }
     };
@@ -48,9 +46,8 @@ const Layout = () => {
         const newUser = session?.user || null;
         setUser(newUser);
         
-        // Check if user is admin
         if (newUser?.email) {
-          const adminEmails = ['admin@ideazzz.com', 'ayuxx770@gmail.com']; // Add admin emails here
+          const adminEmails = ['admin@ideazzz.com', 'ayuxx770@gmail.com'];
           setIsAdmin(adminEmails.includes(newUser.email));
         } else {
           setIsAdmin(false);
@@ -110,16 +107,20 @@ const Layout = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col dark">
+    <div className="min-h-screen flex flex-col">
       <header className={`sticky top-0 z-50 w-full ${isScrolled ? 'bg-black/90 backdrop-blur-md shadow-sm' : 'bg-black'} transition-all duration-300`}>
         <div className="container mx-auto flex items-center justify-between px-4 h-16">
-          <Link to="/" className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/6b787a6d-ec96-492c-9e23-419a0a02a642.png" 
-              alt="Ideazzz Logo" 
-              className="h-10 w-auto"
-            />
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/" className="flex items-center gap-2">
+              <img 
+                src="/lovable-uploads/6b787a6d-ec96-492c-9e23-419a0a02a642.png" 
+                alt="Ideazzz Logo" 
+                className="h-10 w-auto"
+              />
+            </Link>
+            
+            <AuthButtons />
+          </div>
           
           {!isMobile && (
             <NavigationMenu className="hidden md:flex">
@@ -166,8 +167,6 @@ const Layout = () => {
           )}
           
           <div className="flex items-center gap-2 md:gap-4">
-            <ThemeSwitcher />
-            
             <Link to="/cart" className="relative">
               <Button variant="ghost" size="icon" className="rounded-full">
                 <ShoppingCart className="h-5 w-5" />
@@ -178,8 +177,6 @@ const Layout = () => {
                 )}
               </Button>
             </Link>
-            
-            <AuthButtons />
             
             {isMobile && (
               <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>

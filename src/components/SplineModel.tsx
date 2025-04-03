@@ -31,10 +31,10 @@ const SplineModel: React.FC<SplineModelProps> = ({
     console.log('Spline model loaded successfully');
   };
   
-  // Fixed: This is an error handler for the Spline component, not a React event handler
-  const handleError = (err: Error) => {
+  // Fix the error handler to be compatible with Spline's onError prop
+  const handleError = (err: any) => {
     console.error('Error loading Spline model:', err);
-    setError(err);
+    setError(err instanceof Error ? err : new Error(String(err)));
     setLoading(false);
     
     // Show toast only on first error to avoid spamming

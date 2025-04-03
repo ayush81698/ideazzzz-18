@@ -51,7 +51,6 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
       duration: 0.6, 
       ease: 'power3.out' 
     }, '-=0.2')
-    // Fix here: Remove the extra parameter in staggerTo (the 5th one)
     .staggerTo(itemsRef.current, 0.8, { 
       y: 0, 
       autoAlpha: 1, 
@@ -88,15 +87,15 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
       {/* Toggle Button */}
       <button 
         onClick={toggleSidebar}
-        className="menu-button fixed right-4 top-4 z-[120] p-4 rounded-full bg-black/5 backdrop-blur-lg border border-white/10 shadow-lg"
+        className="menu-button fixed top-4 right-4 z-[120] p-3 rounded-full bg-black/70 backdrop-blur-lg border border-white/10 shadow-lg"
         aria-label={isOpen ? "Close menu" : "Open menu"}
       >
         <div className="menu-button-text">
           <div className="icon-wrap">
             {isOpen ? (
-              <X className="menu-button-icon h-6 w-6 text-white" />
+              <X className="menu-button-icon h-5 w-5 text-white" />
             ) : (
-              <Menu className="menu-button-icon h-6 w-6 text-white" />
+              <Menu className="menu-button-icon h-5 w-5 text-white" />
             )}
           </div>
         </div>

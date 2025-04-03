@@ -27,6 +27,12 @@ const navigationItems = [
     label: 'About',
     path: '/about',
     eyebrow: 'Info'
+  },
+  {
+    id: 'admin',
+    label: 'Admin',
+    path: '/admin',
+    eyebrow: 'Dashboard'
   }
 ];
 

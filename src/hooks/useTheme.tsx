@@ -4,17 +4,7 @@ import { useState, useEffect } from 'react';
 type Theme = 'light' | 'dark';
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Check if theme is stored in localStorage
-    const savedTheme = localStorage.getItem('theme');
-    
-    // Default to dark mode
-    if (savedTheme) {
-      return savedTheme as Theme;
-    } else {
-      return 'dark';
-    }
-  });
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
     const root = window.document.documentElement;

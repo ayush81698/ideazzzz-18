@@ -44,7 +44,7 @@ const AuthButtons = () => {
 
   if (user) {
     return (
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         <Link to="/profile">
           <Button variant="outline" size="sm" className="flex items-center gap-2 border-white/20 hover:bg-white/10">
             <User size={16} />

@@ -15,7 +15,6 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ShoppingCart, Menu, X, MapPin } from 'lucide-react';
 import { cartItems } from '@/pages/Shop';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ThemeSwitcher } from '@/hooks/useTheme';
 import { supabase } from '@/integrations/supabase/client';
 import AuthButtons from '@/components/AuthButtons';
 
@@ -119,54 +118,45 @@ const Layout = () => {
               />
             </Link>
             
-            <AuthButtons />
-          </div>
-          
-          {!isMobile && (
-            <NavigationMenu className="hidden md:flex">
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <Link to="/">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      Home
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/shop">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      Shop
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/booking">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      Book a Session
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/about">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                      About
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                {isAdmin && (
+            {!isMobile && (
+              <NavigationMenu className="ml-4">
+                <NavigationMenuList>
                   <NavigationMenuItem>
-                    <Link to="/admin">
+                    <Link to="/">
                       <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Admin
+                        Home
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
-                )}
-              </NavigationMenuList>
-            </NavigationMenu>
-          )}
+                  <NavigationMenuItem>
+                    <Link to="/shop">
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                        Shop
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link to="/booking">
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                        Book a Session
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link to="/about">
+                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                        About
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+            )}
+          </div>
           
           <div className="flex items-center gap-2 md:gap-4">
+            <AuthButtons />
+            
             <Link to="/cart" className="relative">
               <Button variant="ghost" size="icon" className="rounded-full">
                 <ShoppingCart className="h-5 w-5" />

@@ -51,11 +51,11 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
       duration: 0.6, 
       ease: 'power3.out' 
     }, '-=0.2')
+    // Fix here: Remove the extra parameter in staggerTo (the 5th one)
     .staggerTo(itemsRef.current, 0.8, { 
       y: 0, 
       autoAlpha: 1, 
-      ease: 'power3.out',
-      clearProps: 'all' 
+      ease: 'power3.out'
     }, 0.08, '-=0.4');
 
     return () => {

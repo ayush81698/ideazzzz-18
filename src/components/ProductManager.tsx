@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { 
   Card, 
@@ -21,7 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Trash2, Edit, Star, Box3d } from 'lucide-react';
+import { Loader2, Plus, Trash2, Edit, Star, Box } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   fetchProducts, 
@@ -125,7 +124,6 @@ const ProductManager = () => {
       setUploading(true);
       
       if (editingProduct) {
-        // Update existing product
         const updated = await updateProduct(editingProduct.id, formData);
         if (updated) {
           setProducts(prev => 
@@ -134,7 +132,6 @@ const ProductManager = () => {
           toast.success('Product updated successfully');
         }
       } else {
-        // Add new product
         const newProduct = await addProduct(formData);
         if (newProduct) {
           setProducts(prev => [newProduct, ...prev]);
@@ -333,7 +330,7 @@ const ProductManager = () => {
                   )}
                   {product.model_url && (
                     <div className="absolute bottom-2 left-2 bg-blue-500 text-white p-1 rounded-full">
-                      <Box3d className="h-4 w-4" />
+                      <Box className="h-4 w-4" />
                     </div>
                   )}
                 </div>

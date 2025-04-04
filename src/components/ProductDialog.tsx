@@ -1,216 +1,289 @@
 
-import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { toast } from 'sonner';
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Product } from '@/types/products';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { RotateCw } from 'lucide-react';
 
 interface ProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  editingProduct: Product | null;
-  onSave: (product: Partial<Product>, file: File | null) => Promise<void>;
+  product: Product | null;
+  onSave: (product: Product) => void;
 }
 
-const ProductDialog: React.FC<ProductDialogProps> = ({
-  open,
-  onOpenChange,
-  editingProduct,
-  onSave
-}) => {
-  const [formData, setFormData] = useState<Partial<Product>>(
-    editingProduct || {
-      name: '',
-      description: '',
-      price: 0,
-      category: '',
-      stock: 10,
-      imageurl: '',
-      discount: '',
-      featured: false,
-      model_url: '',
-    }
-  );
-  
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const ProductDialog: React.FC<ProductDialogProps> = ({ open, onOpenChange, product, onSave }) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [discount, setDiscount] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [category, setCategory] = useState('');
+  const [featured, setFeatured] = useState(false);
+  const [stock, setStock] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [modelUrl, setModelUrl] = useState('');
+  const [selectedModelFile, setSelectedModelFile] = useState<File | null>(null);
+  const [uploadingModel, setUploadingModel] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    
-    if (name === 'price' || name === 'stock') {
-      setFormData({ ...formData, [name]: Number(value) });
+  useEffect(() => {
+    if (product) {
+      setName(product.name || '');
+      setDescription(product.description || '');
+      setPrice(product.price?.toString() || '');
+      setDiscount(product.discount || '');
+      setImageUrl(product.imageurl || '');
+      setCategory(product.category || '');
+      setFeatured(product.featured || false);
+      setStock(product.stock?.toString() || '');
+      setModelUrl(product.model_url || '');
     } else {
-      setFormData({ ...formData, [name]: value });
+      resetForm();
+    }
+  }, [product, open]);
+
+  const resetForm = () => {
+    setName('');
+    setDescription('');
+    setPrice('');
+    setDiscount('');
+    setImageUrl('');
+    setCategory('');
+    setFeatured(false);
+    setStock('');
+    setSelectedFile(null);
+    setModelUrl('');
+    setSelectedModelFile(null);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
     }
   };
 
-  const handleSwitchChange = (checked: boolean) => {
-    setFormData({ ...formData, featured: checked });
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+  const handleModelFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedModelFile(e.target.files[0]);
     }
   };
 
-  const handleSubmit = async () => {
+  const uploadFile = async (file: File, bucket: string): Promise<string | null> => {
     try {
-      if (!formData.name) {
-        toast.error('Product name is required');
+      setUploading(true);
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `${fileName}`;
+      
+      const { error: uploadError, data } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+        
+      if (uploadError) {
+        throw uploadError;
+      }
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(filePath);
+        
+      return publicUrl;
+    } catch (error) {
+      console.error(`Error uploading to ${bucket}:`, error);
+      toast.error(`Failed to upload file to ${bucket}`);
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      // Validate required fields
+      if (!name || !description || !price) {
+        toast.error('Please fill in all required fields');
         return;
       }
-
-      if (!formData.price || formData.price <= 0) {
-        toast.error('Please enter a valid price');
-        return;
+      
+      let imageUrlToUse = imageUrl;
+      if (selectedFile) {
+        const uploadedUrl = await uploadFile(selectedFile, 'products');
+        if (uploadedUrl) {
+          imageUrlToUse = uploadedUrl;
+        } else {
+          return; // Exit if upload failed
+        }
+      }
+      
+      let modelUrlToUse = modelUrl;
+      if (selectedModelFile) {
+        setUploadingModel(true);
+        const uploadedModelUrl = await uploadFile(selectedModelFile, 'models');
+        if (uploadedModelUrl) {
+          modelUrlToUse = uploadedModelUrl;
+        }
+        setUploadingModel(false);
       }
 
-      setIsSubmitting(true);
-      await onSave(formData, imageFile);
+      const updatedProduct: Product = {
+        id: product?.id || '',
+        name,
+        description,
+        price: parseFloat(price),
+        discount,
+        imageurl: imageUrlToUse,
+        category,
+        featured,
+        stock: stock ? parseInt(stock) : undefined,
+        model_url: modelUrlToUse || null,
+      };
+
+      onSave(updatedProduct);
       onOpenChange(false);
+      resetForm();
     } catch (error) {
       console.error('Error saving product:', error);
-    } finally {
-      setIsSubmitting(false);
+      toast.error('Failed to save product');
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
-          <DialogDescription>
-            {editingProduct 
-              ? 'Update the product details below.' 
-              : 'Fill in the details to add a new product.'}
-          </DialogDescription>
+          <DialogTitle>{product ? 'Edit Product' : 'Add New Product'}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div>
-            <Label htmlFor="name">Name</Label>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">Name</Label>
             <Input
               id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              placeholder="Product name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="col-span-3"
             />
           </div>
-          <div>
-            <Label htmlFor="description">Description</Label>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="description" className="text-right">Description</Label>
             <Textarea
               id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Describe your product"
-              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="col-span-3"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="price">Price (₹)</Label>
-              <Input
-                id="price"
-                name="price"
-                type="number"
-                value={formData.price}
-                onChange={handleInputChange}
-                placeholder="Price in rupees"
-              />
-            </div>
-            <div>
-              <Label htmlFor="stock">Stock</Label>
-              <Input
-                id="stock"
-                name="stock"
-                type="number"
-                value={formData.stock}
-                onChange={handleInputChange}
-                placeholder="Available quantity"
-              />
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="category">Category</Label>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="price" className="text-right">Price</Label>
             <Input
-              id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleInputChange}
-              placeholder="Product category"
+              id="price"
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className="col-span-3"
             />
           </div>
-          <div>
-            <Label htmlFor="imageurl">Image URL</Label>
-            <Input
-              id="imageurl"
-              name="imageurl"
-              value={formData.imageurl}
-              onChange={handleInputChange}
-              placeholder="URL to product image"
-            />
-          </div>
-          <div>
-            <Label htmlFor="model_url">3D Model URL (GLB format)</Label>
-            <Input
-              id="model_url"
-              name="model_url"
-              value={formData.model_url || ''}
-              onChange={handleInputChange}
-              placeholder="URL to 3D GLB model (optional)"
-            />
-            <p className="text-sm text-muted-foreground mt-1">
-              Add a URL to a .glb 3D model file for product preview
-            </p>
-          </div>
-          <div>
-            <Label htmlFor="discount">Discount Label</Label>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="discount" className="text-right">Discount</Label>
             <Input
               id="discount"
-              name="discount"
-              value={formData.discount}
-              onChange={handleInputChange}
-              placeholder="e.g. 20% OFF or Limited Edition"
+              value={discount}
+              onChange={(e) => setDiscount(e.target.value)}
+              className="col-span-3"
+              placeholder="e.g. 10% off"
             />
           </div>
-          <div>
-            <Label htmlFor="image">Upload Image</Label>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="category" className="text-right">Category</Label>
+            <Input
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="stock" className="text-right">Stock</Label>
+            <Input
+              id="stock"
+              type="number"
+              value={stock}
+              onChange={(e) => setStock(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="featured" className="text-right">Featured</Label>
+            <div className="flex items-center col-span-3">
+              <Switch 
+                id="featured" 
+                checked={featured}
+                onCheckedChange={setFeatured}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="image" className="text-right">Image URL</Label>
             <Input
               id="image"
-              name="image"
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              className="col-span-3"
+              placeholder="https://example.com/image.jpg"
             />
           </div>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="featured"
-              checked={formData.featured || false}
-              onCheckedChange={handleSwitchChange}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="imageUpload" className="text-right">Upload Image</Label>
+            <Input
+              id="imageUpload"
+              type="file"
+              onChange={handleFileChange}
+              className="col-span-3"
+              accept="image/*"
             />
-            <Label htmlFor="featured">Feature on homepage</Label>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="modelUrl" className="text-right">3D Model URL</Label>
+            <Input
+              id="modelUrl"
+              value={modelUrl}
+              onChange={(e) => setModelUrl(e.target.value)}
+              className="col-span-3"
+              placeholder="https://example.com/model.glb"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="modelUpload" className="text-right">Upload 3D Model</Label>
+            <Input
+              id="modelUpload"
+              type="file"
+              onChange={handleModelFileChange}
+              className="col-span-3"
+              accept=".glb,.gltf"
+            />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Product'}
+          <Button onClick={handleSave} disabled={uploading || uploadingModel}>
+            {(uploading || uploadingModel) ? (
+              <>
+                <RotateCw className="mr-2 h-4 w-4 animate-spin" />
+                {uploading ? 'Uploading Image...' : 'Uploading Model...'}
+              </>
+            ) : (
+              'Save'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

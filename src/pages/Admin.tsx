@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import ProductManager from '@/components/ProductManager';
-import ModelManager from '@/components/ModelManager';
 import BookingsManager from '@/components/BookingsManager';
 import UsersManager from '@/components/UsersManager';
 import PublicFiguresManager from '@/components/PublicFiguresManager';
@@ -84,9 +84,8 @@ const Admin = () => {
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
       
       <Tabs defaultValue="products" className="w-full">
-        <TabsList className="mb-8 grid grid-cols-5 max-w-4xl">
+        <TabsList className="mb-8 grid grid-cols-4 max-w-4xl">
           <TabsTrigger value="products">Products</TabsTrigger>
-          <TabsTrigger value="models">3D Models</TabsTrigger>
           <TabsTrigger value="bookings">Bookings</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="public-figures">Public Figures</TabsTrigger>
@@ -94,10 +93,6 @@ const Admin = () => {
         
         <TabsContent value="products" className="w-full">
           <ProductManager />
-        </TabsContent>
-        
-        <TabsContent value="models" className="w-full">
-          <ModelManager />
         </TabsContent>
         
         <TabsContent value="bookings" className="w-full">

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { usePublicFiguresGridSlider } from './hooks/usePublicFiguresGridSlider';
+import { Image } from '@/components/ui/image';
 
 const PublicFiguresSlider: React.FC = () => {
   const { figuresGalleries } = usePublicFiguresGridSlider();
@@ -13,7 +14,7 @@ const PublicFiguresSlider: React.FC = () => {
         </h2>
         
         <div className="figures-wrapper">
-          {figuresGalleries.map((gallery, galleryIndex) => (
+          {figuresGalleries.slice(0, 2).map((gallery, galleryIndex) => (
             <div 
               key={`gallery-${galleryIndex}`} 
               className="figures-gallery"
@@ -25,10 +26,12 @@ const PublicFiguresSlider: React.FC = () => {
                   className="figure-item"
                 >
                   <div>
-                    <img
+                    <Image
                       src={figure.imageurl}
                       alt={figure.name}
                       loading="lazy"
+                      objectFit="cover"
+                      className="w-full h-full"
                     />
                     <h3 className="figure-name">{figure.name}</h3>
                   </div>

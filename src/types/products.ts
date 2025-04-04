@@ -4,10 +4,11 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  category?: string;
-  stock?: number;
   imageurl: string;
   discount?: string;
+  category?: string;
   featured?: boolean;
-  model_url?: string;
+  stock?: number;
+  created_at?: string;
+  model_url?: string | null;
 }

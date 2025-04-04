@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -63,28 +62,23 @@ export const usePublicFiguresGridSlider = () => {
     fetchFigures();
   }, []);
 
-  // Organize figures into exactly 2 galleries for the grid display
+  // Create exactly 2 galleries with the figures
   useEffect(() => {
     if (figures.length === 0) return;
 
-    // Duplicate figures to ensure we have enough for the grid display
+    // Duplicate figures to ensure we have enough for the display
     const extendedFigures = [...figures];
     
-    // Keep duplicating until we have at least 20 figures
-    while (extendedFigures.length < 20) {
+    // Keep duplicating until we have at least 10 figures
+    while (extendedFigures.length < 10) {
       extendedFigures.push(...figures);
     }
     
-    // Create exactly two galleries with equal figures each
-    const totalFigures = extendedFigures.length;
-    const halfPoint = Math.ceil(totalFigures / 2);
+    // Create exactly two galleries with equal figures
+    const gallery1 = [...extendedFigures];
+    const gallery2 = [...extendedFigures];
     
-    const galleries = [
-      extendedFigures.slice(0, halfPoint),
-      extendedFigures.slice(0, halfPoint) // Use the same figures but they'll move in opposite direction
-    ];
-    
-    setFiguresGalleries(galleries);
+    setFiguresGalleries([gallery1, gallery2]);
   }, [figures]);
 
   return { figures, figuresGalleries };

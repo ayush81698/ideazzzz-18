@@ -13,19 +13,18 @@ const PublicFiguresSlider: React.FC = () => {
           Public Figures We Worked With
         </h2>
         
-        <div className="figures-wrapper">
+        <div className="figures-grid-wrapper">
           {figuresGalleries.slice(0, 2).map((gallery, galleryIndex) => (
             <div 
               key={`gallery-${galleryIndex}`} 
-              className="figures-gallery"
-              style={{ '--i': galleryIndex } as React.CSSProperties}
+              className={`figures-gallery ${galleryIndex === 0 ? 'slide-left' : 'slide-right'}`}
             >
               {gallery.map((figure, index) => (
                 <div 
                   key={`figure-${figure.id}-${index}`} 
                   className="figure-item"
                 >
-                  <div>
+                  <div className="figure-container">
                     <Image
                       src={figure.imageurl}
                       alt={figure.name}

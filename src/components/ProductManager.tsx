@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Trash2, Edit, Star } from 'lucide-react';
+import { Loader2, Plus, Trash2, Edit, Star, Cube } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   fetchProducts, 
@@ -30,21 +30,25 @@ import {
   deleteProduct, 
   Product 
 } from '@/services/productService';
+import { Progress } from '@/components/ui/progress';
 
 const ProductManager = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: 0,
-    imageurl: '', // Changed from imageUrl to match database column
+    imageurl: '',
     discount: '',
     category: '',
     stock: 0,
-    featured: false
+    featured: false,
+    model_url: ''
   });
 
   useEffect(() => {
@@ -78,13 +82,15 @@ const ProductManager = () => {
       name: '',
       description: '',
       price: 0,
-      imageurl: '', // Changed from imageUrl to match database column
+      imageurl: '',
       discount: '',
       category: '',
       stock: 0,
-      featured: false
+      featured: false,
+      model_url: ''
     });
     setEditingProduct(null);
+    setUploadProgress(0);
   };
 
   const handleEdit = (product: Product) => {
@@ -93,11 +99,12 @@ const ProductManager = () => {
       name: product.name,
       description: product.description,
       price: product.price,
-      imageurl: product.imageurl, // Changed from imageUrl to match database column
+      imageurl: product.imageurl,
       discount: product.discount || '',
       category: product.category || '',
       stock: product.stock || 0,
-      featured: product.featured || false
+      featured: product.featured || false,
+      model_url: product.model_url || ''
     });
     setOpenDialog(true);
   };
@@ -115,6 +122,8 @@ const ProductManager = () => {
     e.preventDefault();
     
     try {
+      setUploading(true);
+      
       if (editingProduct) {
         // Update existing product
         const updated = await updateProduct(editingProduct.id, formData);
@@ -122,12 +131,14 @@ const ProductManager = () => {
           setProducts(prev => 
             prev.map(product => product.id === editingProduct.id ? updated : product)
           );
+          toast.success('Product updated successfully');
         }
       } else {
         // Add new product
         const newProduct = await addProduct(formData);
         if (newProduct) {
           setProducts(prev => [newProduct, ...prev]);
+          toast.success('Product added successfully');
         }
       }
       
@@ -136,6 +147,8 @@ const ProductManager = () => {
     } catch (error) {
       console.error("Error saving product:", error);
       toast.error("Failed to save product");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -207,6 +220,24 @@ const ProductManager = () => {
                 />
               </div>
               
+              <div className="space-y-2">
+                <Label htmlFor="model_url">3D Model URL (GLB format)</Label>
+                <Input
+                  id="model_url"
+                  name="model_url"
+                  value={formData.model_url}
+                  onChange={handleChange}
+                  placeholder="https://example.com/model.glb"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Add a URL to a GLB 3D model file (optional)
+                </p>
+              </div>
+              
+              {uploading && (
+                <Progress value={uploadProgress} className="h-2" />
+              )}
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
@@ -252,8 +283,15 @@ const ProductManager = () => {
                 <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
-                  {editingProduct ? 'Update' : 'Add'} Product
+                <Button type="submit" disabled={uploading}>
+                  {uploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {editingProduct ? 'Updating...' : 'Adding...'}
+                    </>
+                  ) : (
+                    <>{editingProduct ? 'Update' : 'Add'} Product</>
+                  )}
                 </Button>
               </DialogFooter>
             </form>
@@ -276,7 +314,7 @@ const ProductManager = () => {
               <Card key={product.id} className="overflow-hidden">
                 <div className="relative h-48 overflow-hidden">
                   <img 
-                    src={product.imageurl || '/placeholder.svg'} // Changed from imageUrl to match database column
+                    src={product.imageurl || '/placeholder.svg'}
                     alt={product.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -291,6 +329,11 @@ const ProductManager = () => {
                   {product.featured && (
                     <div className="absolute top-2 left-2 bg-yellow-500 text-white p-1 rounded-full">
                       <Star className="h-4 w-4" />
+                    </div>
+                  )}
+                  {product.model_url && (
+                    <div className="absolute bottom-2 left-2 bg-blue-500 text-white p-1 rounded-full">
+                      <Cube className="h-4 w-4" />
                     </div>
                   )}
                 </div>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -62,7 +63,7 @@ export const usePublicFiguresGridSlider = () => {
     fetchFigures();
   }, []);
 
-  // Create exactly 2 galleries with the figures
+  // Create 2 different galleries with different ordering of figures
   useEffect(() => {
     if (figures.length === 0) return;
 
@@ -74,9 +75,19 @@ export const usePublicFiguresGridSlider = () => {
       extendedFigures.push(...figures);
     }
     
-    // Create exactly two galleries with equal figures
+    // Create two galleries with different ordering
     const gallery1 = [...extendedFigures];
-    const gallery2 = [...extendedFigures];
+    
+    // Create a second gallery with a different order
+    // We'll reverse the array and shift it to ensure different content appears side by side
+    const gallery2 = [...extendedFigures].reverse();
+    
+    // Shift the second gallery to ensure different figures appear in parallel positions
+    if (gallery2.length > 3) {
+      // Take first few items and push them to the end
+      const firstItems = gallery2.splice(0, 3);
+      gallery2.push(...firstItems);
+    }
     
     setFiguresGalleries([gallery1, gallery2]);
   }, [figures]);

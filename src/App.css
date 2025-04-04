@@ -23,6 +23,12 @@ body {
 /* Force dark mode by default */
 :root {
   color-scheme: dark;
+  --duration: 700ms;
+  --num-rows: 2;
+  --num-cols: 5;
+  --gallery-width: 200vw;  /* twice the viewport width */
+  --gallery-item-width: calc(var(--gallery-width) / (var(--num-cols))); 
+  --gallery-item-height: calc(60vh / var(--num-rows));
 }
 
 .logo {
@@ -50,6 +56,123 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
+  }
+}
+
+/* Grid Gallery Animation Styles */
+.figures-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.figures-gallery {
+  position: relative;
+  padding: 0;
+  display: grid;
+  width: var(--gallery-width);
+  grid-template-columns: repeat(var(--num-cols), var(--gallery-item-width));
+  grid-template-rows: repeat(var(--num-rows), var(--gallery-item-height));
+  gap: 0.5rem;
+  animation-name: gallery-slide;
+  animation-duration: 60s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.figures-gallery:nth-child(even) {
+  animation-direction: reverse;
+}
+
+@keyframes gallery-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(var(--gallery-width) / 2 * -1)); }
+}
+
+.figures-gallery > .figure-item {
+  position: relative;
+  background: black;
+  overflow: hidden;
+  transition: all 300ms ease-in-out;
+  padding: 0.25rem;
+  color: white;
+  border-radius: 0.5rem;
+}
+
+.figures-gallery > .figure-item > div {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.35rem;
+}
+
+.figures-gallery > .figure-item > div::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.75), transparent 20% 80%, rgba(0, 0, 0, 0.75) 100%);
+  transition: opacity 300ms linear;
+  opacity: 0;
+  z-index: 1;
+}
+
+.figures-wrapper:hover .figure-item:not(:hover) {
+  transform: scale(0.95);
+}
+
+.figures-gallery > .figure-item:hover > div::before {
+  opacity: 1;
+}
+
+.figures-gallery > .figure-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition-property: transform, filter;
+  transition-duration: var(--duration);
+  transition-timing-function: ease-in-out;
+}
+
+.figures-gallery > .figure-item:hover img {
+  transform: scale(1.05);
+}
+
+.figures-gallery > .figure-item .figure-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  transition: all 300ms ease-in-out;
+  opacity: 0;
+  transform: translateY(1rem);
+  color: white;
+  text-decoration: none;
+  background-color: transparent;
+  z-index: 2;
+  text-align: center;
+  font-weight: bold;
+}
+
+.figures-gallery > .figure-item:hover .figure-name {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  :root {
+    --num-rows: 2;
+    --num-cols: 2;
+    --gallery-width: 200vw;
+    --gallery-item-height: 30vh;
+  }
+  
+  .figures-gallery {
+    animation-duration: 30s;
   }
 }
 

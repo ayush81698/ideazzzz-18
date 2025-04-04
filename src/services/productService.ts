@@ -12,6 +12,7 @@ export interface Product {
   discount?: string;
   featured?: boolean;
   created_at?: string;
+  model_url?: string | null; // Added model_url property
 }
 
 export const fetchProducts = async (): Promise<Product[]> => {

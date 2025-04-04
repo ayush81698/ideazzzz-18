@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Trash2, Edit, Star, Cube } from 'lucide-react';
+import { Loader2, Plus, Trash2, Edit, Star, Box3d } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   fetchProducts, 
@@ -333,7 +333,7 @@ const ProductManager = () => {
                   )}
                   {product.model_url && (
                     <div className="absolute bottom-2 left-2 bg-blue-500 text-white p-1 rounded-full">
-                      <Cube className="h-4 w-4" />
+                      <Box3d className="h-4 w-4" />
                     </div>
                   )}
                 </div>

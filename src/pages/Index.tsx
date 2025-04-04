@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -149,7 +150,7 @@ const Index = () => {
           <div className="text-center mb-8 md:mb-10">
             <Badge className="mb-2 bg-ideazzz-pink px-4 py-1 text-white">Special Offers</Badge>
             <h2 className="text-2xl md:text-4xl font-bold">Featured Products</h2>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">
+            <p className="text-gray-600 dark:text-gray-300 mt-2 text-sm md:text-base">
               Explore our handpicked collection of premium 3D models and services
             </p>
           </div>
@@ -159,19 +160,19 @@ const Index = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ideazzz-purple"></div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 featured-products-grid">
               {featuredProducts.map((product) => (
                 <motion.div 
                   key={product.id}
                   whileHover={{ y: -10 }}
-                  className="relative"
+                  className="relative featured-product-card"
                 >
                   <Card className="overflow-hidden h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
                     <div className="relative h-36 md:h-48 overflow-hidden">
                       <Image 
                         src={product.imageurl} 
                         alt={product.name}
-                        className="w-full h-full object-cover transform transition-transform hover:scale-110"
+                        className="w-full h-full object-cover transform transition-transform hover:scale-110 mobile-contained-image"
                         priority={true}
                       />
                       {product.discount && (
@@ -180,7 +181,7 @@ const Index = () => {
                         </div>
                       )}
                     </div>
-                    <CardContent className="p-4 md:p-5">
+                    <CardContent className="p-3 md:p-5">
                       <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">{product.name}</h3>
                       <p className="text-gray-600 dark:text-gray-300 mb-2 md:mb-3 text-xs md:text-sm">
                         {product.description}
@@ -215,33 +216,33 @@ const Index = () => {
         </div>
       </section>
       
-      <section className="py-16 bg-white dark:bg-gray-800">
+      <section className="py-12 md:py-16 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Services</h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          <div className="text-center mb-10 md:mb-16">
+            <h2 className="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Our Services</h2>
+            <p className="text-sm md:text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Discover how we can transform your ideas into reality with our premium sculpting and 3D printing services.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mobile-service-card"
             >
-              <div className="p-8">
-                <div className="w-14 h-14 bg-ideazzz-purple/10 rounded-lg flex items-center justify-center mb-6">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-ideazzz-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-6 md:p-8">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-ideazzz-purple/10 rounded-lg flex items-center justify-center mb-4 md:mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-8 md:w-8 text-ideazzz-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-3">Custom Design</h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3">Custom Design</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-3 md:mb-4 text-sm md:text-base">
                   Work with our expert designers to bring your unique vision to life with precision and artistry.
                 </p>
-                <Link to="/booking" className="text-ideazzz-purple font-medium inline-flex items-center">
+                <Link to="/booking" className="text-ideazzz-purple font-medium inline-flex items-center text-sm md:text-base">
                   Learn More
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 md:h-4 md:w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
@@ -250,21 +251,21 @@ const Index = () => {
             
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mobile-service-card"
             >
-              <div className="p-8">
-                <div className="w-14 h-14 bg-ideazzz-pink/10 rounded-lg flex items-center justify-center mb-6">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-ideazzz-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-6 md:p-8">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-ideazzz-pink/10 rounded-lg flex items-center justify-center mb-4 md:mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-8 md:w-8 text-ideazzz-pink" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-3">3D Printing</h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3">3D Printing</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-3 md:mb-4 text-sm md:text-base">
                   High-quality 3D printing services using premium materials for durable and detailed results.
                 </p>
-                <Link to="/shop" className="text-ideazzz-pink font-medium inline-flex items-center">
+                <Link to="/shop" className="text-ideazzz-pink font-medium inline-flex items-center text-sm md:text-base">
                   Explore Products
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 md:h-4 md:w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
@@ -273,21 +274,21 @@ const Index = () => {
             
             <motion.div 
               whileHover={{ y: -10 }}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mobile-service-card"
             >
-              <div className="p-8">
-                <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-6">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-6 md:p-8">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-4 md:mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 md:h-8 md:w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-3">Premium Materials</h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3">Premium Materials</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-3 md:mb-4 text-sm md:text-base">
                   We use only the highest quality materials to ensure longevity and beauty in every piece.
                 </p>
-                <Link to="/about" className="text-blue-500 font-medium inline-flex items-center">
+                <Link to="/about" className="text-blue-500 font-medium inline-flex items-center text-sm md:text-base">
                   About Our Process
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 md:h-4 md:w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>

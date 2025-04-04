@@ -18,6 +18,39 @@ body {
   body {
     cursor: auto;
   }
+  
+  .mobile-contained-image {
+    object-fit: contain !important;
+    padding: 0 12px;
+  }
+  
+  .mobile-service-card {
+    padding: 16px !important;
+  }
+  
+  .mobile-service-card h3 {
+    font-size: 18px !important;
+  }
+  
+  .mobile-service-card p {
+    font-size: 14px !important;
+  }
+  
+  .featured-products-grid {
+    grid-gap: 16px !important;
+  }
+  
+  .featured-product-card {
+    transform: scale(0.98);
+  }
+  
+  .featured-product-card h3 {
+    font-size: 16px !important;
+  }
+  
+  .featured-product-card p {
+    font-size: 12px !important;
+  }
 }
 
 /* Force dark mode by default */

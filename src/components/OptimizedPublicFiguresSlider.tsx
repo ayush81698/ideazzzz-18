@@ -104,12 +104,12 @@ const OptimizedPublicFiguresSlider = () => {
               backfaceVisibility: 'hidden',
             }}
           >
-            <div className="relative w-full h-full overflow-hidden rounded-lg">
+            <div className="relative w-full h-full overflow-hidden rounded-lg px-4 md:px-0">
               <Image
                 src={figure.imageurl}
                 alt={figure.name}
-                className="w-full h-full object-cover"
-                objectFit="cover"
+                className="w-full h-full object-contain md:object-cover"
+                objectFit="contain"
                 priority={index === activeIndex}
                 width={1200}
                 height={600}

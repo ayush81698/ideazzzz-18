@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { 
   Card, 
@@ -17,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogDescription
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -55,10 +57,16 @@ const ProductManager = () => {
   }, []);
 
   const loadProducts = async () => {
-    setLoading(true);
-    const data = await fetchProducts();
-    setProducts(data);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const data = await fetchProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      toast.error("Failed to fetch products");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -95,10 +103,10 @@ const ProductManager = () => {
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
     setFormData({
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      imageurl: product.imageurl,
+      name: product.name || '',
+      description: product.description || '',
+      price: product.price || 0,
+      imageurl: product.imageurl || '',
       discount: product.discount || '',
       category: product.category || '',
       stock: product.stock || 0,
@@ -110,9 +118,17 @@ const ProductManager = () => {
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      const success = await deleteProduct(id);
-      if (success) {
-        setProducts(prev => prev.filter(product => product.id !== id));
+      try {
+        const success = await deleteProduct(id);
+        if (success) {
+          setProducts(prev => prev.filter(product => product.id !== id));
+          toast.success("Product deleted successfully");
+        } else {
+          toast.error("Failed to delete product");
+        }
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        toast.error("Failed to delete product");
       }
     }
   };
@@ -123,24 +139,41 @@ const ProductManager = () => {
     try {
       setUploading(true);
       
+      if (!formData.name || !formData.description || !formData.price) {
+        toast.error("Name, description and price are required");
+        setUploading(false);
+        return;
+      }
+      
       if (editingProduct) {
+        console.log("Updating product with ID:", editingProduct.id);
+        console.log("Form data:", formData);
+        
         const updated = await updateProduct(editingProduct.id, formData);
         if (updated) {
           setProducts(prev => 
             prev.map(product => product.id === editingProduct.id ? updated : product)
           );
           toast.success('Product updated successfully');
+          setOpenDialog(false);
+          resetForm();
+        } else {
+          toast.error("Failed to update product");
         }
       } else {
+        console.log("Adding new product");
+        console.log("Form data:", formData);
+        
         const newProduct = await addProduct(formData);
         if (newProduct) {
           setProducts(prev => [newProduct, ...prev]);
           toast.success('Product added successfully');
+          setOpenDialog(false);
+          resetForm();
+        } else {
+          toast.error("Failed to add product");
         }
       }
-      
-      resetForm();
-      setOpenDialog(false);
     } catch (error) {
       console.error("Error saving product:", error);
       toast.error("Failed to save product");
@@ -169,11 +202,14 @@ const ProductManager = () => {
               <DialogTitle>
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
               </DialogTitle>
+              <DialogDescription>
+                Fill in the product details below
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Product Name</Label>
+                  <Label htmlFor="name">Product Name*</Label>
                   <Input
                     id="name"
                     name="name"
@@ -183,7 +219,7 @@ const ProductManager = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price (₹)</Label>
+                  <Label htmlFor="price">Price (₹)*</Label>
                   <Input
                     id="price"
                     name="price"
@@ -196,7 +232,7 @@ const ProductManager = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Description*</Label>
                 <Textarea
                   id="description"
                   name="description"
@@ -207,13 +243,14 @@ const ProductManager = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="imageurl">Image URL</Label>
+                <Label htmlFor="imageurl">Image URL*</Label>
                 <Input
                   id="imageurl"
                   name="imageurl"
                   value={formData.imageurl}
                   onChange={handleChange}
                   required
+                  placeholder="https://example.com/image.jpg"
                 />
               </div>
               

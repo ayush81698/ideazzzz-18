@@ -1,9 +1,7 @@
 
 import React from 'react';
 
-// Component disabled as per requirements
-const CustomCursor: React.FC = () => {
-  return null;
-};
+// Completely disabled custom cursor component
+const CustomCursor: React.FC = () => null;
 
 export default CustomCursor;

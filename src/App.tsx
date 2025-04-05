@@ -16,8 +16,6 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
-import CustomCursor from "@/components/CustomCursor";
-import PageTransition from "@/components/PageTransition";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useState, useEffect } from "react";
 import "./App.css";
@@ -55,25 +53,22 @@ const App = () => {
           {isLoading && <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />}
           <Toaster />
           <Sonner />
-          <CustomCursor />
-          <PageTransition>
-            <AnimatePresence mode="wait">
-              <Routes location={location} key={location.pathname}>
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<Index />} />
-                  <Route path="shop" element={<Shop />} />
-                  <Route path="shop/:id" element={<ProductPage />} />
-                  <Route path="booking" element={<Booking />} />
-                  <Route path="about" element={<About />} />
-                  <Route path="cart" element={<Cart />} />
-                  <Route path="admin" element={<Admin />} />
-                  <Route path="auth" element={<Auth />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              </Routes>
-            </AnimatePresence>
-          </PageTransition>
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Index />} />
+                <Route path="shop" element={<Shop />} />
+                <Route path="shop/:id" element={<ProductPage />} />
+                <Route path="booking" element={<Booking />} />
+                <Route path="about" element={<About />} />
+                <Route path="cart" element={<Cart />} />
+                <Route path="admin" element={<Admin />} />
+                <Route path="auth" element={<Auth />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </AnimatePresence>
         </div>
       </TooltipProvider>
     </QueryClientProvider>

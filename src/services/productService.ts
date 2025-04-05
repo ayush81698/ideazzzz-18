@@ -6,13 +6,13 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  imageurl: string; // Changed from imageUrl to imageurl to match DB column
+  imageurl: string; 
   category?: string;
   stock?: number;
   discount?: string;
   featured?: boolean;
   created_at?: string;
-  model_url?: string | null; // Added model_url property
+  model_url?: string | null;
 }
 
 export const fetchProducts = async (): Promise<Product[]> => {
@@ -36,18 +36,30 @@ export const fetchProducts = async (): Promise<Product[]> => {
 
 export const addProduct = async (product: Omit<Product, 'id'>): Promise<Product | null> => {
   try {
+    console.log("Adding product to Supabase:", product);
+    
     const { data, error } = await supabase
       .from('products')
-      .insert([product])
-      .select()
-      .single();
+      .insert([{
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        imageurl: product.imageurl,
+        category: product.category || null,
+        stock: product.stock || null,
+        discount: product.discount || null,
+        featured: product.featured || false,
+        model_url: product.model_url || null
+      }])
+      .select();
       
     if (error) {
       console.error('Error adding product:', error);
       throw error;
     }
     
-    return data;
+    console.log("Supabase response after adding:", data);
+    return data?.[0] || null;
   } catch (error) {
     console.error('Error in addProduct service:', error);
     return null;
@@ -56,19 +68,32 @@ export const addProduct = async (product: Omit<Product, 'id'>): Promise<Product 
 
 export const updateProduct = async (id: string, product: Partial<Product>): Promise<Product | null> => {
   try {
+    console.log("Updating product with ID:", id);
+    console.log("Update data:", product);
+    
     const { data, error } = await supabase
       .from('products')
-      .update(product)
+      .update({
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        imageurl: product.imageurl,
+        category: product.category,
+        stock: product.stock,
+        discount: product.discount,
+        featured: product.featured,
+        model_url: product.model_url
+      })
       .eq('id', id)
-      .select()
-      .single();
+      .select();
       
     if (error) {
       console.error('Error updating product:', error);
       throw error;
     }
     
-    return data;
+    console.log("Supabase response after update:", data);
+    return data?.[0] || null;
   } catch (error) {
     console.error('Error in updateProduct service:', error);
     return null;
@@ -94,7 +119,6 @@ export const deleteProduct = async (id: string): Promise<boolean> => {
   }
 };
 
-// Add a function to fetch a single product by ID
 export const fetchProductById = async (id: string): Promise<Product | null> => {
   try {
     const { data, error } = await supabase

@@ -1,47 +1,10 @@
 
 import React from 'react';
-import { usePublicFiguresGridSlider } from './hooks/usePublicFiguresGridSlider';
-import { Image } from '@/components/ui/image';
+import ImageCollage from './ImageCollage';
 
+// This component now uses the ImageCollage component instead of the slider
 const PublicFiguresSlider: React.FC = () => {
-  const { figuresGalleries } = usePublicFiguresGridSlider();
-  
-  return (
-    <section className="py-16 overflow-hidden bg-gray-900">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-white">
-          Our recent projects 
-        </h2>
-        
-        <div className="figures-grid-wrapper">
-          {figuresGalleries.slice(0, 2).map((gallery, galleryIndex) => (
-            <div 
-              key={`gallery-${galleryIndex}`} 
-              className={`figures-gallery ${galleryIndex === 0 ? 'slide-left' : 'slide-right'}`}
-            >
-              {gallery.map((figure, index) => (
-                <div 
-                  key={`figure-${figure.id}-${index}`} 
-                  className="figure-item"
-                >
-                  <div className="figure-container">
-                    <Image
-                      src={figure.imageurl}
-                      alt={figure.name}
-                      loading="lazy"
-                      objectFit="cover"
-                      className="w-full h-full"
-                    />
-                    <h3 className="figure-name">{figure.name}</h3>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+  return <ImageCollage />;
 };
 
 export default React.memo(PublicFiguresSlider);

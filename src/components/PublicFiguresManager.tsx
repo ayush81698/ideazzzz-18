@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Table, 
   TableBody, 
@@ -20,12 +21,15 @@ import {
   DialogFooter, 
   DialogTrigger 
 } from '@/components/ui/dialog';
-import { Trash2, Edit, Plus } from 'lucide-react';
+import { Trash2, Edit, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface PublicFigure {
   id: string;
   name: string;
   imageurl: string;
+  subtitle?: string;
+  description?: string;
+  order?: number;
 }
 
 const PublicFiguresManager = () => {
@@ -35,6 +39,8 @@ const PublicFiguresManager = () => {
   const [currentFigure, setCurrentFigure] = useState<PublicFigure | null>(null);
   const [name, setName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [subtitle, setSubtitle] = useState('');
+  const [description, setDescription] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -47,17 +53,20 @@ const PublicFiguresManager = () => {
       
       // Check if the table exists before querying
       try {
-        // Use type assertion to bypass TypeScript restrictions
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('public_figures')
-          .select('*');
+          .select('*')
+          .order('order', { ascending: true });
         
         if (!error) {
           // Table exists, map the data to our interface
           const mappedData = (data || []).map((item: any) => ({
             id: item.id,
             name: item.name,
-            imageurl: item.imageurl
+            imageurl: item.imageurl,
+            subtitle: item.subtitle || '',
+            description: item.description || '',
+            order: item.order || 0
           }));
           setFigures(mappedData);
         } else {
@@ -82,11 +91,15 @@ const PublicFiguresManager = () => {
       setCurrentFigure(figure);
       setName(figure.name);
       setImageUrl(figure.imageurl);
+      setSubtitle(figure.subtitle || '');
+      setDescription(figure.description || '');
       setIsEditing(true);
     } else {
       setCurrentFigure(null);
       setName('');
       setImageUrl('');
+      setSubtitle('');
+      setDescription('');
       setIsEditing(false);
     }
     setDialogOpen(true);
@@ -97,23 +110,27 @@ const PublicFiguresManager = () => {
     setCurrentFigure(null);
     setName('');
     setImageUrl('');
+    setSubtitle('');
+    setDescription('');
     setIsEditing(false);
   };
 
   const handleSubmit = async () => {
     try {
       if (!name || !imageUrl) {
-        toast.error('Please fill in all fields');
+        toast.error('Name and image URL are required');
         return;
       }
 
       if (isEditing && currentFigure) {
         // Update existing figure
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('public_figures')
           .update({
             name,
-            imageurl: imageUrl // Use imageurl to match DB column
+            imageurl: imageUrl,
+            subtitle,
+            description
           })
           .eq('id', currentFigure.id);
 
@@ -123,13 +140,21 @@ const PublicFiguresManager = () => {
         }
         toast.success('Public figure updated successfully');
       } else {
+        // Get the highest order to add the new item at the end
+        const maxOrder = figures.length > 0 
+          ? Math.max(...figures.map(fig => fig.order || 0)) + 1
+          : 0;
+
         // Insert new figure
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('public_figures')
           .insert([
             {
               name,
-              imageurl: imageUrl // Use imageurl to match DB column
+              imageurl: imageUrl,
+              subtitle,
+              description,
+              order: maxOrder
             }
           ]);
 
@@ -151,7 +176,7 @@ const PublicFiguresManager = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('public_figures')
         .delete()
         .eq('id', id);
@@ -163,6 +188,49 @@ const PublicFiguresManager = () => {
     } catch (error) {
       console.error('Error deleting public figure:', error);
       toast.error('Failed to delete public figure');
+    }
+  };
+
+  const moveItem = async (id: string, direction: 'up' | 'down') => {
+    const index = figures.findIndex(figure => figure.id === id);
+    if ((direction === 'up' && index === 0) || 
+        (direction === 'down' && index === figures.length - 1)) {
+      return; // Can't move further
+    }
+
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    const newFigures = [...figures];
+    const temp = newFigures[index];
+    newFigures[index] = newFigures[newIndex];
+    newFigures[newIndex] = temp;
+
+    // Update order values
+    const updatedFigures = newFigures.map((figure, i) => ({
+      ...figure,
+      order: i
+    }));
+
+    setFigures(updatedFigures);
+
+    // Update in database
+    try {
+      const updates = [
+        { id: updatedFigures[index].id, order: updatedFigures[index].order },
+        { id: updatedFigures[newIndex].id, order: updatedFigures[newIndex].order }
+      ];
+
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('public_figures')
+          .update({ order: update.order })
+          .eq('id', update.id);
+
+        if (error) throw error;
+      }
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast.error('Failed to reorder figures');
+      fetchFigures(); // Reload the original order
     }
   };
 
@@ -184,7 +252,9 @@ const PublicFiguresManager = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Order</TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Subtitle</TableHead>
                 <TableHead>Image Preview</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -192,14 +262,35 @@ const PublicFiguresManager = () => {
             <TableBody>
               {figures.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center py-6">
+                  <TableCell colSpan={5} className="text-center py-6">
                     No public figures added yet. Add your first one!
                   </TableCell>
                 </TableRow>
               ) : (
-                figures.map(figure => (
+                figures.map((figure, index) => (
                   <TableRow key={figure.id}>
+                    <TableCell className="w-24">
+                      <div className="flex items-center space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          disabled={index === 0}
+                          onClick={() => moveItem(figure.id, 'up')}
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          disabled={index === figures.length - 1}
+                          onClick={() => moveItem(figure.id, 'down')}
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell className="font-medium">{figure.name}</TableCell>
+                    <TableCell>{figure.subtitle || "—"}</TableCell>
                     <TableCell>
                       <div className="h-16 w-16 overflow-hidden rounded-md">
                         <img 
@@ -247,7 +338,26 @@ const PublicFiguresManager = () => {
                 id="name"
                 value={name} 
                 onChange={e => setName(e.target.value)} 
-                placeholder="Enter celebrity name"
+                placeholder="Enter name"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="subtitle" className="text-sm font-medium">Subtitle</label>
+              <Input 
+                id="subtitle"
+                value={subtitle} 
+                onChange={e => setSubtitle(e.target.value)} 
+                placeholder="Enter subtitle (optional)"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="description" className="text-sm font-medium">Description</label>
+              <Textarea 
+                id="description"
+                value={description} 
+                onChange={e => setDescription(e.target.value)} 
+                placeholder="Enter description (optional)"
+                rows={3}
               />
             </div>
             <div className="space-y-2">

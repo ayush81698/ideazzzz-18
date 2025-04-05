@@ -38,19 +38,22 @@ export const addProduct = async (product: Omit<Product, 'id'>): Promise<Product 
   try {
     console.log("Adding product to Supabase:", product);
     
+    // Ensure all fields are properly formatted
+    const productToInsert = {
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      imageurl: product.imageurl || '',
+      category: product.category || null,
+      stock: product.stock || null,
+      discount: product.discount || null,
+      featured: product.featured || false,
+      model_url: product.model_url || null
+    };
+    
     const { data, error } = await supabase
       .from('products')
-      .insert([{
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        imageurl: product.imageurl,
-        category: product.category || null,
-        stock: product.stock || null,
-        discount: product.discount || null,
-        featured: product.featured || false,
-        model_url: product.model_url || null
-      }])
+      .insert([productToInsert])
       .select();
       
     if (error) {
@@ -71,19 +74,22 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
     console.log("Updating product with ID:", id);
     console.log("Update data:", product);
     
+    // Only include fields that are provided
+    const updateData: any = {};
+    
+    if (product.name !== undefined) updateData.name = product.name;
+    if (product.description !== undefined) updateData.description = product.description;
+    if (product.price !== undefined) updateData.price = product.price;
+    if (product.imageurl !== undefined) updateData.imageurl = product.imageurl;
+    if (product.category !== undefined) updateData.category = product.category;
+    if (product.stock !== undefined) updateData.stock = product.stock;
+    if (product.discount !== undefined) updateData.discount = product.discount;
+    if (product.featured !== undefined) updateData.featured = product.featured;
+    if (product.model_url !== undefined) updateData.model_url = product.model_url;
+    
     const { data, error } = await supabase
       .from('products')
-      .update({
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        imageurl: product.imageurl,
-        category: product.category,
-        stock: product.stock,
-        discount: product.discount,
-        featured: product.featured,
-        model_url: product.model_url
-      })
+      .update(updateData)
       .eq('id', id)
       .select();
       

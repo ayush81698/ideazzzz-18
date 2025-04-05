@@ -10,7 +10,6 @@ interface PublicFigure {
 
 export const usePublicFiguresGridSlider = () => {
   const [figures, setFigures] = useState<PublicFigure[]>([]);
-  const [figuresGalleries, setFiguresGalleries] = useState<PublicFigure[][]>([]);
   
   // Fetch public figures from Supabase
   useEffect(() => {
@@ -23,10 +22,17 @@ export const usePublicFiguresGridSlider = () => {
         if (error) throw error;
         
         if (data && data.length > 0) {
-          setFigures(data);
+          let extendedFigures = [...data];
+          
+          // Duplicate figures to ensure we have enough for a smooth continuous animation
+          while (extendedFigures.length < 10) {
+            extendedFigures = [...extendedFigures, ...data];
+          }
+          
+          setFigures(extendedFigures);
         } else {
           // Fallback data if no figures are found
-          setFigures([
+          const fallbackFigures = [
             {
               id: '1',
               name: 'Emma Johnson',
@@ -52,7 +58,15 @@ export const usePublicFiguresGridSlider = () => {
               name: 'Aisha Patel',
               imageurl: 'https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60'
             }
-          ]);
+          ];
+          
+          // Duplicate the fallback figures to have enough for display
+          let extendedFigures = [...fallbackFigures];
+          while (extendedFigures.length < 10) {
+            extendedFigures = [...extendedFigures, ...fallbackFigures];
+          }
+          
+          setFigures(extendedFigures);
         }
       } catch (error) {
         console.error('Error fetching public figures:', error);
@@ -63,34 +77,5 @@ export const usePublicFiguresGridSlider = () => {
     fetchFigures();
   }, []);
 
-  // Create 2 different galleries with different ordering of figures
-  useEffect(() => {
-    if (figures.length === 0) return;
-
-    // Duplicate figures to ensure we have enough for the display
-    const extendedFigures = [...figures];
-    
-    // Keep duplicating until we have at least 10 figures
-    while (extendedFigures.length < 10) {
-      extendedFigures.push(...figures);
-    }
-    
-    // Create two galleries with different ordering
-    const gallery1 = [...extendedFigures];
-    
-    // Create a second gallery with a different order
-    // We'll reverse the array and shift it to ensure different content appears side by side
-    const gallery2 = [...extendedFigures].reverse();
-    
-    // Shift the second gallery to ensure different figures appear in parallel positions
-    if (gallery2.length > 3) {
-      // Take first few items and push them to the end
-      const firstItems = gallery2.splice(0, 3);
-      gallery2.push(...firstItems);
-    }
-    
-    setFiguresGalleries([gallery1, gallery2]);
-  }, [figures]);
-
-  return { figures, figuresGalleries };
+  return { figures };
 };

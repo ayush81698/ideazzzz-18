@@ -4,7 +4,7 @@ import { usePublicFiguresGridSlider } from './hooks/usePublicFiguresGridSlider';
 import { Image } from '@/components/ui/image';
 
 const PublicFiguresSlider: React.FC = () => {
-  const { figuresGalleries } = usePublicFiguresGridSlider();
+  const { figures } = usePublicFiguresGridSlider();
   
   return (
     <section className="py-16 overflow-hidden bg-gray-900">
@@ -14,30 +14,25 @@ const PublicFiguresSlider: React.FC = () => {
         </h2>
         
         <div className="figures-grid-wrapper">
-          {figuresGalleries.slice(0, 2).map((gallery, galleryIndex) => (
-            <div 
-              key={`gallery-${galleryIndex}`} 
-              className={`figures-gallery ${galleryIndex === 0 ? 'slide-left' : 'slide-right'}`}
-            >
-              {gallery.map((figure, index) => (
-                <div 
-                  key={`figure-${figure.id}-${index}`} 
-                  className="figure-item"
-                >
-                  <div className="figure-container">
-                    <Image
-                      src={figure.imageurl}
-                      alt={figure.name}
-                      loading="lazy"
-                      objectFit="cover"
-                      className="w-full h-full"
-                    />
-                    <h3 className="figure-name">{figure.name}</h3>
-                  </div>
+          <div className="figures-gallery slide-right">
+            {figures.map((figure, index) => (
+              <div 
+                key={`figure-${figure.id}-${index}`} 
+                className="figure-item"
+              >
+                <div className="figure-container">
+                  <Image
+                    src={figure.imageurl}
+                    alt={figure.name}
+                    loading="lazy"
+                    objectFit="cover"
+                    className="w-full h-full"
+                  />
+                  <h3 className="figure-name">{figure.name}</h3>
                 </div>
-              ))}
-            </div>
-          ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

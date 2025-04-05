@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { 
   Card, 
@@ -56,9 +57,15 @@ const ProductManager = () => {
 
   const loadProducts = async () => {
     setLoading(true);
-    const data = await fetchProducts();
-    setProducts(data);
-    setLoading(false);
+    try {
+      const data = await fetchProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error("Error loading products:", error);
+      toast.error("Failed to load products");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -110,9 +117,17 @@ const ProductManager = () => {
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      const success = await deleteProduct(id);
-      if (success) {
-        setProducts(prev => prev.filter(product => product.id !== id));
+      try {
+        const success = await deleteProduct(id);
+        if (success) {
+          setProducts(prev => prev.filter(product => product.id !== id));
+          toast.success('Product deleted successfully');
+        } else {
+          toast.error('Failed to delete product');
+        }
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        toast.error("Failed to delete product");
       }
     }
   };
@@ -122,6 +137,15 @@ const ProductManager = () => {
     
     try {
       setUploading(true);
+      setUploadProgress(10);
+      
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          const nextProgress = prev + 10;
+          return nextProgress > 90 ? 90 : nextProgress;
+        });
+      }, 300);
       
       if (editingProduct) {
         const updated = await updateProduct(editingProduct.id, formData);
@@ -130,22 +154,32 @@ const ProductManager = () => {
             prev.map(product => product.id === editingProduct.id ? updated : product)
           );
           toast.success('Product updated successfully');
+          setOpenDialog(false);
+          resetForm();
+        } else {
+          toast.error('Failed to update product');
         }
       } else {
         const newProduct = await addProduct(formData);
         if (newProduct) {
           setProducts(prev => [newProduct, ...prev]);
           toast.success('Product added successfully');
+          setOpenDialog(false);
+          resetForm();
+        } else {
+          toast.error('Failed to add product');
         }
       }
       
-      resetForm();
-      setOpenDialog(false);
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
     } catch (error) {
       console.error("Error saving product:", error);
       toast.error("Failed to save product");
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -188,7 +222,7 @@ const ProductManager = () => {
                     id="price"
                     name="price"
                     type="number"
-                    value={formData.price}
+                    value={formData.price.toString()}
                     onChange={handleChange}
                     required
                   />
@@ -251,7 +285,7 @@ const ProductManager = () => {
                     id="stock"
                     name="stock"
                     type="number"
-                    value={formData.stock}
+                    value={formData.stock.toString()}
                     onChange={handleChange}
                   />
                 </div>

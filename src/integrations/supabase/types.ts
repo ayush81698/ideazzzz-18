@@ -180,21 +180,30 @@ export type Database = {
       public_figures: {
         Row: {
           created_at: string
+          description: string | null
           id: string
           imageurl: string
           name: string
+          order: number | null
+          subtitle: string | null
         }
         Insert: {
           created_at?: string
+          description?: string | null
           id?: string
           imageurl: string
           name: string
+          order?: number | null
+          subtitle?: string | null
         }
         Update: {
           created_at?: string
+          description?: string | null
           id?: string
           imageurl?: string
           name?: string
+          order?: number | null
+          subtitle?: string | null
         }
         Relationships: []
       }

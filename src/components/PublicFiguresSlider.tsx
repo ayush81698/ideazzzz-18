@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import './PublicFiguresSlider.css';
 
 interface PublicFigure {
   id: string;
@@ -9,6 +10,7 @@ interface PublicFigure {
   imageurl: string;
   subtitle?: string;
   description?: string;
+  order?: number;
 }
 
 const PublicFiguresSlider: React.FC = () => {
@@ -21,7 +23,8 @@ const PublicFiguresSlider: React.FC = () => {
       try {
         const { data, error } = await supabase
           .from('public_figures')
-          .select('*');
+          .select('*')
+          .order('order', { ascending: true });
           
         if (error) throw error;
         

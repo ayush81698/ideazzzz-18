@@ -148,15 +148,13 @@ const PublicFiguresManager = () => {
         // Insert new figure
         const { error } = await supabase
           .from('public_figures')
-          .insert([
-            {
-              name,
-              imageurl: imageUrl,
-              subtitle,
-              description,
-              order: maxOrder
-            }
-          ]);
+          .insert({
+            name,
+            imageurl: imageUrl,
+            subtitle,
+            description,
+            order: maxOrder
+          });
 
         if (error) {
           console.error('Error inserting figure:', error);

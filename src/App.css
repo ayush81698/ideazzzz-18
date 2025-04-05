@@ -24,11 +24,11 @@ body {
 :root {
   color-scheme: dark;
   --duration: 700ms;
-  --num-rows: 1;
+  --num-rows: 2;
   --num-cols: 5;
   --gallery-width: 200vw;  /* twice the viewport width */
   --gallery-item-width: calc(var(--gallery-width) / (var(--num-cols))); 
-  --gallery-item-height: 300px;
+  --gallery-item-height: calc(60vh / var(--num-rows));
 }
 
 .logo {
@@ -81,13 +81,23 @@ body {
   animation-iteration-count: infinite;
 }
 
+.figures-gallery.slide-left {
+  animation-name: slideLeft;
+}
+
 .figures-gallery.slide-right {
   animation-name: slideRight;
+  top: 250px;
+}
+
+@keyframes slideLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(var(--gallery-width) / 2 * -1)); }
 }
 
 @keyframes slideRight {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(calc(var(--gallery-width) / 2 * -1)); }
+  0% { transform: translateX(calc(var(--gallery-width) / 2 * -1)); }
+  100% { transform: translateX(0); }
 }
 
 .figures-gallery > .figure-item {
@@ -120,7 +130,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  aspect-ratio: 16/9;
+  aspect-ratio: 1/1;
 }
 
 .figures-gallery > .figure-item .figure-name {
@@ -141,19 +151,19 @@ body {
 
 @media (max-width: 768px) {
   :root {
-    --num-rows: 1;
-    --num-cols: 3;
+    --num-rows: 2;
+    --num-cols: 2;
     --gallery-width: 200vw;
-    --gallery-item-height: 200px;
+    --gallery-item-height: 30vh;
   }
   
   .figures-gallery {
-    animation-duration: 40s;
+    animation-duration: 30s;
   }
   
   .figures-gallery > .figure-item img {
     max-width: 100%;
-    max-height: 200px;
+    max-height: 30vh;
   }
 }
 

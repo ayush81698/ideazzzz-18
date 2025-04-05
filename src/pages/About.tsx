@@ -27,7 +27,6 @@ const About = () => {
             <h2 className="text-2xl md:text-3xl font-bold mb-6">Our Story</h2>
             <p className="text-gray-400 mb-4">
              IDEAZZZZ is a innovative, creative and affirmative hub which is built on talent and relationships. Our cosmopolitan team is based in Mumbai, India
-            </p>
             <p className="text-gray-400 mb-4">
              INF IDEAZZZZ CREATIVE PVT LTD is a 360 Degree Creative & Innovative Hub where Ideas are Explored, Imaginations are Given Life, Creativity is been flourished and Execution flashes the strength of our Creative & Innovative Team.
             </p>

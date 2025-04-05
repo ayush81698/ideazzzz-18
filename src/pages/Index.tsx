@@ -8,13 +8,21 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ShoppingBag } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
+import SplineModel from '@/components/SplineModel';
 import PublicFiguresSlider from '@/components/PublicFiguresSlider';
 import { Image } from '@/components/ui/image';
 
 const Index = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
+  const [splineError, setSplineError] = useState(false);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setIsModelLoaded(true), 1000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
     async function fetchFeaturedProducts() {
@@ -67,10 +75,45 @@ const Index = () => {
     fetchFeaturedProducts();
   }, [isMobile]);
 
+  const handleSplineError = () => {
+    console.log('Spline error detected, showing fallback');
+    setSplineError(true);
+  };
+
   return (
     <div className="relative" data-parallax-layers>
+      <style>{`
+        .spline-container canvas {
+          image-rendering: crisp-edges;
+          width: ${isMobile ? '100%' : '70%'};
+          height: ${isMobile ? '100%' : '70%'};
+          filter: ${splineError ? 'none' : 'blur(1px)'};
+        }
+        
+        .hero-background {
+          background-image: url('/fallback-image.jpg');
+          background-size: cover;
+          background-position: center;
+          opacity: ${splineError ? '0.7' : '0.3'};
+          transition: opacity 0.5s ease;
+        }
+      `}</style>
+
       <section className="relative py-4 md:py-16 min-h-[85vh] overflow-hidden flex items-center">
-        <div className="absolute inset-0 w-full h-full z-0 bg-gradient-to-br from-ideazzz-purple/10 to-ideazzz-pink/10"></div>
+        <div className="absolute inset-0 w-full h-full z-0 hero-background"></div>
+        
+        <div className="absolute inset-0 w-full h-full z-0 spline-container parallax__layer" data-parallax-layer="1">
+          {isModelLoaded && !splineError ? (
+            <SplineModel 
+              scene="https://prod.spline.design/AXqCZid080td1A-X/scene.splinecode"
+              className="w-full h-full"
+              performance={true}
+              quality={isMobile ? 'low' : 'medium'}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-ideazzz-purple/10 to-ideazzz-pink/10 opacity-50"></div>
+          )}
+        </div>
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col justify-between items-center min-h-[70vh]">

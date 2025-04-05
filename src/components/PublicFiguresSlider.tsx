@@ -7,7 +7,7 @@ const PublicFiguresSlider: React.FC = () => {
   const { figures } = usePublicFiguresGridSlider();
   
   return (
-    <section className="py-16 overflow-hidden bg-gray-900">
+    <section className="py-12 overflow-hidden bg-gray-900">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-white">
           Our recent projects 

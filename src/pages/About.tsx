@@ -12,9 +12,9 @@ const About = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">About ADeazzz</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Our vision</h1>
           <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-            Creating personalized 3D figurines from your photos with AI precision
+            trusted by 50+ clients 
           </p>
         </motion.div>
 
@@ -26,13 +26,12 @@ const About = () => {
           >
             <h2 className="text-2xl md:text-3xl font-bold mb-6">Our Story</h2>
             <p className="text-gray-400 mb-4">
-              ADeazzz was born from a simple idea: to transform ordinary photos into extraordinary 3D models. Our founder, a passionate 3D artist, noticed how difficult it was for people to get custom figurines made without spending a fortune.
-            </p>
+             IDEAZZZZ is a innovative, creative and affirmative hub which is built on talent and relationships. Our cosmopolitan team is based in Mumbai, India
             <p className="text-gray-400 mb-4">
-              In 2023, we developed a proprietary AI-powered 3D modeling system that can accurately recreate human features from just a few photos. This technology has allowed us to democratize custom 3D figurines, making them accessible to everyone.
+             INF IDEAZZZZ CREATIVE PVT LTD is a 360 Degree Creative & Innovative Hub where Ideas are Explored, Imaginations are Given Life, Creativity is been flourished and Execution flashes the strength of our Creative & Innovative Team.
             </p>
             <p className="text-gray-400">
-              Today, we're proud to serve customers across India, delivering handcrafted, personalized 3D figurines for all occasions - from wedding cake toppers to superhero action figures of your children.
+             We showcase our passionate concepts & presentations to the world through Digital, AR-VR, Television, Events, Films, Outdoor, Print and Radio Media for our Clients.
             </p>
           </motion.div>
           
@@ -43,7 +42,7 @@ const About = () => {
             className="relative h-[400px] rounded-lg overflow-hidden"
           >
             <img 
-              src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=800&q=80" 
+              src="https://www.ideazzzz.com/wp-content/uploads/elementor/thumbs/1-Banner-1-qjjq1s4yrx10812141c684yjo0m7s258d3guuu688w.jpeg" 
               alt="3D printing workshop" 
               className="absolute inset-0 w-full h-full object-cover"
             />

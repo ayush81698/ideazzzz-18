@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag } from 'lucide-react';
 import ModelViewer from '@/components/ModelViewer';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductCardProps {
   product: {
@@ -22,13 +23,15 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [showModel, setShowModel] = useState(false);
   const hasModel = !!product.model_url;
+  const isMobile = useIsMobile();
 
   return (
     <motion.div 
       whileHover={{ y: -5 }}
       className="relative"
-      onMouseEnter={() => hasModel && setShowModel(true)}
-      onMouseLeave={() => setShowModel(false)}
+      onMouseEnter={() => !isMobile && hasModel && setShowModel(true)}
+      onMouseLeave={() => !isMobile && setShowModel(false)}
+      onClick={() => isMobile && hasModel && setShowModel(!showModel)}
     >
       <Card className="overflow-hidden h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
         <div className="relative h-48 md:h-56 overflow-hidden">
@@ -38,7 +41,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               height="100%"
               width="100%"
               autoRotate={true}
-              cameraControls={false}
+              cameraControls={isMobile}
               backgroundAlpha={0}
               fieldOfView="30deg"
               exposure="1.5"
@@ -57,7 +60,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
           {hasModel && (
             <div className="absolute bottom-0 left-0 bg-purple-600 text-white px-2 py-0.5 text-xs font-medium">
-              3D Preview
+              {isMobile ? "Tap for 3D" : "3D Preview"}
             </div>
           )}
         </div>

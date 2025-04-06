@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 import './PublicFiguresSlider.css';
 
 interface PublicFigure {
@@ -16,6 +17,8 @@ interface PublicFigure {
 const PublicFiguresSlider: React.FC = () => {
   const [figures, setFigures] = useState<PublicFigure[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const isMobile = useIsMobile();
   
   // Fetch public figures from Supabase
   useEffect(() => {
@@ -74,6 +77,23 @@ const PublicFiguresSlider: React.FC = () => {
     fetchFigures();
   }, []);
 
+  // Handle swipe/click for mobile
+  useEffect(() => {
+    if (isMobile && figures.length > 0) {
+      const interval = setInterval(() => {
+        setActiveIndex((prevIndex) => (prevIndex + 1) % figures.length);
+      }, 5000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isMobile, figures.length]);
+
+  const handleCardClick = (index: number) => {
+    if (isMobile) {
+      setActiveIndex(index);
+    }
+  };
+
   if (loading) {
     return (
       <div className="py-16 bg-gray-900 flex justify-center items-center">
@@ -89,45 +109,87 @@ const PublicFiguresSlider: React.FC = () => {
           Public Figures We Worked With 
         </h2>
         
-        <div className="general-container mx-auto w-full md:w-4/5 lg:w-3/4 xl:w-2/3 h-auto md:h-[21rem] flex flex-col md:flex-row">
-          {figures.map((figure, index) => (
-            <React.Fragment key={figure.id}>
-              <input 
-                className="radio" 
-                type="radio" 
-                name="card" 
-                id={`card${index}`} 
-                defaultChecked={index === 0} 
-              />
-              <label 
-                className="content md:flex-1 mb-4 md:mb-0 md:mr-2 relative rounded-3xl overflow-hidden cursor-pointer transition-all" 
-                htmlFor={`card${index}`}
-                style={{
-                  backgroundImage: `url(${figure.imageurl})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                }}
-              >
-                <h1 className="title-card">
-                  <span className="marg-bott font-bold text-lg md:text-xl lg:text-2xl">
-                    {figure.name}
-                  </span>
-                  {figure.subtitle && (
-                    <span className="subtitle text-sm md:text-base">
-                      {figure.subtitle}
+        {isMobile ? (
+          <div className="w-full max-w-md mx-auto">
+            <div className="relative h-[300px] w-full overflow-hidden rounded-xl shadow-xl">
+              {figures.map((figure, index) => (
+                <div 
+                  key={figure.id}
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    index === activeIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                  }`}
+                  style={{
+                    backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url(${figure.imageurl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                  onClick={() => handleCardClick(index)}
+                >
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                    <h3 className="text-xl font-bold mb-1">{figure.name}</h3>
+                    {figure.subtitle && (
+                      <p className="text-sm opacity-90 mb-2">{figure.subtitle}</p>
+                    )}
+                    {figure.description && (
+                      <p className="text-sm opacity-75">{figure.description}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center mt-4 space-x-2">
+              {figures.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full ${
+                    index === activeIndex ? 'bg-ideazzz-purple' : 'bg-gray-400'
+                  }`}
+                  onClick={() => setActiveIndex(index)}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="general-container mx-auto w-full md:w-4/5 lg:w-3/4 xl:w-2/3 h-auto md:h-[21rem] flex flex-col md:flex-row">
+            {figures.map((figure, index) => (
+              <React.Fragment key={figure.id}>
+                <input 
+                  className="radio" 
+                  type="radio" 
+                  name="card" 
+                  id={`card${index}`} 
+                  defaultChecked={index === 0} 
+                />
+                <label 
+                  className="content md:flex-1 mb-4 md:mb-0 md:mr-2 relative rounded-3xl overflow-hidden cursor-pointer transition-all" 
+                  htmlFor={`card${index}`}
+                  style={{
+                    backgroundImage: `url(${figure.imageurl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                  }}
+                >
+                  <h1 className="title-card">
+                    <span className="marg-bott font-bold text-lg md:text-xl lg:text-2xl">
+                      {figure.name}
                     </span>
+                    {figure.subtitle && (
+                      <span className="subtitle text-sm md:text-base">
+                        {figure.subtitle}
+                      </span>
+                    )}
+                  </h1>
+                  {figure.description && (
+                    <h3 className="card-title subsubtitle">
+                      <span>{figure.description}</span>
+                    </h3>
                   )}
-                </h1>
-                {figure.description && (
-                  <h3 className="card-title subsubtitle">
-                    <span>{figure.description}</span>
-                  </h3>
-                )}
-              </label>
-            </React.Fragment>
-          ))}
-        </div>
+                </label>
+              </React.Fragment>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

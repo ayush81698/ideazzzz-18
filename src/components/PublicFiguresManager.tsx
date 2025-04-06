@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -145,16 +144,18 @@ const PublicFiguresManager = () => {
           ? Math.max(...figures.map(fig => fig.order || 0)) + 1
           : 0;
 
-        // Insert new figure
+        // Insert new figure - type-safe approach
+        const newFigure = {
+          name,
+          imageurl: imageUrl,
+          subtitle,
+          description,
+          order: maxOrder
+        };
+
         const { error } = await supabase
           .from('public_figures')
-          .insert({
-            name,
-            imageurl: imageUrl,
-            subtitle,
-            description,
-            order: maxOrder
-          });
+          .insert(newFigure);
 
         if (error) {
           console.error('Error inserting figure:', error);

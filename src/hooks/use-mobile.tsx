@@ -15,30 +15,19 @@ export function useIsMobile() {
     // Safety check for SSR
     if (typeof window === 'undefined') return
 
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    
-    const onChange = () => {
+    const handleResize = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
     
-    // Use the newer addEventListener API
-    if (mql.addEventListener) {
-      mql.addEventListener("change", onChange)
-    } else {
-      // Fallback for older browsers
-      mql.addListener(onChange)
-    }
-    
     // Set initial value
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    handleResize()
     
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize)
+    
+    // Clean up
     return () => {
-      if (mql.removeEventListener) {
-        mql.removeEventListener("change", onChange)
-      } else {
-        // Fallback for older browsers
-        mql.removeListener(onChange)
-      }
+      window.removeEventListener('resize', handleResize)
     }
   }, [])
 

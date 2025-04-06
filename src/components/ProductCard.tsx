@@ -16,7 +16,7 @@ interface ProductCardProps {
     price: number;
     imageurl: string;
     discount?: string;
-    model_url?: string;
+    model_url?: string | null;
   };
 }
 

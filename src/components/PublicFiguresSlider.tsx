@@ -12,6 +12,7 @@ interface PublicFigure {
   subtitle?: string;
   description?: string;
   order?: number;
+  video_url?: string;
 }
 
 const PublicFiguresSlider: React.FC = () => {
@@ -118,14 +119,31 @@ const PublicFiguresSlider: React.FC = () => {
                   className={`absolute inset-0 transition-opacity duration-500 ${
                     index === activeIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
                   }`}
-                  style={{
-                    backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url(${figure.imageurl})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
                   onClick={() => handleCardClick(index)}
                 >
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  {figure.video_url ? (
+                    <div className="absolute inset-0 overflow-hidden">
+                      <video 
+                        src={figure.video_url}
+                        className="absolute w-full h-full object-cover opacity-60"
+                        autoPlay 
+                        muted 
+                        loop 
+                        playsInline
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+                    </div>
+                  ) : (
+                    <div 
+                      className="absolute inset-0" 
+                      style={{
+                        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url(${figure.imageurl})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }}
+                    ></div>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-10">
                     <h3 className="text-xl font-bold mb-1">{figure.name}</h3>
                     {figure.subtitle && (
                       <p className="text-sm opacity-90 mb-2">{figure.subtitle}</p>
@@ -163,14 +181,28 @@ const PublicFiguresSlider: React.FC = () => {
                 <label 
                   className="content md:flex-1 mb-4 md:mb-0 md:mr-2 relative rounded-3xl overflow-hidden cursor-pointer transition-all" 
                   htmlFor={`card${index}`}
-                  style={{
-                    backgroundImage: `url(${figure.imageurl})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                  }}
                 >
-                  <h1 className="title-card">
+                  {figure.video_url ? (
+                    <div className="absolute inset-0 w-full h-full">
+                      <video 
+                        src={figure.video_url}
+                        className="absolute w-full h-full object-cover opacity-60"
+                        autoPlay 
+                        muted 
+                        loop 
+                        playsInline
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-40 z-0"></div>
+                    </div>
+                  ) : (
+                    <div className="absolute inset-0 w-full h-full" style={{
+                      backgroundImage: `url(${figure.imageurl})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat',
+                    }}></div>
+                  )}
+                  <h1 className="title-card z-10 relative">
                     <span className="marg-bott font-bold text-lg md:text-xl lg:text-2xl">
                       {figure.name}
                     </span>
@@ -181,7 +213,7 @@ const PublicFiguresSlider: React.FC = () => {
                     )}
                   </h1>
                   {figure.description && (
-                    <h3 className="card-title subsubtitle">
+                    <h3 className="card-title subsubtitle z-10 relative">
                       <span>{figure.description}</span>
                     </h3>
                   )}

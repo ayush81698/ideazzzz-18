@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ interface PublicFigure {
   subtitle?: string;
   description?: string;
   order?: number;
+  video_url?: string;
 }
 
 const PublicFiguresManager = () => {
@@ -40,6 +42,7 @@ const PublicFiguresManager = () => {
   const [imageUrl, setImageUrl] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [description, setDescription] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -65,7 +68,8 @@ const PublicFiguresManager = () => {
             imageurl: item.imageurl,
             subtitle: item.subtitle || '',
             description: item.description || '',
-            order: item.order || 0
+            order: item.order || 0,
+            video_url: item.video_url || ''
           }));
           setFigures(mappedData);
         } else {
@@ -92,6 +96,7 @@ const PublicFiguresManager = () => {
       setImageUrl(figure.imageurl);
       setSubtitle(figure.subtitle || '');
       setDescription(figure.description || '');
+      setVideoUrl(figure.video_url || '');
       setIsEditing(true);
     } else {
       setCurrentFigure(null);
@@ -99,6 +104,7 @@ const PublicFiguresManager = () => {
       setImageUrl('');
       setSubtitle('');
       setDescription('');
+      setVideoUrl('');
       setIsEditing(false);
     }
     setDialogOpen(true);
@@ -111,6 +117,7 @@ const PublicFiguresManager = () => {
     setImageUrl('');
     setSubtitle('');
     setDescription('');
+    setVideoUrl('');
     setIsEditing(false);
   };
 
@@ -129,7 +136,8 @@ const PublicFiguresManager = () => {
             name,
             imageurl: imageUrl,
             subtitle,
-            description
+            description,
+            video_url: videoUrl || null
           })
           .eq('id', currentFigure.id);
 
@@ -150,6 +158,7 @@ const PublicFiguresManager = () => {
           imageurl: imageUrl,
           subtitle,
           description,
+          video_url: videoUrl || null,
           order: maxOrder
         };
 
@@ -255,13 +264,14 @@ const PublicFiguresManager = () => {
                 <TableHead>Name</TableHead>
                 <TableHead>Subtitle</TableHead>
                 <TableHead>Image Preview</TableHead>
+                <TableHead>Video URL</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {figures.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6">
+                  <TableCell colSpan={6} className="text-center py-6">
                     No public figures added yet. Add your first one!
                   </TableCell>
                 </TableRow>
@@ -298,6 +308,11 @@ const PublicFiguresManager = () => {
                           className="h-full w-full object-cover"
                         />
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {figure.video_url ? (
+                        <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Video Added</span>
+                      ) : "—"}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
@@ -367,6 +382,16 @@ const PublicFiguresManager = () => {
                 onChange={e => setImageUrl(e.target.value)} 
                 placeholder="https://example.com/image.jpg"
               />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="videoUrl" className="text-sm font-medium">Background Video URL (optional)</label>
+              <Input 
+                id="videoUrl"
+                value={videoUrl} 
+                onChange={e => setVideoUrl(e.target.value)} 
+                placeholder="https://example.com/video.mp4"
+              />
+              <p className="text-xs text-gray-500">Add a video URL to display in the background when this figure is shown</p>
             </div>
             {imageUrl && (
               <div className="mt-4">

@@ -8,6 +8,7 @@ interface PublicFigure {
   id: string;
   name: string;
   imageurl: string;
+  video_url?: string;
 }
 
 const ImageCollage: React.FC = () => {
@@ -113,14 +114,35 @@ const ImageCollage: React.FC = () => {
               }}
             >
               <div className="relative w-40 h-40 md:w-56 md:h-56 overflow-hidden rounded-md shadow-lg">
-                <Image
-                  src={figure.imageurl}
-                  alt={figure.name}
-                  loading="lazy"
-                  objectFit="cover"
-                  className="w-full h-full transform transition-transform duration-500 hover:scale-110"
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-3">
+                {figure.video_url ? (
+                  <>
+                    <video 
+                      src={figure.video_url}
+                      className="w-full h-full object-cover opacity-60"
+                      autoPlay 
+                      muted 
+                      loop 
+                      playsInline
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+                    <Image
+                      src={figure.imageurl}
+                      alt={figure.name}
+                      loading="lazy"
+                      objectFit="contain"
+                      className="absolute inset-0 w-full h-full transform transition-transform duration-500 hover:scale-110 z-10 opacity-90"
+                    />
+                  </>
+                ) : (
+                  <Image
+                    src={figure.imageurl}
+                    alt={figure.name}
+                    loading="lazy"
+                    objectFit="cover"
+                    className="w-full h-full transform transition-transform duration-500 hover:scale-110"
+                  />
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-3 z-20">
                   <h3 className="text-white text-sm md:text-base font-medium">
                     {figure.name}
                   </h3>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -52,72 +53,174 @@ const UsersManager = () => {
     try {
       setLoading(true);
       
-      // Since we can't access profiles table (it doesn't exist in our schema),
-      // we'll use auth.users directly via admin API or fallback to demo data
+      // Fetch users from the auth.users table via Supabase admin API
+      const { data, error } = await supabase.auth.admin.listUsers();
       
-      // For development purposes, we'll use sample data
-      const demoUsers: AdminUser[] = [
-        {
-          id: '1',
-          email: 'user1@example.com',
-          created_at: new Date().toISOString(),
-          last_sign_in_at: new Date().toISOString(),
-          phone: '+91 98765 43210',
-          app_metadata: { provider: 'email' },
-          user_metadata: { name: 'Demo User 1' }
-        },
-        {
-          id: '2',
-          email: 'user2@example.com',
-          created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-          last_sign_in_at: null,
-          phone: null,
-          app_metadata: { provider: 'google' },
-          user_metadata: { name: 'Demo User 2' }
-        },
-        {
-          id: '3',
-          email: 'admin@ideazzz.com',
-          created_at: new Date(Date.now() - 186400000).toISOString(), // 2+ days ago
-          last_sign_in_at: new Date().toISOString(),
-          phone: '+91 98765 43210',
-          app_metadata: { provider: 'email' },
-          user_metadata: { name: 'Admin User' }
-        }
-      ];
+      if (error) {
+        throw error;
+      }
       
-      setUsers(demoUsers);
-      setFilteredUsers(demoUsers);
-      toast.success('Loaded user data successfully');
-      
-    } catch (error) {
+      if (data && data.users && data.users.length > 0) {
+        // Map the Supabase auth users to our AdminUser interface
+        const mappedUsers = data.users.map(user => ({
+          id: user.id,
+          email: user.email || '',
+          created_at: user.created_at || '',
+          last_sign_in_at: user.last_sign_in_at || null,
+          phone: user.phone || null,
+          app_metadata: user.app_metadata || {},
+          user_metadata: user.user_metadata || {}
+        }));
+        
+        setUsers(mappedUsers);
+        setFilteredUsers(mappedUsers);
+        toast.success('Loaded user data successfully');
+      } else {
+        // Fall back to sample data for demo purposes if no users are found
+        console.error('No users found, using demo data');
+        
+        const demoUsers: AdminUser[] = [
+          {
+            id: '1',
+            email: 'user1@example.com',
+            created_at: new Date().toISOString(),
+            last_sign_in_at: new Date().toISOString(),
+            phone: '+91 98765 43210',
+            app_metadata: { provider: 'email' },
+            user_metadata: { name: 'Demo User 1' }
+          },
+          {
+            id: '2',
+            email: 'user2@example.com',
+            created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+            last_sign_in_at: null,
+            phone: null,
+            app_metadata: { provider: 'google' },
+            user_metadata: { name: 'Demo User 2' }
+          },
+          {
+            id: '3',
+            email: 'admin@ideazzz.com',
+            created_at: new Date(Date.now() - 186400000).toISOString(), // 2+ days ago
+            last_sign_in_at: new Date().toISOString(),
+            phone: '+91 98765 43210',
+            app_metadata: { provider: 'email' },
+            user_metadata: { name: 'Admin User' }
+          }
+        ];
+        
+        setUsers(demoUsers);
+        setFilteredUsers(demoUsers);
+        
+        toast.warning('Using demo user data');
+      }
+    } catch (error: any) {
       console.error('Error fetching users:', error);
       
-      // Fall back to sample data for demo purposes
-      const demoUsers: AdminUser[] = [
-        {
-          id: '1',
-          email: 'user1@example.com',
-          created_at: new Date().toISOString(),
-          last_sign_in_at: new Date().toISOString(),
-          phone: '+91 98765 43210',
-          app_metadata: { provider: 'email' },
-          user_metadata: { name: 'Demo User 1' }
-        },
-        {
-          id: '2',
-          email: 'user2@example.com',
-          created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-          last_sign_in_at: null,
-          phone: null,
-          app_metadata: { provider: 'google' },
-          user_metadata: { name: 'Demo User 2' }
+      // If we can't access admin API (likely due to permissions),
+      // try to get users from the regular auth API
+      try {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        
+        if (authError) throw authError;
+        
+        if (authData && authData.user) {
+          // If we can get the current user, add it to our list
+          const currentUser: AdminUser = {
+            id: authData.user.id,
+            email: authData.user.email || '',
+            created_at: authData.user.created_at || '',
+            last_sign_in_at: authData.user.last_sign_in_at || null,
+            phone: authData.user.phone || null,
+            app_metadata: authData.user.app_metadata || {},
+            user_metadata: authData.user.user_metadata || {}
+          };
+          
+          // Fall back to sample data plus the current user
+          const demoUsers: AdminUser[] = [
+            currentUser,
+            {
+              id: '1',
+              email: 'user1@example.com',
+              created_at: new Date().toISOString(),
+              last_sign_in_at: new Date().toISOString(),
+              phone: '+91 98765 43210',
+              app_metadata: { provider: 'email' },
+              user_metadata: { name: 'Demo User 1' }
+            },
+            {
+              id: '2',
+              email: 'user2@example.com',
+              created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+              last_sign_in_at: null,
+              phone: null,
+              app_metadata: { provider: 'google' },
+              user_metadata: { name: 'Demo User 2' }
+            }
+          ];
+          
+          setUsers(demoUsers);
+          setFilteredUsers(demoUsers);
+          
+          toast.warning('Using demo data with your user information');
+        } else {
+          // Complete fallback if we can't get anything from the API
+          const demoUsers: AdminUser[] = [
+            {
+              id: '1',
+              email: 'user1@example.com',
+              created_at: new Date().toISOString(),
+              last_sign_in_at: new Date().toISOString(),
+              phone: '+91 98765 43210',
+              app_metadata: { provider: 'email' },
+              user_metadata: { name: 'Demo User 1' }
+            },
+            {
+              id: '2',
+              email: 'user2@example.com',
+              created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+              last_sign_in_at: null,
+              phone: null,
+              app_metadata: { provider: 'google' },
+              user_metadata: { name: 'Demo User 2' }
+            }
+          ];
+          
+          setUsers(demoUsers);
+          setFilteredUsers(demoUsers);
+          
+          toast.error('Using demo data for testing purposes');
         }
-      ];
-      setUsers(demoUsers);
-      setFilteredUsers(demoUsers);
-      
-      toast.error('Using demo data for testing purposes');
+      } catch (fallbackError) {
+        console.error('Fallback error fetching user:', fallbackError);
+        
+        // Complete fallback if we can't get anything from the API
+        const demoUsers: AdminUser[] = [
+          {
+            id: '1',
+            email: 'user1@example.com',
+            created_at: new Date().toISOString(),
+            last_sign_in_at: new Date().toISOString(),
+            phone: '+91 98765 43210',
+            app_metadata: { provider: 'email' },
+            user_metadata: { name: 'Demo User 1' }
+          },
+          {
+            id: '2',
+            email: 'user2@example.com',
+            created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+            last_sign_in_at: null,
+            phone: null,
+            app_metadata: { provider: 'google' },
+            user_metadata: { name: 'Demo User 2' }
+          }
+        ];
+        
+        setUsers(demoUsers);
+        setFilteredUsers(demoUsers);
+        
+        toast.error('Using demo data for testing purposes');
+      }
     } finally {
       setLoading(false);
     }

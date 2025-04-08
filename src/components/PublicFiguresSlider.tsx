@@ -150,7 +150,11 @@ const PublicFiguresSlider: React.FC = () => {
             <iframe
               src={getYouTubeEmbedUrl(activeVideoUrl)}
               className="absolute w-full h-full object-cover"
-              style={{ pointerEvents: 'none' }}
+              style={{ 
+                pointerEvents: 'none',
+                transform: 'scale(1.15)', // Zoom in by 15%
+                transformOrigin: 'center center'
+              }}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
@@ -159,6 +163,10 @@ const PublicFiguresSlider: React.FC = () => {
             <video 
               src={activeVideoUrl}
               className="absolute w-full h-full object-cover"
+              style={{ 
+                transform: 'scale(1.15)', // Zoom in by 15%
+                transformOrigin: 'center center'
+              }}
               autoPlay 
               muted 
               loop 

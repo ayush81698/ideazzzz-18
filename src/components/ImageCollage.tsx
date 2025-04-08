@@ -121,11 +121,11 @@ const ImageCollage: React.FC = () => {
           Our recent projects 
         </h2>
         
-        <div className="image-collage">
+        <div className="image-collage position-relative h-[90vh] max-h-[700px] w-full overflow-hidden">
           {figures.map((figure, index) => (
             <motion.div 
               key={`${figure.id}-${index}`}
-              className="image-item"
+              className="image-item absolute transition-transform duration-300"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ 
@@ -196,21 +196,6 @@ const ImageCollage: React.FC = () => {
           ))}
         </div>
       </div>
-
-      <style jsx>{`
-        .image-collage {
-          position: relative;
-          height: 90vh;
-          max-height: 700px;
-          width: 100%;
-          overflow: hidden;
-        }
-        
-        .image-item {
-          position: absolute;
-          transition: transform 0.3s ease;
-        }
-      `}</style>
     </section>
   );
 };

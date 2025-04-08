@@ -44,6 +44,12 @@ const getYouTubeEmbedUrl = (url: string) => {
   return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0`;
 };
 
+// Helper function to check if the URL is a YouTube URL
+const isYouTubeUrl = (url: string) => {
+  if (!url) return false;
+  return url.includes('youtube.com') || url.includes('youtu.be');
+};
+
 const PublicFiguresSlider: React.FC = () => {
   const [figures, setFigures] = useState<PublicFigure[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,6 +130,9 @@ const PublicFiguresSlider: React.FC = () => {
     }
   };
 
+  // Get the active figure's video URL for background
+  const activeVideoUrl = figures.length > 0 ? figures[activeIndex].video_url : undefined;
+
   if (loading) {
     return (
       <div className="py-16 bg-gray-900 flex justify-center items-center">
@@ -133,8 +142,34 @@ const PublicFiguresSlider: React.FC = () => {
   }
 
   return (
-    <section className="py-16 overflow-hidden bg-gray-900">
-      <div className="container mx-auto px-4">
+    <section className="py-16 overflow-hidden bg-gray-900 relative">
+      {/* Background Video Layer for the entire section */}
+      {activeVideoUrl && (
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          {isYouTubeUrl(activeVideoUrl) ? (
+            <iframe
+              src={getYouTubeEmbedUrl(activeVideoUrl)}
+              className="absolute w-full h-full object-cover"
+              style={{ pointerEvents: 'none' }}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          ) : (
+            <video 
+              src={activeVideoUrl}
+              className="absolute w-full h-full object-cover"
+              autoPlay 
+              muted 
+              loop 
+              playsInline
+            />
+          )}
+          <div className="absolute inset-0 bg-black bg-opacity-70"></div>
+        </div>
+      )}
+      
+      <div className="container mx-auto px-4 relative z-10">
         <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center text-white">
           Public Figures We Worked With 
         </h2>
@@ -150,40 +185,17 @@ const PublicFiguresSlider: React.FC = () => {
                   }`}
                   onClick={() => handleCardClick(index)}
                 >
-                  {/* Background Video/Image Layer */}
-                  <div className="absolute inset-0 z-0">
-                    {figure.video_url ? (
-                      isYouTubeUrl(figure.video_url) ? (
-                        <iframe
-                          src={getYouTubeEmbedUrl(figure.video_url)}
-                          className="absolute w-full h-full object-cover opacity-40"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        ></iframe>
-                      ) : (
-                        <video 
-                          src={figure.video_url}
-                          className="absolute w-full h-full object-cover opacity-40"
-                          autoPlay 
-                          muted 
-                          loop 
-                          playsInline
-                        />
-                      )
-                    ) : (
-                      <div 
-                        className="absolute inset-0" 
-                        style={{
-                          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url(${figure.imageurl})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                        }}
-                      ></div>
-                    )}
-                    {/* Add a dark overlay for better text readability */}
-                    <div className="absolute inset-0 bg-black bg-opacity-40 z-1"></div>
-                  </div>
+                  <div 
+                    className="absolute inset-0" 
+                    style={{
+                      backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url(${figure.imageurl})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  ></div>
+                  
+                  {/* Add a dark overlay for better text readability */}
+                  <div className="absolute inset-0 bg-black bg-opacity-40 z-1"></div>
                   
                   {/* Figure Image (in front of background) */}
                   <div className="absolute inset-0 flex items-center justify-center z-10">
@@ -231,43 +243,21 @@ const PublicFiguresSlider: React.FC = () => {
                   name="card" 
                   id={`card${index}`} 
                   defaultChecked={index === 0} 
+                  onChange={() => setActiveIndex(index)}
                 />
                 <label 
                   className="content md:flex-1 mb-4 md:mb-0 md:mr-2 relative rounded-3xl overflow-hidden cursor-pointer transition-all" 
                   htmlFor={`card${index}`}
                 >
-                  {/* Background Video/Image Layer */}
-                  <div className="absolute inset-0 w-full h-full z-0">
-                    {figure.video_url ? (
-                      isYouTubeUrl(figure.video_url) ? (
-                        <iframe
-                          src={getYouTubeEmbedUrl(figure.video_url)}
-                          className="absolute w-full h-full object-cover opacity-40"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        ></iframe>
-                      ) : (
-                        <video 
-                          src={figure.video_url}
-                          className="absolute w-full h-full object-cover opacity-40"
-                          autoPlay 
-                          muted 
-                          loop 
-                          playsInline
-                        />
-                      )
-                    ) : (
-                      <div className="absolute inset-0 w-full h-full" style={{
-                        backgroundImage: `url(${figure.imageurl})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        backgroundRepeat: 'no-repeat',
-                      }}></div>
-                    )}
-                    {/* Add a dark overlay for better text readability */}
-                    <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                  </div>
+                  <div className="absolute inset-0 w-full h-full" style={{
+                    backgroundImage: `url(${figure.imageurl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                  }}></div>
+                  
+                  {/* Add a dark overlay for better text readability */}
+                  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
                   
                   {/* Figure Content (in front of background) */}
                   <div className="relative z-10 h-full flex flex-col justify-between p-5">
@@ -295,12 +285,6 @@ const PublicFiguresSlider: React.FC = () => {
       </div>
     </section>
   );
-};
-
-// Helper function to check if the URL is a YouTube URL
-const isYouTubeUrl = (url: string) => {
-  if (!url) return false;
-  return url.includes('youtube.com') || url.includes('youtu.be');
 };
 
 export default React.memo(PublicFiguresSlider);

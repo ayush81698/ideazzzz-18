@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -53,14 +52,16 @@ const UsersManager = () => {
     try {
       setLoading(true);
       
-      // Fetch users from the auth.users table via Supabase admin API
+      // Use the listUsers endpoint
       const { data, error } = await supabase.auth.admin.listUsers();
       
       if (error) {
+        console.error('Error from listUsers:', error);
         throw error;
       }
       
       if (data && data.users && data.users.length > 0) {
+        console.log('Fetched users:', data.users.length);
         // Map the Supabase auth users to our AdminUser interface
         const mappedUsers = data.users.map(user => ({
           id: user.id,
@@ -74,57 +75,40 @@ const UsersManager = () => {
         
         setUsers(mappedUsers);
         setFilteredUsers(mappedUsers);
-        toast.success('Loaded user data successfully');
+        toast.success(`Loaded ${mappedUsers.length} users successfully`);
       } else {
-        // Fall back to sample data for demo purposes if no users are found
-        console.error('No users found, using demo data');
+        // Try alternative approach - query the auth.users table directly via RPC
+        console.log('No users found via admin.listUsers, trying alternative approach');
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_users');
         
-        const demoUsers: AdminUser[] = [
-          {
-            id: '1',
-            email: 'user1@example.com',
-            created_at: new Date().toISOString(),
-            last_sign_in_at: new Date().toISOString(),
-            phone: '+91 98765 43210',
-            app_metadata: { provider: 'email' },
-            user_metadata: { name: 'Demo User 1' }
-          },
-          {
-            id: '2',
-            email: 'user2@example.com',
-            created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-            last_sign_in_at: null,
-            phone: null,
-            app_metadata: { provider: 'google' },
-            user_metadata: { name: 'Demo User 2' }
-          },
-          {
-            id: '3',
-            email: 'admin@ideazzz.com',
-            created_at: new Date(Date.now() - 186400000).toISOString(), // 2+ days ago
-            last_sign_in_at: new Date().toISOString(),
-            phone: '+91 98765 43210',
-            app_metadata: { provider: 'email' },
-            user_metadata: { name: 'Admin User' }
-          }
-        ];
+        if (rpcError) {
+          console.error('Error from RPC fallback:', rpcError);
+          throw rpcError;
+        }
         
-        setUsers(demoUsers);
-        setFilteredUsers(demoUsers);
-        
-        toast.warning('Using demo user data');
+        if (rpcData && rpcData.length > 0) {
+          console.log('Fetched users via RPC:', rpcData.length);
+          setUsers(rpcData);
+          setFilteredUsers(rpcData);
+          toast.success(`Loaded ${rpcData.length} users via database function`);
+        } else {
+          throw new Error('No users found via any method');
+        }
       }
     } catch (error: any) {
       console.error('Error fetching users:', error);
       
-      // If we can't access admin API (likely due to permissions),
-      // try to get users from the regular auth API
+      // Final fallback - try to get at least the current authenticated user
       try {
         const { data: authData, error: authError } = await supabase.auth.getUser();
         
-        if (authError) throw authError;
+        if (authError) {
+          console.error('Auth getUser error:', authError);
+          throw authError;
+        }
         
         if (authData && authData.user) {
+          console.log('Retrieved current user only:', authData.user.email);
           // If we can get the current user, add it to our list
           const currentUser: AdminUser = {
             id: authData.user.id,
@@ -136,90 +120,19 @@ const UsersManager = () => {
             user_metadata: authData.user.user_metadata || {}
           };
           
-          // Fall back to sample data plus the current user
-          const demoUsers: AdminUser[] = [
-            currentUser,
-            {
-              id: '1',
-              email: 'user1@example.com',
-              created_at: new Date().toISOString(),
-              last_sign_in_at: new Date().toISOString(),
-              phone: '+91 98765 43210',
-              app_metadata: { provider: 'email' },
-              user_metadata: { name: 'Demo User 1' }
-            },
-            {
-              id: '2',
-              email: 'user2@example.com',
-              created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-              last_sign_in_at: null,
-              phone: null,
-              app_metadata: { provider: 'google' },
-              user_metadata: { name: 'Demo User 2' }
-            }
-          ];
-          
-          setUsers(demoUsers);
-          setFilteredUsers(demoUsers);
-          
-          toast.warning('Using demo data with your user information');
+          setUsers([currentUser]);
+          setFilteredUsers([currentUser]);
+          toast.warning('Limited access: Only showing your user account');
         } else {
-          // Complete fallback if we can't get anything from the API
-          const demoUsers: AdminUser[] = [
-            {
-              id: '1',
-              email: 'user1@example.com',
-              created_at: new Date().toISOString(),
-              last_sign_in_at: new Date().toISOString(),
-              phone: '+91 98765 43210',
-              app_metadata: { provider: 'email' },
-              user_metadata: { name: 'Demo User 1' }
-            },
-            {
-              id: '2',
-              email: 'user2@example.com',
-              created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-              last_sign_in_at: null,
-              phone: null,
-              app_metadata: { provider: 'google' },
-              user_metadata: { name: 'Demo User 2' }
-            }
-          ];
-          
-          setUsers(demoUsers);
-          setFilteredUsers(demoUsers);
-          
-          toast.error('Using demo data for testing purposes');
+          toast.error('Failed to retrieve any user data');
+          setUsers([]);
+          setFilteredUsers([]);
         }
       } catch (fallbackError) {
-        console.error('Fallback error fetching user:', fallbackError);
-        
-        // Complete fallback if we can't get anything from the API
-        const demoUsers: AdminUser[] = [
-          {
-            id: '1',
-            email: 'user1@example.com',
-            created_at: new Date().toISOString(),
-            last_sign_in_at: new Date().toISOString(),
-            phone: '+91 98765 43210',
-            app_metadata: { provider: 'email' },
-            user_metadata: { name: 'Demo User 1' }
-          },
-          {
-            id: '2',
-            email: 'user2@example.com',
-            created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-            last_sign_in_at: null,
-            phone: null,
-            app_metadata: { provider: 'google' },
-            user_metadata: { name: 'Demo User 2' }
-          }
-        ];
-        
-        setUsers(demoUsers);
-        setFilteredUsers(demoUsers);
-        
-        toast.error('Using demo data for testing purposes');
+        console.error('Complete failure fetching any user data:', fallbackError);
+        toast.error('Unable to fetch user data. Please check your permissions.');
+        setUsers([]);
+        setFilteredUsers([]);
       }
     } finally {
       setLoading(false);

@@ -149,7 +149,7 @@ const ImageCollage: React.FC = () => {
               }}
             >
               <div className="relative w-40 h-40 md:w-56 md:h-56 overflow-hidden rounded-md shadow-lg">
-                {/* Background Video Layer */}
+                {/* Background Video Layer - Positioned behind everything */}
                 {figure.video_url && (
                   <div className="absolute inset-0 z-0 bg-black">
                     {isYouTubeUrl(figure.video_url) ? (

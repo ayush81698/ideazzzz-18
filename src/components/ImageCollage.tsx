@@ -11,6 +11,41 @@ interface PublicFigure {
   video_url?: string;
 }
 
+// Helper function to get YouTube embed URL from any YouTube URL format
+const getYouTubeEmbedUrl = (url: string) => {
+  if (!url) return null;
+  
+  // Check if it's a YouTube URL
+  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
+  if (!youtubeRegex.test(url)) return url; // Not a YouTube URL, return as is
+  
+  // Extract video ID
+  let videoId = '';
+  
+  if (url.includes('youtu.be')) {
+    // Short URL format: https://youtu.be/VIDEO_ID
+    videoId = url.split('/').pop() || '';
+  } else if (url.includes('youtube.com/watch')) {
+    // Standard URL format: https://www.youtube.com/watch?v=VIDEO_ID
+    const urlParams = new URLSearchParams(url.split('?')[1]);
+    videoId = urlParams.get('v') || '';
+  } else if (url.includes('youtube.com/embed')) {
+    // Already an embed URL
+    videoId = url.split('/').pop() || '';
+  }
+  
+  if (!videoId) return url; // Couldn't extract video ID
+  
+  // Return the embed URL with parameters for background video use
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0`;
+};
+
+// Helper function to check if the URL is a YouTube URL
+const isYouTubeUrl = (url: string) => {
+  if (!url) return false;
+  return url.includes('youtube.com') || url.includes('youtu.be');
+};
+
 const ImageCollage: React.FC = () => {
   const [figures, setFigures] = useState<PublicFigure[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,34 +149,42 @@ const ImageCollage: React.FC = () => {
               }}
             >
               <div className="relative w-40 h-40 md:w-56 md:h-56 overflow-hidden rounded-md shadow-lg">
-                {figure.video_url ? (
-                  <>
-                    <video 
-                      src={figure.video_url}
-                      className="w-full h-full object-cover opacity-60"
-                      autoPlay 
-                      muted 
-                      loop 
-                      playsInline
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-                    <Image
-                      src={figure.imageurl}
-                      alt={figure.name}
-                      loading="lazy"
-                      objectFit="contain"
-                      className="absolute inset-0 w-full h-full transform transition-transform duration-500 hover:scale-110 z-10 opacity-90"
-                    />
-                  </>
-                ) : (
-                  <Image
-                    src={figure.imageurl}
-                    alt={figure.name}
-                    loading="lazy"
-                    objectFit="cover"
-                    className="w-full h-full transform transition-transform duration-500 hover:scale-110"
-                  />
-                )}
+                {/* Background Video/Image Layer */}
+                <div className="absolute inset-0 z-0">
+                  {figure.video_url ? (
+                    isYouTubeUrl(figure.video_url) ? (
+                      <iframe
+                        src={getYouTubeEmbedUrl(figure.video_url)}
+                        className="absolute w-full h-full object-cover opacity-40"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      ></iframe>
+                    ) : (
+                      <video 
+                        src={figure.video_url}
+                        className="absolute w-full h-full object-cover opacity-40"
+                        autoPlay 
+                        muted 
+                        loop 
+                        playsInline
+                      />
+                    )
+                  ) : null}
+                  {/* Add a dark overlay for better foreground visibility */}
+                  <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+                </div>
+                
+                {/* Foreground Image */}
+                <Image
+                  src={figure.imageurl}
+                  alt={figure.name}
+                  loading="lazy"
+                  objectFit="cover"
+                  className="w-full h-full transform transition-transform duration-500 hover:scale-110 relative z-10"
+                />
+                
+                {/* Name Overlay */}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-3 z-20">
                   <h3 className="text-white text-sm md:text-base font-medium">
                     {figure.name}

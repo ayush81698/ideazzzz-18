@@ -6,6 +6,7 @@ interface PublicFigure {
   id: string;
   name: string;
   imageurl: string;
+  video_url?: string;
 }
 
 export const usePublicFiguresGridSlider = () => {

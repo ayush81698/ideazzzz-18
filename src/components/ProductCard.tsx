@@ -40,11 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               modelUrl={product.model_url!}
               height="100%"
               width="100%"
-              autoRotate={true}
-              cameraControls={isMobile}
-              backgroundAlpha={0}
-              fieldOfView="30deg"
-              exposure="1.5"
+              className=""
             />
           ) : (
             <img 

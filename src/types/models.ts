@@ -30,3 +30,13 @@ export interface SupabaseModel {
   is_featured?: boolean;
   position?: string;
 }
+
+export interface PublicFigure {
+  id: string;
+  name: string;
+  subtitle?: string;
+  description?: string;
+  imageurl: string;
+  video_url?: string;
+  order?: number;
+}

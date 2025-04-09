@@ -9,6 +9,12 @@ interface ModelViewerProps {
   width?: string;
   height?: string;
   className?: string;
+  autoRotate?: boolean;
+  cameraControls?: boolean;
+  backgroundAlpha?: number;
+  fieldOfView?: string;
+  exposure?: string;
+  scale?: string;
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
@@ -16,6 +22,13 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   width = '100%',
   height = '100%',
   className = '',
+  // Additional props with defaults
+  autoRotate, 
+  cameraControls,
+  backgroundAlpha,
+  fieldOfView,
+  exposure,
+  scale
 }) => {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);

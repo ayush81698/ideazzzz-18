@@ -102,16 +102,6 @@ const PublicFiguresSlider: React.FC = () => {
     fetchFigures();
   }, []);
 
-  useEffect(() => {
-    if (isMobile && figures.length > 0) {
-      const interval = setInterval(() => {
-        setActiveIndex((prevIndex) => (prevIndex + 1) % figures.length);
-      }, 5000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [isMobile, figures.length]);
-
   const handleCardClick = (index: number) => {
     if (isMobile) {
       setActiveIndex(index);
@@ -138,7 +128,7 @@ const PublicFiguresSlider: React.FC = () => {
               className="absolute w-full h-full object-cover"
               style={{ 
                 pointerEvents: 'none',
-                transform: isMobile ? 'scale(2)' : 'scale(1.25)',
+                transform: isMobile ? 'scale(1.7)' : 'scale(1.25)',
                 transformOrigin: 'center center'
               }}
               frameBorder="0"
@@ -150,7 +140,7 @@ const PublicFiguresSlider: React.FC = () => {
               src={activeVideoUrl}
               className="absolute w-full h-full object-cover"
               style={{ 
-                transform: isMobile ? 'scale(2)' : 'scale(1.25)',
+                transform: isMobile ? 'scale(1.7)' : 'scale(1.25)',
                 transformOrigin: 'center center'
               }}
               autoPlay 
@@ -182,7 +172,7 @@ const PublicFiguresSlider: React.FC = () => {
                   <div 
                     className="absolute inset-0" 
                     style={{
-                      backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8)), url(${figure.imageurl})`,
+                      backgroundImage: `url(${figure.imageurl})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                     }}
@@ -200,15 +190,17 @@ const PublicFiguresSlider: React.FC = () => {
                 </div>
               ))}
             </div>
-            <div className="flex justify-center mt-4 space-x-2">
+            <div className="flex justify-center mt-4 gap-3">
               {figures.map((_, index) => (
                 <button
                   key={index}
-                  className={`w-2 h-2 rounded-full ${
-                    index === activeIndex ? 'bg-ideazzz-purple' : 'bg-gray-400'
-                  }`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    index === activeIndex ? 'bg-ideazzz-purple text-white' : 'bg-gray-700 text-gray-300'
+                  } hover:bg-ideazzz-purple hover:text-white transition-colors`}
                   onClick={() => setActiveIndex(index)}
-                />
+                >
+                  {index + 1}
+                </button>
               ))}
             </div>
           </div>

@@ -28,7 +28,7 @@ const Index = () => {
       description: 'Personalized 3D figure based on your photo',
       price: 79.99,
       imageurl: '/lovable-uploads/6b787a6d-ec96-492c-9e23-419a0a02a642.png',
-      model_url: 'https://prod.spline.design/zBE88NNswGCLp5LL/scene.splinecode',
+      model_url: 'https://prod.spline.design/WorDEPrxYHiC4pAl/scene.splinecode',
       category: 'figures'
     },
     {
@@ -37,7 +37,7 @@ const Index = () => {
       description: 'Personalized 3D portrait model',
       price: 59.99,
       imageurl: '/lovable-uploads/d754419d-a8f8-4d9d-b619-460b25f1a2eb.png', 
-      model_url: 'https://prod.spline.design/zBE88NNswGCLp5LL/scene.splinecode',
+      model_url: 'https://prod.spline.design/WorDEPrxYHiC4pAl/scene.splinecode',
       category: 'portraits'
     },
     {
@@ -46,7 +46,7 @@ const Index = () => {
       description: 'Personal 3D avatar for gaming and metaverse',
       price: 49.99,
       imageurl: '/lovable-uploads/e878763e-514f-4b8d-9415-d20319b19995.png',
-      model_url: 'https://prod.spline.design/zBE88NNswGCLp5LL/scene.splinecode',
+      model_url: 'https://prod.spline.design/WorDEPrxYHiC4pAl/scene.splinecode',
       category: 'avatars'
     }
   ]);
@@ -121,7 +121,7 @@ const Index = () => {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <ModelViewer
-            modelUrl="https://prod.spline.design/zBE88NNswGCLp5LL/scene.splinecode"
+            modelUrl="https://prod.spline.design/WorDEPrxYHiC4pAl/scene.splinecode"
             autoRotate={true}
             cameraControls={false}
             height="100%"

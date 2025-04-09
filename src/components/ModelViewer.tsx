@@ -58,13 +58,21 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [modelError, setModelError] = useState<string | null>(null);
-  // Using a more reliable fallback model URL
-  const fallbackModelUrl = 'https://prod.spline.design/zBE88NNswGCLp5LL/scene.splinecode';
+  // Using reliable fallback model URLs
+  const fallbackModelUrls = [
+    'https://prod.spline.design/WorDEPrxYHiC4pAl/scene.splinecode',
+    'https://prod.spline.design/zBE88NNswGCLp5LL/scene.splinecode'
+  ];
+  const [currentModelUrl, setCurrentModelUrl] = useState<string>(modelUrl || fallbackModelUrls[0]);
 
   useEffect(() => {
     setLoading(true);
     setProgress(0);
     setModelError(null);
+    
+    if (modelUrl) {
+      setCurrentModelUrl(modelUrl);
+    }
 
     // Simulate loading progress
     const progressInterval = setInterval(() => {
@@ -91,8 +99,26 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
   const handleModelError = (error: Error) => {
     console.error('Error loading model:', error);
-    setModelError('Failed to load 3D model');
-    setLoading(false);
+    
+    // If the current model URL is already a fallback, try the next one
+    if (currentModelUrl !== modelUrl && fallbackModelUrls.includes(currentModelUrl)) {
+      const currentIndex = fallbackModelUrls.indexOf(currentModelUrl);
+      if (currentIndex < fallbackModelUrls.length - 1) {
+        // Try next fallback
+        setCurrentModelUrl(fallbackModelUrls[currentIndex + 1]);
+        return;
+      }
+    }
+    
+    // If we're already using the original URL or have tried all fallbacks
+    if (currentModelUrl === modelUrl) {
+      // First try with a fallback
+      setCurrentModelUrl(fallbackModelUrls[0]);
+    } else {
+      // Show error if all fallbacks have been tried
+      setModelError('Failed to load 3D model');
+      setLoading(false);
+    }
   };
 
   // Prepare model options from props
@@ -149,7 +175,7 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         transform: scale ? `scale(${scale})` : undefined,
       }}>
         <SplineModel
-          scene={modelUrl || fallbackModelUrl}
+          scene={currentModelUrl}
           onLoad={handleModelLoad}
           onError={handleModelError}
           options={modelOptions}

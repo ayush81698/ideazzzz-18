@@ -37,9 +37,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="relative h-48 md:h-56 overflow-hidden">
           {showModel && hasModel ? (
             <ModelViewer
-              modelUrl={product.model_url}
+              modelUrl={product.model_url!}
               height="100%"
               width="100%"
+              autoRotate={true}
+              cameraControls={isMobile}
+              backgroundAlpha={0}
+              fieldOfView="30deg"
+              exposure="1.5"
             />
           ) : (
             <img 

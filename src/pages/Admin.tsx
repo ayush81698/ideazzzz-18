@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import ProductManager from '@/components/ProductManager';
 import BookingsManager from '@/components/BookingsManager';
-import { UsersManager } from '@/components/UsersManager';
+import UsersManager from '@/components/UsersManager';
 import PublicFiguresManager from '@/components/PublicFiguresManager';
 
 // Explicitly define admin emails for type safety

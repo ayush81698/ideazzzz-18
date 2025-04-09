@@ -2,231 +2,288 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { format } from 'date-fns';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, Search, ArrowUpDown } from "lucide-react";
 
+// Renamed to AdminUser to avoid conflicts with Supabase's User type
 interface AdminUser {
   id: string;
-  email: string | null;
+  email: string;
   created_at: string;
   last_sign_in_at: string | null;
   phone: string | null;
-  app_metadata: { provider: string };
-  user_metadata: any;
+  app_metadata: {
+    provider?: string;
+    [key: string]: any;
+  };
+  user_metadata: {
+    [key: string]: any;
+  };
 }
 
-export const UsersManager = () => {
+const UsersManager = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<{ field: string; direction: 'asc' | 'desc' }>({ 
+    field: 'created_at', 
+    direction: 'desc' 
+  });
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
   useEffect(() => {
-    if (searchTerm) {
-      const filtered = users.filter(
-        user => 
-          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.id.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredUsers(filtered);
-    } else {
-      setFilteredUsers(users);
-    }
-  }, [searchTerm, users]);
+    filterAndSortUsers();
+  }, [users, searchQuery, sortBy]);
 
-  // Function to fetch actual users from the database
   const fetchUsers = async () => {
-    setIsLoading(true);
-    setError(null);
-    
     try {
-      console.log('Fetching users...');
+      setLoading(true);
       
-      // First, try to get all users from the admin_users table
-      const { data: userData, error: userError } = await supabase
-        .from('admin_users')
-        .select('*');
+      // Use the listUsers endpoint
+      const { data, error } = await supabase.auth.admin.listUsers();
       
-      if (userError) {
-        console.error('Error fetching from admin_users:', userError);
+      if (error) {
+        console.error('Error from listUsers:', error);
+        throw error;
       }
       
-      // Second, try to get public_figures data to merge with users
-      const { data: publicFiguresData, error: publicFiguresError } = await supabase
-        .from('public_figures')
-        .select('*');
-      
-      if (publicFiguresError) {
-        console.error('Error fetching from public_figures:', publicFiguresError);
-      }
-      
-      // Third, get any other user data from the auth system if available
-      let authUsers: AdminUser[] = [];
-      try {
-        const { data: { users: adminUsers }, error: adminError } = await supabase.auth.admin.listUsers();
-        
-        if (adminError) {
-          console.error('Error from admin.listUsers:', adminError);
-        } else if (adminUsers && adminUsers.length > 0) {
-          authUsers = adminUsers.map(user => ({
-            id: user.id,
-            email: user.email,
-            created_at: user.created_at,
-            last_sign_in_at: user.last_sign_in_at,
-            phone: user.phone,
-            app_metadata: user.app_metadata,
-            user_metadata: user.user_metadata
-          }));
-        }
-      } catch (e) {
-        console.log('Admin API not available, continuing with other sources');
-      }
-      
-      // Combine all data sources
-      let allUsers: AdminUser[] = [];
-      
-      // Add admin users if we have them
-      if (userData && userData.length > 0) {
-        console.log(`Got ${userData.length} users from admin_users table`);
-        const mappedAdminUsers = userData.map(user => ({
+      if (data && data.users && data.users.length > 0) {
+        console.log('Fetched users:', data.users.length);
+        // Map the Supabase auth users to our AdminUser interface
+        const mappedUsers = data.users.map(user => ({
           id: user.id,
-          email: user.email,
-          created_at: user.created_at,
-          last_sign_in_at: null,
-          phone: null,
-          app_metadata: { provider: 'Database' },
-          user_metadata: {}
+          email: user.email || '',
+          created_at: user.created_at || '',
+          last_sign_in_at: user.last_sign_in_at || null,
+          phone: user.phone || null,
+          app_metadata: user.app_metadata || {},
+          user_metadata: user.user_metadata || {}
         }));
-        allUsers = [...allUsers, ...mappedAdminUsers];
-      }
-      
-      // Add public figures as users if we have them
-      if (publicFiguresData && publicFiguresData.length > 0) {
-        console.log(`Got ${publicFiguresData.length} users from public_figures table`);
-        const mappedPublicFigures = publicFiguresData.map(figure => ({
-          id: figure.id,
-          email: `${figure.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
-          created_at: figure.created_at,
-          last_sign_in_at: null,
-          phone: null,
-          app_metadata: { provider: 'PublicFigure' },
-          user_metadata: { name: figure.name }
-        }));
-        allUsers = [...allUsers, ...mappedPublicFigures];
-      }
-      
-      // Add auth users if we have them
-      if (authUsers.length > 0) {
-        console.log(`Got ${authUsers.length} users from auth system`);
-        allUsers = [...allUsers, ...authUsers];
-      }
-      
-      // If we have no users at all, add a fallback user
-      if (allUsers.length === 0) {
-        console.log('No users found, using fallback data');
-        allUsers = [
-          {
-            id: '123',
-            email: 'user1@example.com',
-            created_at: new Date().toISOString(),
+        
+        setUsers(mappedUsers);
+        setFilteredUsers(mappedUsers);
+        toast.success(`Loaded ${mappedUsers.length} users successfully`);
+      } else {
+        // Try alternative approach - query the auth.users table directly via SQL
+        console.log('No users found via admin.listUsers, trying alternative approach');
+        
+        // Use a simple select query instead of the non-existent RPC function
+        const { data: sqlData, error: sqlError } = await supabase
+          .from('admin_users')
+          .select('*');
+        
+        if (sqlError) {
+          console.error('Error from SQL fallback:', sqlError);
+          throw sqlError;
+        }
+        
+        if (sqlData && sqlData.length > 0) {
+          console.log('Fetched users via SQL:', sqlData.length);
+          
+          // Convert to our AdminUser format
+          const mappedUsers: AdminUser[] = sqlData.map(user => ({
+            id: user.id || '',
+            email: user.email || '',
+            created_at: user.created_at || '',
             last_sign_in_at: null,
             phone: null,
-            app_metadata: { provider: 'Fallback' },
+            app_metadata: { provider: 'Database' },
             user_metadata: {}
-          },
-          {
-            id: '456',
-            email: 'user2@example.com',
-            created_at: new Date().toISOString(),
-            last_sign_in_at: null,
-            phone: null,
-            app_metadata: { provider: 'Fallback' },
-            user_metadata: {}
-          }
-        ];
+          }));
+          
+          setUsers(mappedUsers);
+          setFilteredUsers(mappedUsers);
+          toast.success(`Loaded ${mappedUsers.length} users via database query`);
+        } else {
+          throw new Error('No users found via any method');
+        }
       }
-      
-      // Remove duplicates (based on id)
-      const uniqueUsers = Array.from(
-        new Map(allUsers.map(user => [user.id, user])).values()
-      );
-      
-      setUsers(uniqueUsers);
-      setFilteredUsers(uniqueUsers);
-      toast.success(`Loaded ${uniqueUsers.length} users successfully`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching users:', error);
-      setError('Error fetching users. Please try again later.');
-      toast.error('Failed to load users');
+      
+      // Final fallback - try to get at least the current authenticated user
+      try {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        
+        if (authError) {
+          console.error('Auth getUser error:', authError);
+          throw authError;
+        }
+        
+        if (authData && authData.user) {
+          console.log('Retrieved current user only:', authData.user.email);
+          // If we can get the current user, add it to our list
+          const currentUser: AdminUser = {
+            id: authData.user.id,
+            email: authData.user.email || '',
+            created_at: authData.user.created_at || '',
+            last_sign_in_at: authData.user.last_sign_in_at || null,
+            phone: authData.user.phone || null,
+            app_metadata: authData.user.app_metadata || {},
+            user_metadata: authData.user.user_metadata || {}
+          };
+          
+          setUsers([currentUser]);
+          setFilteredUsers([currentUser]);
+          toast.warning('Limited access: Only showing your user account');
+        } else {
+          toast.error('Failed to retrieve any user data');
+          setUsers([]);
+          setFilteredUsers([]);
+        }
+      } catch (fallbackError) {
+        console.error('Complete failure fetching any user data:', fallbackError);
+        toast.error('Unable to fetch user data. Please check your permissions.');
+        setUsers([]);
+        setFilteredUsers([]);
+      }
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
+  const filterAndSortUsers = () => {
+    let filtered = [...users];
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(user => 
+        (user.email && user.email.toLowerCase().includes(query)) ||
+        (user.phone && user.phone.toLowerCase().includes(query)) ||
+        (user.user_metadata?.name && user.user_metadata.name.toLowerCase().includes(query))
+      );
+    }
+    
+    // Apply sorting
+    filtered.sort((a, b) => {
+      const direction = sortBy.direction === 'asc' ? 1 : -1;
+      
+      if (sortBy.field === 'created_at') {
+        return direction * (new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      }
+      
+      if (sortBy.field === 'email') {
+        return direction * ((a.email || '').localeCompare(b.email || ''));
+      }
+      
+      if (sortBy.field === 'last_sign_in') {
+        if (!a.last_sign_in_at) return direction;
+        if (!b.last_sign_in_at) return -direction;
+        return direction * (new Date(a.last_sign_in_at).getTime() - new Date(b.last_sign_in_at).getTime());
+      }
+      
+      return 0;
+    });
+    
+    setFilteredUsers(filtered);
+  };
+
+  const toggleSort = (field: string) => {
+    setSortBy(prev => ({
+      field,
+      direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Never';
+    return new Date(dateString).toLocaleString();
+  };
+
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Users Management</h2>
-        <div className="flex space-x-2">
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold">User Management</h2>
+      
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64"
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <Button onClick={fetchUsers} disabled={isLoading}>
-            {isLoading ? 'Loading...' : 'Refresh'}
-          </Button>
         </div>
+        <Button variant="outline" onClick={fetchUsers}>Refresh</Button>
       </div>
-
-      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
-
-      <div className="border rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead>Provider</TableHead>
-              <TableHead>Last Sign In</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
+      
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      ) : filteredUsers.length === 0 ? (
+        <div className="text-center py-8 bg-muted/20 rounded-lg">
+          <p className="text-muted-foreground">No users found</p>
+        </div>
+      ) : (
+        <div className="border rounded-lg overflow-hidden">
+          <Table>
+            <TableCaption>List of registered users</TableCaption>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-4">Loading...</TableCell>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    className="p-0 hover:bg-transparent flex items-center"
+                    onClick={() => toggleSort('email')}
+                  >
+                    Email
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>Provider</TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    className="p-0 hover:bg-transparent flex items-center"
+                    onClick={() => toggleSort('created_at')}
+                  >
+                    Joined
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button 
+                    variant="ghost" 
+                    className="p-0 hover:bg-transparent flex items-center"
+                    onClick={() => toggleSort('last_sign_in')}
+                  >
+                    Last Sign In
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
               </TableRow>
-            ) : filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
+            </TableHeader>
+            <TableBody>
+              {filteredUsers.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell className="font-mono text-xs">{user.id.substring(0, 8)}...</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.created_at ? format(new Date(user.created_at), 'PP') : 'N/A'}</TableCell>
-                  <TableCell>{user.app_metadata?.provider || 'Unknown'}</TableCell>
-                  <TableCell>
-                    {user.last_sign_in_at 
-                      ? format(new Date(user.last_sign_in_at), 'PP pp')
-                      : 'Never'}
-                  </TableCell>
+                  <TableCell className="font-medium">{user.email}</TableCell>
+                  <TableCell>{user.app_metadata?.provider || 'Email'}</TableCell>
+                  <TableCell>{formatDate(user.created_at)}</TableCell>
+                  <TableCell>{formatDate(user.last_sign_in_at)}</TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-4">No users found</TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 };
+
+export default UsersManager;

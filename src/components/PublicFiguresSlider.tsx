@@ -128,7 +128,7 @@ const PublicFiguresSlider: React.FC = () => {
               className="absolute w-full h-full object-cover"
               style={{ 
                 pointerEvents: 'none',
-                transform: isMobile ? 'scale(1.7)' : 'scale(1.25)',
+                transform: isMobile ? 'scale(2.7)' : 'scale(1.25)',
                 transformOrigin: 'center center'
               }}
               frameBorder="0"
@@ -140,7 +140,7 @@ const PublicFiguresSlider: React.FC = () => {
               src={activeVideoUrl}
               className="absolute w-full h-full object-cover"
               style={{ 
-                transform: isMobile ? 'scale(1.7)' : 'scale(1.25)',
+                transform: isMobile ? 'scale(2.7)' : 'scale(1.25)',
                 transformOrigin: 'center center'
               }}
               autoPlay 

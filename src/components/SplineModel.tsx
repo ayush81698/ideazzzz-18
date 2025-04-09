@@ -6,9 +6,23 @@ interface SplineModelProps {
   scene: string;
   onLoad?: () => void;
   onError?: (error: Error) => void;
+  options?: {
+    rotationAxis?: 'x' | 'y' | 'z';
+    initialRotation?: string;
+    rotateOnScroll?: boolean;
+    scrollY?: number;
+    angleX?: string;
+    angleY?: string;
+    angleZ?: string;
+    autoRotate?: boolean;
+    cameraControls?: boolean;
+    backgroundAlpha?: number;
+    fieldOfView?: string;
+    exposure?: string;
+  };
 }
 
-const SplineModel: React.FC<SplineModelProps> = ({ scene, onLoad, onError }) => {
+const SplineModel: React.FC<SplineModelProps> = ({ scene, onLoad, onError, options }) => {
   useEffect(() => {
     return () => {
       // Clean up any resources when component unmounts

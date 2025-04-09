@@ -8,12 +8,12 @@
 
 .background-video {
   position: absolute;
-  width: 160%; /* Increased zoom by 60% (previously 140%) */
-  height: 160%; /* Increased zoom by 60% (previously 140%) */
-  top: -30%;
-  left: -30%;
+  width: 180%; /* Increased zoom by 20% (previously 160%) */
+  height: 180%; /* Increased zoom by 20% (previously 160%) */
+  top: -40%; /* Adjusted to maintain center alignment */
+  left: -40%; /* Adjusted to maintain center alignment */
   object-fit: cover;
-  opacity: 0.3; /* Decreased opacity further (previously 0.4) */
+  opacity: 0.2; /* Decreased opacity further (previously 0.3) */
   filter: blur(3px);
   z-index: 0;
 }

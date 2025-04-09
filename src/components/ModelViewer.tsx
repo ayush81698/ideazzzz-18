@@ -94,8 +94,36 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     setLoading(false);
   };
 
+  // Prepare model options from props
+  const modelOptions = {
+    rotationAxis,
+    initialRotation,
+    rotateOnScroll,
+    scrollY,
+    angleX,
+    angleY,
+    angleZ,
+    autoRotate,
+    cameraControls,
+    backgroundAlpha,
+    fieldOfView,
+    exposure
+  };
+
   return (
-    <div className={`relative ${className}`} style={{ width, height }}>
+    <div 
+      className={`relative ${className}`} 
+      style={{ 
+        width, 
+        height,
+        position: position as any,
+        top,
+        left,
+        right,
+        bottom,
+        zIndex
+      }}
+    >
       {loading && (
         <div className="absolute inset-0 bg-black/5 backdrop-blur-sm flex flex-col items-center justify-center z-10">
           <div className="w-64 space-y-4">
@@ -114,35 +142,16 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         </div>
       )}
       
-      <div style={{ opacity: loading ? 0 : 1, transition: 'opacity 0.5s ease' }}>
+      <div style={{ 
+        opacity: loading ? 0 : 1, 
+        transition: 'opacity 0.5s ease',
+        transform: scale ? `scale(${scale})` : undefined,
+      }}>
         <SplineModel
           scene={modelUrl || fallbackModelUrl}
           onLoad={handleModelLoad}
           onError={handleModelError}
-          // Remove properties that don't exist in SplineModel
-          // The SplineModel component should handle these internally
-          style={{
-            position: position as any,
-            top,
-            left,
-            right,
-            bottom,
-            transform: scale ? `scale(${scale})` : undefined,
-            zIndex,
-          }}
-          // Pass other props as options or configuration
-          rotationAxis={rotationAxis}
-          initialRotation={initialRotation}
-          rotateOnScroll={rotateOnScroll}
-          scrollY={scrollY}
-          angleX={angleX}
-          angleY={angleY}
-          angleZ={angleZ}
-          autoRotate={autoRotate}
-          cameraControls={cameraControls}
-          backgroundAlpha={backgroundAlpha}
-          fieldOfView={fieldOfView}
-          exposure={exposure}
+          options={modelOptions}
         />
       </div>
     </div>

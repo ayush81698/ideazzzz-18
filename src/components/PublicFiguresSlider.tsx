@@ -19,7 +19,7 @@ const PublicFiguresSlider: React.FC<PublicFiguresSliderProps> = ({ publicFigures
   const transitionDuration = 0.5;
   const [showGrid, setShowGrid] = useState(false);
   
-  const gridSliderData = usePublicFiguresGridSlider({
+  const { GridView } = usePublicFiguresGridSlider({
     publicFigures,
     currentIndex,
     setCurrentIndex
@@ -158,7 +158,7 @@ const PublicFiguresSlider: React.FC<PublicFiguresSliderProps> = ({ publicFigures
       </div>
 
       <AnimatePresence>
-        {showGrid && gridSliderData && gridSliderData.GridView && <gridSliderData.GridView />}
+        {showGrid && <GridView />}
       </AnimatePresence>
 
       {/* Enlarged image overlay */}

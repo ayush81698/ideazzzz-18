@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -77,20 +78,36 @@ const UsersManager = () => {
         setFilteredUsers(mappedUsers);
         toast.success(`Loaded ${mappedUsers.length} users successfully`);
       } else {
-        // Try alternative approach - query the auth.users table directly via RPC
+        // Try alternative approach - query the auth.users table directly via SQL
         console.log('No users found via admin.listUsers, trying alternative approach');
-        const { data: rpcData, error: rpcError } = await supabase.rpc('get_all_users');
         
-        if (rpcError) {
-          console.error('Error from RPC fallback:', rpcError);
-          throw rpcError;
+        // Use a simple select query instead of the non-existent RPC function
+        const { data: sqlData, error: sqlError } = await supabase
+          .from('admin_users')
+          .select('*');
+        
+        if (sqlError) {
+          console.error('Error from SQL fallback:', sqlError);
+          throw sqlError;
         }
         
-        if (rpcData && rpcData.length > 0) {
-          console.log('Fetched users via RPC:', rpcData.length);
-          setUsers(rpcData);
-          setFilteredUsers(rpcData);
-          toast.success(`Loaded ${rpcData.length} users via database function`);
+        if (sqlData && sqlData.length > 0) {
+          console.log('Fetched users via SQL:', sqlData.length);
+          
+          // Convert to our AdminUser format
+          const mappedUsers: AdminUser[] = sqlData.map(user => ({
+            id: user.id || '',
+            email: user.email || '',
+            created_at: user.created_at || '',
+            last_sign_in_at: null,
+            phone: null,
+            app_metadata: { provider: 'Database' },
+            user_metadata: {}
+          }));
+          
+          setUsers(mappedUsers);
+          setFilteredUsers(mappedUsers);
+          toast.success(`Loaded ${mappedUsers.length} users via database query`);
         } else {
           throw new Error('No users found via any method');
         }

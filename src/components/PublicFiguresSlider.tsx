@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -15,36 +14,28 @@ interface PublicFigure {
   video_url?: string;
 }
 
-// Helper function to get YouTube embed URL from any YouTube URL format
 const getYouTubeEmbedUrl = (url: string) => {
   if (!url) return null;
   
-  // Check if it's a YouTube URL
   const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
-  if (!youtubeRegex.test(url)) return url; // Not a YouTube URL, return as is
+  if (!youtubeRegex.test(url)) return url;
   
-  // Extract video ID
   let videoId = '';
   
   if (url.includes('youtu.be')) {
-    // Short URL format: https://youtu.be/VIDEO_ID
     videoId = url.split('/').pop() || '';
   } else if (url.includes('youtube.com/watch')) {
-    // Standard URL format: https://www.youtube.com/watch?v=VIDEO_ID
     const urlParams = new URLSearchParams(url.split('?')[1]);
     videoId = urlParams.get('v') || '';
   } else if (url.includes('youtube.com/embed')) {
-    // Already an embed URL
     videoId = url.split('/').pop() || '';
   }
   
-  if (!videoId) return url; // Couldn't extract video ID
+  if (!videoId) return url;
   
-  // Return the embed URL
   return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0`;
 };
 
-// Helper function to check if the URL is a YouTube URL
 const isYouTubeUrl = (url: string) => {
   if (!url) return false;
   return url.includes('youtube.com') || url.includes('youtu.be');
@@ -56,7 +47,6 @@ const PublicFiguresSlider: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const isMobile = useIsMobile();
   
-  // Fetch public figures from Supabase
   useEffect(() => {
     const fetchFigures = async () => {
       try {
@@ -70,7 +60,6 @@ const PublicFiguresSlider: React.FC = () => {
         if (data && data.length > 0) {
           setFigures(data);
         } else {
-          // Fallback data if no figures are found
           setFigures([
             {
               id: '1',
@@ -113,7 +102,6 @@ const PublicFiguresSlider: React.FC = () => {
     fetchFigures();
   }, []);
 
-  // Handle swipe/click for mobile
   useEffect(() => {
     if (isMobile && figures.length > 0) {
       const interval = setInterval(() => {
@@ -130,7 +118,6 @@ const PublicFiguresSlider: React.FC = () => {
     }
   };
 
-  // Get the active figure's video URL for background
   const activeVideoUrl = figures.length > 0 ? figures[activeIndex].video_url : undefined;
 
   if (loading) {
@@ -143,7 +130,6 @@ const PublicFiguresSlider: React.FC = () => {
 
   return (
     <section className="py-16 overflow-hidden bg-gray-900 relative">
-      {/* Background Video Layer for the entire section */}
       {activeVideoUrl && (
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           {isYouTubeUrl(activeVideoUrl) ? (
@@ -152,7 +138,7 @@ const PublicFiguresSlider: React.FC = () => {
               className="absolute w-full h-full object-cover"
               style={{ 
                 pointerEvents: 'none',
-                transform: isMobile ? 'scale(1.6)' : 'scale(1.25)', // Zoom in by 60% on mobile, keep 25% on desktop
+                transform: isMobile ? 'scale(2)' : 'scale(1.25)',
                 transformOrigin: 'center center'
               }}
               frameBorder="0"
@@ -164,7 +150,7 @@ const PublicFiguresSlider: React.FC = () => {
               src={activeVideoUrl}
               className="absolute w-full h-full object-cover"
               style={{ 
-                transform: isMobile ? 'scale(1.6)' : 'scale(1.25)', // Zoom in by 60% on mobile, keep 25% on desktop
+                transform: isMobile ? 'scale(2)' : 'scale(1.25)',
                 transformOrigin: 'center center'
               }}
               autoPlay 
@@ -173,7 +159,7 @@ const PublicFiguresSlider: React.FC = () => {
               playsInline
             />
           )}
-          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          {!isMobile && <div className="absolute inset-0 bg-black bg-opacity-40"></div>}
         </div>
       )}
       
@@ -202,21 +188,6 @@ const PublicFiguresSlider: React.FC = () => {
                     }}
                   ></div>
                   
-                  {/* Add a dark overlay for better text readability */}
-                  <div className="absolute inset-0 bg-black bg-opacity-40 z-1"></div>
-                  
-                  {/* Figure Image (in front of background) */}
-                  <div className="absolute inset-0 flex items-center justify-center z-10">
-                    <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-white shadow-lg">
-                      <img 
-                        src={figure.imageurl} 
-                        alt={figure.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                  
-                  {/* Text Content */}
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-20">
                     <h3 className="text-xl font-bold mb-1">{figure.name}</h3>
                     {figure.subtitle && (
@@ -264,10 +235,8 @@ const PublicFiguresSlider: React.FC = () => {
                     backgroundRepeat: 'no-repeat',
                   }}></div>
                   
-                  {/* Add a dark overlay for better text readability */}
                   <div className="absolute inset-0 bg-black bg-opacity-40"></div>
                   
-                  {/* Figure Content (in front of background) */}
                   <div className="relative z-10 h-full flex flex-col justify-between p-5">
                     <h1 className="title-card z-10 relative">
                       <span className="marg-bott font-bold text-lg md:text-xl lg:text-2xl">

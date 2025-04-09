@@ -121,11 +121,11 @@ const ImageCollage: React.FC = () => {
           Our recent projects 
         </h2>
         
-        <div className="image-collage">
+        <div className="image-collage position-relative h-[90vh] max-h-[700px] w-full overflow-hidden">
           {figures.map((figure, index) => (
             <motion.div 
               key={`${figure.id}-${index}`}
-              className="image-item"
+              className="image-item absolute transition-transform duration-300"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ 
@@ -149,13 +149,13 @@ const ImageCollage: React.FC = () => {
               }}
             >
               <div className="relative w-40 h-40 md:w-56 md:h-56 overflow-hidden rounded-md shadow-lg">
-                {/* Background Video/Image Layer */}
-                <div className="absolute inset-0 z-0">
-                  {figure.video_url ? (
-                    isYouTubeUrl(figure.video_url) ? (
+                {/* Background Video Layer - Positioned behind everything */}
+                {figure.video_url && (
+                  <div className="absolute inset-0 z-0 bg-black">
+                    {isYouTubeUrl(figure.video_url) ? (
                       <iframe
                         src={getYouTubeEmbedUrl(figure.video_url)}
-                        className="absolute w-full h-full object-cover opacity-40"
+                        className="absolute w-full h-full object-cover"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
@@ -163,17 +163,18 @@ const ImageCollage: React.FC = () => {
                     ) : (
                       <video 
                         src={figure.video_url}
-                        className="absolute w-full h-full object-cover opacity-40"
+                        className="absolute w-full h-full object-cover"
                         autoPlay 
                         muted 
                         loop 
                         playsInline
                       />
-                    )
-                  ) : null}
-                  {/* Add a dark overlay for better foreground visibility */}
-                  <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-                </div>
+                    )}
+                  </div>
+                )}
+                
+                {/* Dark Overlay for better visibility of content */}
+                <div className="absolute inset-0 bg-black bg-opacity-40 z-1"></div>
                 
                 {/* Foreground Image */}
                 <Image
@@ -181,11 +182,11 @@ const ImageCollage: React.FC = () => {
                   alt={figure.name}
                   loading="lazy"
                   objectFit="cover"
-                  className="w-full h-full transform transition-transform duration-500 hover:scale-110 relative z-10"
+                  className="w-full h-full transform transition-transform duration-500 hover:scale-110 relative z-2"
                 />
                 
                 {/* Name Overlay */}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-3 z-20">
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-3 z-3">
                   <h3 className="text-white text-sm md:text-base font-medium">
                     {figure.name}
                   </h3>

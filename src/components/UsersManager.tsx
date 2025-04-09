@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -47,7 +46,7 @@ export const UsersManager = () => {
     setError(null);
     
     try {
-      console.log('Fetching users...');
+      console.log('Fetching users from Supabase...');
       
       // First, try to get all users from the admin_users table
       const { data: userData, error: userError } = await supabase
@@ -58,7 +57,7 @@ export const UsersManager = () => {
         console.error('Error fetching from admin_users:', userError);
       }
       
-      // Second, try to get public_figures data to merge with users
+      // Also try to get public_figures data to merge with users
       const { data: publicFiguresData, error: publicFiguresError } = await supabase
         .from('public_figures')
         .select('*');
@@ -67,15 +66,17 @@ export const UsersManager = () => {
         console.error('Error fetching from public_figures:', publicFiguresError);
       }
       
-      // Third, get any other user data from the auth system if available
+      // Try to get auth users if possible
       let authUsers: AdminUser[] = [];
       try {
-        const { data: { users: adminUsers }, error: adminError } = await supabase.auth.admin.listUsers();
+        console.log('Attempting to fetch authenticated users...');
+        const { data, error } = await supabase.auth.admin.listUsers();
         
-        if (adminError) {
-          console.error('Error from admin.listUsers:', adminError);
-        } else if (adminUsers && adminUsers.length > 0) {
-          authUsers = adminUsers.map(user => ({
+        if (error) {
+          console.error('Error fetching auth users:', error);
+        } else if (data && data.users && data.users.length > 0) {
+          console.log(`Retrieved ${data.users.length} authenticated users`);
+          authUsers = data.users.map(user => ({
             id: user.id,
             email: user.email,
             created_at: user.created_at,
@@ -86,7 +87,7 @@ export const UsersManager = () => {
           }));
         }
       } catch (e) {
-        console.log('Admin API not available, continuing with other sources');
+        console.log('Admin API not accessible, continuing with regular database users');
       }
       
       // Combine all data sources
@@ -128,39 +129,21 @@ export const UsersManager = () => {
         allUsers = [...allUsers, ...authUsers];
       }
       
-      // If we have no users at all, add a fallback user
-      if (allUsers.length === 0) {
-        console.log('No users found, using fallback data');
-        allUsers = [
-          {
-            id: '123',
-            email: 'user1@example.com',
-            created_at: new Date().toISOString(),
-            last_sign_in_at: null,
-            phone: null,
-            app_metadata: { provider: 'Fallback' },
-            user_metadata: {}
-          },
-          {
-            id: '456',
-            email: 'user2@example.com',
-            created_at: new Date().toISOString(),
-            last_sign_in_at: null,
-            phone: null,
-            app_metadata: { provider: 'Fallback' },
-            user_metadata: {}
-          }
-        ];
-      }
-      
       // Remove duplicates (based on id)
       const uniqueUsers = Array.from(
         new Map(allUsers.map(user => [user.id, user])).values()
       );
       
+      if (uniqueUsers.length === 0) {
+        console.warn('No users found in any data source');
+        toast.warning('No users found. Please add users to see them here.');
+      } else {
+        console.log(`Successfully loaded ${uniqueUsers.length} unique users`);
+        toast.success(`Loaded ${uniqueUsers.length} users successfully`);
+      }
+      
       setUsers(uniqueUsers);
       setFilteredUsers(uniqueUsers);
-      toast.success(`Loaded ${uniqueUsers.length} users successfully`);
     } catch (error) {
       console.error('Error fetching users:', error);
       setError('Error fetching users. Please try again later.');
@@ -230,3 +213,5 @@ export const UsersManager = () => {
     </div>
   );
 };
+
+export default UsersManager;

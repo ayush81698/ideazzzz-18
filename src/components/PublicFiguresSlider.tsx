@@ -17,10 +17,12 @@ const PublicFiguresSlider: React.FC<PublicFiguresSliderProps> = ({ publicFigures
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const transitionDuration = 0.5;
-  const { GridView, showGrid, setShowGrid } = usePublicFiguresGridSlider({
+  const [showGrid, setShowGrid] = useState(false);
+  
+  const { GridView } = usePublicFiguresGridSlider({
     publicFigures,
     currentIndex,
-    setCurrentIndex,
+    setCurrentIndex
   });
 
   useEffect(() => {

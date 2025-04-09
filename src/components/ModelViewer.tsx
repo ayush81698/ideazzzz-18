@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import SplineModel from './SplineModel';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,6 +8,25 @@ interface ModelViewerProps {
   width?: string;
   height?: string;
   className?: string;
+  position?: string;
+  top?: string;
+  left?: string;
+  right?: string;
+  bottom?: string;
+  scale?: string;
+  rotationAxis?: 'x' | 'y' | 'z';
+  initialRotation?: string;
+  zIndex?: number;
+  rotateOnScroll?: boolean;
+  scrollY?: number;
+  angleX?: string;
+  angleY?: string;
+  angleZ?: string;
+  autoRotate?: boolean;
+  cameraControls?: boolean;
+  backgroundAlpha?: number;
+  fieldOfView?: string;
+  exposure?: string;
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
@@ -16,6 +34,25 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   width = '100%',
   height = '100%',
   className = '',
+  position,
+  top,
+  left,
+  right,
+  bottom,
+  scale,
+  rotationAxis,
+  initialRotation,
+  zIndex,
+  rotateOnScroll,
+  scrollY,
+  angleX,
+  angleY,
+  angleZ,
+  autoRotate,
+  cameraControls,
+  backgroundAlpha,
+  fieldOfView,
+  exposure,
 }) => {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -81,6 +118,25 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           scene={modelUrl || fallbackModelUrl}
           onLoad={handleModelLoad}
           onError={handleModelError}
+          position={position}
+          top={top}
+          left={left}
+          right={right}
+          bottom={bottom}
+          scale={scale}
+          rotationAxis={rotationAxis}
+          initialRotation={initialRotation}
+          zIndex={zIndex}
+          rotateOnScroll={rotateOnScroll}
+          scrollY={scrollY}
+          angleX={angleX}
+          angleY={angleY}
+          angleZ={angleZ}
+          autoRotate={autoRotate}
+          cameraControls={cameraControls}
+          backgroundAlpha={backgroundAlpha}
+          fieldOfView={fieldOfView}
+          exposure={exposure}
         />
       </div>
     </div>

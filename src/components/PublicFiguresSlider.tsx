@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -151,7 +152,7 @@ const PublicFiguresSlider: React.FC = () => {
               className="absolute w-full h-full object-cover"
               style={{ 
                 pointerEvents: 'none',
-                transform: 'scale(1.25)', // Zoom in by 20% (increased from 15%)
+                transform: isMobile ? 'scale(1.6)' : 'scale(1.25)', // Zoom in by 60% on mobile, keep 25% on desktop
                 transformOrigin: 'center center'
               }}
               frameBorder="0"
@@ -163,7 +164,7 @@ const PublicFiguresSlider: React.FC = () => {
               src={activeVideoUrl}
               className="absolute w-full h-full object-cover"
               style={{ 
-                transform: 'scale(1.25)', // Zoom in by 20% (increased from 15%)
+                transform: isMobile ? 'scale(1.6)' : 'scale(1.25)', // Zoom in by 60% on mobile, keep 25% on desktop
                 transformOrigin: 'center center'
               }}
               autoPlay 

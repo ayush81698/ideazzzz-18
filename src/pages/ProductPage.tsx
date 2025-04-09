@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -32,14 +31,12 @@ const ProductPage = () => {
     const loadProduct = async () => {
       setIsLoading(true);
       try {
-        // Fetch products from the service
         const allProducts = await fetchProducts();
         
         if (id) {
           const foundProduct = allProducts.find(p => p.id === id);
           setProduct(foundProduct || null);
           
-          // Set related products (excluding current product)
           const related = allProducts
             .filter(p => p.id !== id)
             .slice(0, isMobile ? 2 : 4);
@@ -68,7 +65,6 @@ const ProductPage = () => {
     }
   };
   
-  // Ensure reviews array exists even if we can't get it from product data
   const reviews = [
     {
       id: 1,
@@ -127,10 +123,8 @@ const ProductPage = () => {
     );
   }
 
-  // Ensure product has tags property, if not provide empty array
   const productTags = product.tags || [];
   
-  // Ensure product has rating property, if not provide default
   const productRating = product.rating || 4.5;
 
   return (
@@ -168,7 +162,6 @@ const ProductPage = () => {
                     <ModelViewer 
                       modelUrl={product.model_url} 
                       className="h-full"
-                      autoRotate={true}
                       scale={isMobile ? "1.2 1.2 1.2" : "1 1 1"}
                     />
                   ) : (

@@ -113,4 +113,6 @@ const FloatingModels: React.FC<FloatingModelsProps> = ({
   );
 };
 
-export default memo(FloatingModels);
+// Export default and named component to fix the import error in Index.tsx
+export default FloatingModels;
+export { FloatingModels };

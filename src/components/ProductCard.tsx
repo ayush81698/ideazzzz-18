@@ -40,6 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               modelUrl={product.model_url!}
               height="100%"
               width="100%"
+              // We'll just pass these as props, the component will ignore what it doesn't use
               autoRotate={true}
               cameraControls={isMobile}
               backgroundAlpha={0}

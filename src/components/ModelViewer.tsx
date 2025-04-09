@@ -58,7 +58,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [modelError, setModelError] = useState<string | null>(null);
-  const fallbackModelUrl = 'https://prod.spline.design/8JkST9hQpUjRqFjD/scene.splinecode';
+  // Using a more reliable fallback model URL
+  const fallbackModelUrl = 'https://prod.spline.design/zBE88NNswGCLp5LL/scene.splinecode';
 
   useEffect(() => {
     setLoading(true);

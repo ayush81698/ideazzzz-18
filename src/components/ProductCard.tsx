@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -23,9 +24,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [showModel, setShowModel] = useState(false);
   const hasModel = !!product.model_url;
   const isMobile = useIsMobile();
-  
-  // Safely handle model errors by providing fallback options
-  const safeModelUrl = product.model_url || 'https://prod.spline.design/WorDEPrxYHiC4pAl/scene.splinecode';
 
   return (
     <motion.div 
@@ -39,7 +37,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="relative h-48 md:h-56 overflow-hidden">
           {showModel && hasModel ? (
             <ModelViewer
-              modelUrl={safeModelUrl}
+              modelUrl={product.model_url!}
               height="100%"
               width="100%"
               autoRotate={true}

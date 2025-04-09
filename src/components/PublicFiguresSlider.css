@@ -8,19 +8,28 @@
 
 .background-video {
   position: absolute;
-  width: 180%; /* Increased zoom by 20% (previously 160%) */
-  height: 180%; /* Increased zoom by 20% (previously 160%) */
-  top: -40%; /* Adjusted to maintain center alignment */
-  left: -40%; /* Adjusted to maintain center alignment */
+  width: 120%; /* Increased zoom by 20% */
+  height: 120%; /* Increased zoom by 20% */
+  top: -10%;
+  left: -10%;
   object-fit: cover;
-  opacity: 0.2; /* Decreased opacity further (previously 0.3) */
+  opacity: 0.6; /* Decreased opacity */
   filter: blur(3px);
   z-index: 0;
 }
 
-/* ... keep existing code (other styles) */
+.slider-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  color: white;
+  padding: 2rem;
+}
 
-/* Image enlargement functionality already exists, but let's make sure it works perfectly */
+/* Added styling for the enlarged image functionality */
 .figure-image {
   cursor: pointer;
   transition: all 0.3s ease-in-out;

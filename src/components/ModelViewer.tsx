@@ -9,25 +9,6 @@ interface ModelViewerProps {
   width?: string;
   height?: string;
   className?: string;
-  position?: string;
-  top?: string;
-  left?: string;
-  right?: string;
-  bottom?: string;
-  scale?: string;
-  rotationAxis?: 'x' | 'y' | 'z';
-  initialRotation?: string;
-  zIndex?: number;
-  rotateOnScroll?: boolean;
-  scrollY?: number;
-  angleX?: string;
-  angleY?: string;
-  angleZ?: string;
-  autoRotate?: boolean;
-  cameraControls?: boolean;
-  backgroundAlpha?: number;
-  fieldOfView?: string;
-  exposure?: string;
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
@@ -35,44 +16,16 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   width = '100%',
   height = '100%',
   className = '',
-  position,
-  top,
-  left,
-  right,
-  bottom,
-  scale,
-  rotationAxis,
-  initialRotation,
-  zIndex,
-  rotateOnScroll,
-  scrollY,
-  angleX,
-  angleY,
-  angleZ,
-  autoRotate,
-  cameraControls,
-  backgroundAlpha,
-  fieldOfView,
-  exposure,
 }) => {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [modelError, setModelError] = useState<string | null>(null);
-  // Using reliable fallback model URLs
-  const fallbackModelUrls = [
-    'https://prod.spline.design/WorDEPrxYHiC4pAl/scene.splinecode',
-    'https://prod.spline.design/zBE88NNswGCLp5LL/scene.splinecode'
-  ];
-  const [currentModelUrl, setCurrentModelUrl] = useState<string>(modelUrl || fallbackModelUrls[0]);
+  const fallbackModelUrl = 'https://prod.spline.design/8JkST9hQpUjRqFjD/scene.splinecode';
 
   useEffect(() => {
     setLoading(true);
     setProgress(0);
     setModelError(null);
-    
-    if (modelUrl) {
-      setCurrentModelUrl(modelUrl);
-    }
 
     // Simulate loading progress
     const progressInterval = setInterval(() => {
@@ -99,58 +52,12 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
 
   const handleModelError = (error: Error) => {
     console.error('Error loading model:', error);
-    
-    // If the current model URL is already a fallback, try the next one
-    if (currentModelUrl !== modelUrl && fallbackModelUrls.includes(currentModelUrl)) {
-      const currentIndex = fallbackModelUrls.indexOf(currentModelUrl);
-      if (currentIndex < fallbackModelUrls.length - 1) {
-        // Try next fallback
-        setCurrentModelUrl(fallbackModelUrls[currentIndex + 1]);
-        return;
-      }
-    }
-    
-    // If we're already using the original URL or have tried all fallbacks
-    if (currentModelUrl === modelUrl) {
-      // First try with a fallback
-      setCurrentModelUrl(fallbackModelUrls[0]);
-    } else {
-      // Show error if all fallbacks have been tried
-      setModelError('Failed to load 3D model');
-      setLoading(false);
-    }
-  };
-
-  // Prepare model options from props
-  const modelOptions = {
-    rotationAxis,
-    initialRotation,
-    rotateOnScroll,
-    scrollY,
-    angleX,
-    angleY,
-    angleZ,
-    autoRotate,
-    cameraControls,
-    backgroundAlpha,
-    fieldOfView,
-    exposure
+    setModelError('Failed to load 3D model');
+    setLoading(false);
   };
 
   return (
-    <div 
-      className={`relative ${className}`} 
-      style={{ 
-        width, 
-        height,
-        position: position as any,
-        top,
-        left,
-        right,
-        bottom,
-        zIndex
-      }}
-    >
+    <div className={`relative ${className}`} style={{ width, height }}>
       {loading && (
         <div className="absolute inset-0 bg-black/5 backdrop-blur-sm flex flex-col items-center justify-center z-10">
           <div className="w-64 space-y-4">
@@ -169,16 +76,11 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
         </div>
       )}
       
-      <div style={{ 
-        opacity: loading ? 0 : 1, 
-        transition: 'opacity 0.5s ease',
-        transform: scale ? `scale(${scale})` : undefined,
-      }}>
+      <div style={{ opacity: loading ? 0 : 1, transition: 'opacity 0.5s ease' }}>
         <SplineModel
-          scene={currentModelUrl}
+          scene={modelUrl || fallbackModelUrl}
           onLoad={handleModelLoad}
           onError={handleModelError}
-          options={modelOptions}
         />
       </div>
     </div>

@@ -17,31 +17,18 @@ const PublicFiguresSlider: React.FC<PublicFiguresSliderProps> = ({ publicFigures
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const transitionDuration = 0.5;
-  const [showGrid, setShowGrid] = useState(false);
-  
-  const { GridView } = usePublicFiguresGridSlider({
+  const { GridView, showGrid, setShowGrid } = usePublicFiguresGridSlider({
     publicFigures,
     currentIndex,
-    setCurrentIndex
+    setCurrentIndex,
   });
 
   useEffect(() => {
     if (!loading && publicFigures.length > 0 && videoRef.current) {
       const video = videoRef.current;
-      let videoSrc = publicFigures[currentIndex]?.video_url || '';
-      
-      // Check if the video URL is a YouTube URL and convert it to a direct MP4 URL if possible
-      // Note: This is a simplified check, won't work for all YouTube URL formats
-      if (videoSrc && videoSrc.includes('youtube.com/watch')) {
-        // For demonstration purposes, we'll use a fallback video instead
-        videoSrc = 'https://assets.mixkit.co/videos/preview/mixkit-man-dancing-under-changing-lights-1240-large.mp4';
-      }
-      
-      if (videoSrc) {
-        video.src = videoSrc;
-        video.load();
-        video.play().catch(err => console.error('Error playing video:', err));
-      }
+      video.src = publicFigures[currentIndex]?.video_url || '';
+      video.load();
+      video.play().catch(err => console.error('Error playing video:', err));
     }
   }, [currentIndex, loading, publicFigures]);
 

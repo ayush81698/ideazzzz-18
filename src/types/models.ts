@@ -1,3 +1,4 @@
+
 export interface PositionData {
   top?: string;
   left?: string;
@@ -28,15 +29,4 @@ export interface SupabaseModel {
   model_url: string;
   is_featured?: boolean;
   position?: string;
-}
-
-export interface PublicFigure {
-  id: string;
-  name: string;
-  subtitle?: string;
-  description?: string;
-  imageurl: string;
-  video_url?: string;
-  order?: number;
-  created_at?: string;
 }

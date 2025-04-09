@@ -9,26 +9,6 @@ interface ModelViewerProps {
   width?: string;
   height?: string;
   className?: string;
-  // Add missing props from errors
-  position?: string;
-  top?: string;
-  left?: string;
-  right?: string;
-  bottom?: string;
-  scale?: string;
-  rotationAxis?: 'x' | 'y' | 'z';
-  initialRotation?: string;
-  zIndex?: number;
-  angleX?: string;
-  angleY?: string;
-  angleZ?: string;
-  rotateOnScroll?: boolean;
-  scrollY?: number;
-  autoRotate?: boolean;
-  cameraControls?: boolean;
-  backgroundAlpha?: number;
-  fieldOfView?: string;
-  exposure?: string;
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
@@ -36,27 +16,6 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   width = '100%',
   height = '100%',
   className = '',
-  // Add remaining props with defaults
-  position,
-  top,
-  left,
-  right,
-  bottom,
-  scale,
-  zIndex,
-  // Default values for the rest
-  rotationAxis,
-  initialRotation,
-  angleX,
-  angleY,
-  angleZ,
-  rotateOnScroll,
-  scrollY,
-  autoRotate,
-  cameraControls,
-  backgroundAlpha,
-  fieldOfView,
-  exposure
 }) => {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -97,20 +56,8 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
     setLoading(false);
   };
 
-  // Create inline styles for positioned elements
-  const containerStyle: React.CSSProperties = {
-    width,
-    height,
-    position: position as React.CSSProperties['position'] || undefined,
-    top: top || undefined,
-    left: left || undefined,
-    right: right || undefined,
-    bottom: bottom || undefined,
-    zIndex: zIndex || undefined,
-  };
-
   return (
-    <div className={`relative ${className}`} style={containerStyle}>
+    <div className={`relative ${className}`} style={{ width, height }}>
       {loading && (
         <div className="absolute inset-0 bg-black/5 backdrop-blur-sm flex flex-col items-center justify-center z-10">
           <div className="w-64 space-y-4">

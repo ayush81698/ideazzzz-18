@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import FloatingModels from '@/components/FloatingModels';
+import { FloatingModels } from '@/components/FloatingModels';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import PublicFiguresSlider from '@/components/PublicFiguresSlider';
@@ -77,7 +77,7 @@ const Index = () => {
   return (
     <div className="relative w-full">
       <PublicFiguresSlider publicFigures={publicFigures} loading={loading} />
-      <FloatingModels models={[]} /> {/* Pass empty array as models for now */}
+      <FloatingModels />
     </div>
   );
 };

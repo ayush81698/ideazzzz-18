@@ -125,7 +125,7 @@ const Index = () => {
             >
               <div className="backdrop-blur-sm bg-black/30 p-4 rounded-lg border border-white/10 shadow-lg max-w-xl">
                 <h1 className="text-sm md:text-xl lg:text-2xl font-bold mb-2 md:mb-3 text-white">
-                  Create Your <span className="text-ideazzz-purple">Personalized 3D Models</span>
+                  3D print Your <span className="text-ideazzz-purple">Personalized Models</span>
                 </h1>
               </div>
             </motion.div>

@@ -1,10 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
-import { FloatingModels } from '@/components/FloatingModels';
+import FloatingModels from '@/components/FloatingModels';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import PublicFiguresSlider from '@/components/PublicFiguresSlider';
-import { PublicFigure } from '@/types/models';
+
+// Define PublicFigure type if it's missing from the models file
+interface PublicFigure {
+  id: string;
+  name: string;
+  subtitle?: string;
+  description?: string;
+  imageurl: string;
+  video_url?: string | null;
+  order: number;
+}
 
 const Index = () => {
   const [publicFigures, setPublicFigures] = useState<PublicFigure[]>([]);

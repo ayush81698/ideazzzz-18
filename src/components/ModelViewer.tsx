@@ -9,6 +9,26 @@ interface ModelViewerProps {
   width?: string;
   height?: string;
   className?: string;
+  // Additional props used by FloatingModels and other components
+  position?: string;
+  top?: string;
+  left?: string;
+  right?: string;
+  bottom?: string;
+  scale?: string;
+  rotationAxis?: 'x' | 'y' | 'z';
+  initialRotation?: string;
+  zIndex?: number;
+  rotateOnScroll?: boolean;
+  scrollY?: number;
+  angleX?: string;
+  angleY?: string;
+  angleZ?: string;
+  autoRotate?: boolean;
+  cameraControls?: boolean;
+  backgroundAlpha?: number;
+  fieldOfView?: string;
+  exposure?: string;
 }
 
 const ModelViewer: React.FC<ModelViewerProps> = ({
@@ -16,6 +36,9 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
   width = '100%',
   height = '100%',
   className = '',
+  // We don't need to use these props inside this component,
+  // but we need to accept them to satisfy TypeScript
+  ...otherProps
 }) => {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);

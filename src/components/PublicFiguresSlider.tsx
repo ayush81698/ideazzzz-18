@@ -151,7 +151,7 @@ const PublicFiguresSlider: React.FC = () => {
               className="absolute w-full h-full object-cover"
               style={{ 
                 pointerEvents: 'none',
-                transform: 'scale(1.2)', // Zoom in by 20% (increased from 15%)
+                transform: 'scale(1.25)', // Zoom in by 20% (increased from 15%)
                 transformOrigin: 'center center'
               }}
               frameBorder="0"
@@ -163,7 +163,7 @@ const PublicFiguresSlider: React.FC = () => {
               src={activeVideoUrl}
               className="absolute w-full h-full object-cover"
               style={{ 
-                transform: 'scale(1.2)', // Zoom in by 20% (increased from 15%)
+                transform: 'scale(1.25)', // Zoom in by 20% (increased from 15%)
                 transformOrigin: 'center center'
               }}
               autoPlay 
@@ -172,7 +172,7 @@ const PublicFiguresSlider: React.FC = () => {
               playsInline
             />
           )}
-          <div className="absolute inset-0 bg-black bg-opacity-70"></div>
+          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         </div>
       )}
       

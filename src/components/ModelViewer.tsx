@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import SplineModel from './SplineModel';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -118,15 +119,20 @@ const ModelViewer: React.FC<ModelViewerProps> = ({
           scene={modelUrl || fallbackModelUrl}
           onLoad={handleModelLoad}
           onError={handleModelError}
-          position={position}
-          top={top}
-          left={left}
-          right={right}
-          bottom={bottom}
-          scale={scale}
+          // Remove properties that don't exist in SplineModel
+          // The SplineModel component should handle these internally
+          style={{
+            position: position as any,
+            top,
+            left,
+            right,
+            bottom,
+            transform: scale ? `scale(${scale})` : undefined,
+            zIndex,
+          }}
+          // Pass other props as options or configuration
           rotationAxis={rotationAxis}
           initialRotation={initialRotation}
-          zIndex={zIndex}
           rotateOnScroll={rotateOnScroll}
           scrollY={scrollY}
           angleX={angleX}

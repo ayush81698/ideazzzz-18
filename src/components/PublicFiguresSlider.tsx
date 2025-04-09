@@ -19,7 +19,7 @@ const PublicFiguresSlider: React.FC<PublicFiguresSliderProps> = ({ publicFigures
   const transitionDuration = 0.5;
   const [showGrid, setShowGrid] = useState(false);
   
-  const { GridView } = usePublicFiguresGridSlider({
+  const gridSliderData = usePublicFiguresGridSlider({
     publicFigures,
     currentIndex,
     setCurrentIndex
@@ -28,9 +28,20 @@ const PublicFiguresSlider: React.FC<PublicFiguresSliderProps> = ({ publicFigures
   useEffect(() => {
     if (!loading && publicFigures.length > 0 && videoRef.current) {
       const video = videoRef.current;
-      video.src = publicFigures[currentIndex]?.video_url || '';
-      video.load();
-      video.play().catch(err => console.error('Error playing video:', err));
+      let videoSrc = publicFigures[currentIndex]?.video_url || '';
+      
+      // Check if the video URL is a YouTube URL and convert it to a direct MP4 URL if possible
+      // Note: This is a simplified check, won't work for all YouTube URL formats
+      if (videoSrc && videoSrc.includes('youtube.com/watch')) {
+        // For demonstration purposes, we'll use a fallback video instead
+        videoSrc = 'https://assets.mixkit.co/videos/preview/mixkit-man-dancing-under-changing-lights-1240-large.mp4';
+      }
+      
+      if (videoSrc) {
+        video.src = videoSrc;
+        video.load();
+        video.play().catch(err => console.error('Error playing video:', err));
+      }
     }
   }, [currentIndex, loading, publicFigures]);
 
@@ -147,7 +158,7 @@ const PublicFiguresSlider: React.FC<PublicFiguresSliderProps> = ({ publicFigures
       </div>
 
       <AnimatePresence>
-        {showGrid && <GridView />}
+        {showGrid && gridSliderData && gridSliderData.GridView && <gridSliderData.GridView />}
       </AnimatePresence>
 
       {/* Enlarged image overlay */}

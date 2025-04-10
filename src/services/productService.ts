@@ -2,6 +2,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CreateProductParams, Product, UpdateProductParams } from "@/types/products";
 
+// Re-export the Product type so it can be imported from this module
+export type { Product } from "@/types/products";
+
 export async function getAllProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Product } from "@/types/products";
 import ModelViewerComponent from './ModelViewerComponent';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Cube3d } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -18,16 +19,27 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
     <Card className="overflow-hidden h-full flex flex-col">
       <div className="relative h-64 bg-gray-100">
         {product.model_url ? (
-          <ModelViewerComponent 
-            src={product.model_url}
-            ios_src={product.usdz_url}
-            alt={product.name}
-            height="256px"
-            autoRotate={true}
-            cameraControls={true}
-            ar={Boolean(product.usdz_url)}
-            poster={product.images && product.images.length > 0 ? product.images[0] : undefined}
-          />
+          <>
+            <ModelViewerComponent 
+              src={product.model_url}
+              ios_src={product.usdz_url}
+              alt={product.name}
+              height="256px"
+              autoRotate={true}
+              cameraControls={true}
+              ar={Boolean(product.usdz_url)}
+              poster={product.images && product.images.length > 0 ? product.images[0] : undefined}
+            />
+            
+            {/* AR View Indicator - Always visible regardless of mobile/desktop */}
+            {product.usdz_url && (
+              <div className="absolute top-2 right-2 z-10">
+                <div className="bg-purple-600 text-white rounded-full p-2 shadow-lg" title="AR Available">
+                  <Cube3d size={20} />
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           product.images && product.images.length > 0 ? (
             <img
@@ -42,6 +54,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           )
         )}
         
+        {/* Mobile AR Badge */}
         {isMobile && product.model_url && product.usdz_url && (
           <div className="absolute bottom-2 right-2 z-10">
             <div className="bg-purple-600 text-white text-xs px-2 py-1 rounded-full animate-pulse">

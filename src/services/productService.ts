@@ -18,12 +18,12 @@ export async function getAllProducts(): Promise<Product[]> {
     price: item.price,
     images: item.imageurl ? [item.imageurl] : [],  // Convert imageurl to images array
     model_url: item.model_url,
-    usdz_url: item.usdz_url,
+    usdz_url: item.usdz_url || undefined,  // Handle potentially missing usdz_url field
     created_at: item.created_at
   }));
 }
 
-// Add the missing fetchProducts function that Shop and ProductPage need
+// Export the fetchProducts function that Shop and ProductPage need
 export async function fetchProducts(): Promise<Product[]> {
   return getAllProducts();
 }
@@ -55,7 +55,7 @@ export async function createProduct(params: CreateProductParams): Promise<Produc
     price: data.price,
     images: data.imageurl ? [data.imageurl] : [],
     model_url: data.model_url,
-    usdz_url: data.usdz_url,
+    usdz_url: data.usdz_url || undefined,  // Handle potentially missing field
     created_at: data.created_at
   };
 }
@@ -89,7 +89,7 @@ export async function updateProduct(params: UpdateProductParams): Promise<Produc
     price: data.price,
     images: data.imageurl ? [data.imageurl] : [],
     model_url: data.model_url,
-    usdz_url: data.usdz_url,
+    usdz_url: data.usdz_url || undefined,  // Handle potentially missing field
     created_at: data.created_at
   };
 }

@@ -84,7 +84,7 @@ export async function createProduct(params: CreateProductParams): Promise<Produc
     images: data.imageurl ? [data.imageurl] : [],
     imageurl: data.imageurl, // Include for backward compatibility
     model_url: data.model_url,
-    usdz_url: data.usdz_url,  // Access the usdz_url field directly
+    usdz_url: (data as ProductDatabaseResponse).usdz_url,  // Cast to ProductDatabaseResponse to access usdz_url
     created_at: data.created_at,
     category: data.category,
     discount: data.discount,
@@ -123,7 +123,7 @@ export async function updateProduct(params: UpdateProductParams): Promise<Produc
     images: data.imageurl ? [data.imageurl] : [],
     imageurl: data.imageurl, // Include for backward compatibility
     model_url: data.model_url,
-    usdz_url: data.usdz_url,  // Access the usdz_url field directly
+    usdz_url: (data as ProductDatabaseResponse).usdz_url,  // Cast to ProductDatabaseResponse to access usdz_url
     created_at: data.created_at,
     category: data.category,
     discount: data.discount,

@@ -1,8 +1,7 @@
-
 import React, { useEffect, useRef } from 'react';
 import '@google/model-viewer';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { CubeIcon } from 'lucide-react';
+import { Cube } from 'lucide-react';
 
 declare global {
   namespace JSX {
@@ -50,13 +49,10 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
     const modelViewer = modelViewerRef.current;
     
     if (modelViewer) {
-      // Ensure AR mode is enabled for mobile devices when available
       if (isMobile && ar && ios_src) {
-        // Add any mobile-specific AR configuration here
         console.log("AR mode available for mobile device");
       }
       
-      // Event listeners for AR mode
       const onARTracking = (event: any) => {
         console.log("AR tracking started", event);
       };
@@ -75,9 +71,7 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
     }
   }, [isMobile, ar, ios_src]);
 
-  // Add custom styling for AR button to make it more visible
   useEffect(() => {
-    // Apply custom styling to make AR button more visible
     const style = document.createElement('style');
     style.textContent = `
       .ar-button {

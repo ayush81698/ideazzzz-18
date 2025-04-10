@@ -1,7 +1,8 @@
+
 import React, { useEffect, useRef } from 'react';
 import '@google/model-viewer';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Box3d } from 'lucide-react';
+import { Box } from 'lucide-react';
 
 declare global {
   namespace JSX {
@@ -136,7 +137,7 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
       
       {ar && ios_src && (
         <button slot="ar-button" className="ar-button">
-          <Box3d size={24} />
+          <Box size={24} />
           View in AR
         </button>
       )}

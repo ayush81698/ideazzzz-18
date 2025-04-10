@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Product } from "@/types/products";
 import ModelViewerComponent from './ModelViewerComponent';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Box3d } from 'lucide-react'; // Changed from Cube3D to Box3d which is available in lucide-react
+import { Box } from 'lucide-react'; // Changed from Box3d to Box which is available in lucide-react
 
 interface ProductCardProps {
   product: Product;
@@ -35,7 +35,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
             {product.usdz_url && (
               <div className="absolute top-2 right-2 z-10">
                 <div className="bg-purple-600 text-white rounded-full p-2 shadow-lg" title="AR Available">
-                  <Box3d size={20} /> {/* Changed from Cube3D to Box3d */}
+                  <Box size={20} /> {/* Changed from Box3d to Box */}
                 </div>
               </div>
             )}

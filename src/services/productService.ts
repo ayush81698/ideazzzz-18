@@ -5,6 +5,22 @@ import { CreateProductParams, Product, UpdateProductParams } from "@/types/produ
 // Re-export the Product type so it can be imported from this module
 export type { Product } from "@/types/products";
 
+// Define the database response type to include the usdz_url field
+interface ProductDatabaseResponse {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageurl: string | null;
+  model_url: string | null;
+  usdz_url: string | null;
+  created_at: string;
+  category: string | null;
+  discount: string | null;
+  featured: boolean | null;
+  stock: number | null;
+}
+
 export async function getAllProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
@@ -14,7 +30,7 @@ export async function getAllProducts(): Promise<Product[]> {
   if (error) throw error;
   
   // Map database schema to our Product interface
-  return (data || []).map(item => ({
+  return (data as ProductDatabaseResponse[] || []).map(item => ({
     id: item.id,
     name: item.name,
     description: item.description,

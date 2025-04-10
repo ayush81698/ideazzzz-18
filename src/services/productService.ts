@@ -9,31 +9,89 @@ export async function getAllProducts(): Promise<Product[]> {
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return data || [];
+  
+  // Map database schema to our Product interface
+  return (data || []).map(item => ({
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    price: item.price,
+    images: item.imageurl ? [item.imageurl] : [],  // Convert imageurl to images array
+    model_url: item.model_url,
+    usdz_url: item.usdz_url,
+    created_at: item.created_at
+  }));
+}
+
+// Add the missing fetchProducts function that Shop and ProductPage need
+export async function fetchProducts(): Promise<Product[]> {
+  return getAllProducts();
 }
 
 export async function createProduct(params: CreateProductParams): Promise<Product> {
+  // Convert our API format to database schema
+  const dbProduct = {
+    name: params.name,
+    description: params.description,
+    price: params.price,
+    imageurl: params.images && params.images.length > 0 ? params.images[0] : null,
+    model_url: params.model_url,
+    usdz_url: params.usdz_url
+  };
+
   const { data, error } = await supabase
     .from("products")
-    .insert([params])
+    .insert([dbProduct])
     .select()
     .single();
 
   if (error) throw error;
-  return data;
+  
+  // Convert back to our Product interface
+  return {
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    price: data.price,
+    images: data.imageurl ? [data.imageurl] : [],
+    model_url: data.model_url,
+    usdz_url: data.usdz_url,
+    created_at: data.created_at
+  };
 }
 
 export async function updateProduct(params: UpdateProductParams): Promise<Product> {
   const { id, ...updateData } = params;
+  
+  // Convert our API format to database schema
+  const dbUpdateData: any = { ...updateData };
+  
+  // Handle the conversion from images array to imageurl
+  if (updateData.images) {
+    dbUpdateData.imageurl = updateData.images.length > 0 ? updateData.images[0] : null;
+    delete dbUpdateData.images;
+  }
+
   const { data, error } = await supabase
     .from("products")
-    .update(updateData)
+    .update(dbUpdateData)
     .eq("id", id)
     .select()
     .single();
 
   if (error) throw error;
-  return data;
+  
+  // Convert back to our Product interface
+  return {
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    price: data.price,
+    images: data.imageurl ? [data.imageurl] : [],
+    model_url: data.model_url,
+    usdz_url: data.usdz_url,
+    created_at: data.created_at
+  };
 }
 
 export async function deleteProduct(id: string): Promise<void> {

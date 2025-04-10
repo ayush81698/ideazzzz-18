@@ -128,7 +128,7 @@ const PublicFiguresSlider: React.FC = () => {
               className="absolute w-full h-full object-cover"
               style={{ 
                 pointerEvents: 'none',
-                transform: isMobile ? 'scale(3)' : 'scale(1.4)',
+                transform: isMobile ? 'scale(3)' : 'scale(1.9)',
                 transformOrigin: 'center center'
               }}
               frameBorder="0"

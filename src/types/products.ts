@@ -8,6 +8,12 @@ export interface Product {
   model_url?: string;
   usdz_url?: string;
   created_at: string;
+  // Additional fields used in the Shop component
+  category?: string;
+  discount?: string;
+  featured?: boolean;
+  stock?: number;
+  imageurl?: string; // Keep this for backward compatibility
 }
 
 export interface CreateProductParams {
@@ -17,6 +23,10 @@ export interface CreateProductParams {
   images: string[];
   model_url?: string;
   usdz_url?: string;
+  category?: string;
+  discount?: string;
+  featured?: boolean;
+  stock?: number;
 }
 
 export interface UpdateProductParams {
@@ -27,4 +37,8 @@ export interface UpdateProductParams {
   images?: string[];
   model_url?: string;
   usdz_url?: string;
+  category?: string;
+  discount?: string;
+  featured?: boolean;
+  stock?: number;
 }

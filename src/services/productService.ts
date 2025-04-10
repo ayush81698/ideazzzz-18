@@ -20,9 +20,14 @@ export async function getAllProducts(): Promise<Product[]> {
     description: item.description,
     price: item.price,
     images: item.imageurl ? [item.imageurl] : [],  // Convert imageurl to images array
+    imageurl: item.imageurl, // Include the original imageurl field for backward compatibility
     model_url: item.model_url,
     usdz_url: item.usdz_url || undefined,  // Handle potentially missing usdz_url field
-    created_at: item.created_at
+    created_at: item.created_at,
+    category: item.category,
+    discount: item.discount,
+    featured: item.featured,
+    stock: item.stock
   }));
 }
 
@@ -39,7 +44,11 @@ export async function createProduct(params: CreateProductParams): Promise<Produc
     price: params.price,
     imageurl: params.images && params.images.length > 0 ? params.images[0] : null,
     model_url: params.model_url,
-    usdz_url: params.usdz_url
+    usdz_url: params.usdz_url,
+    category: params.category,
+    discount: params.discount,
+    featured: params.featured,
+    stock: params.stock
   };
 
   const { data, error } = await supabase
@@ -57,9 +66,14 @@ export async function createProduct(params: CreateProductParams): Promise<Produc
     description: data.description,
     price: data.price,
     images: data.imageurl ? [data.imageurl] : [],
+    imageurl: data.imageurl, // Include for backward compatibility
     model_url: data.model_url,
-    usdz_url: data.usdz_url || undefined,  // Handle potentially missing field
-    created_at: data.created_at
+    usdz_url: data.usdz_url || undefined,
+    created_at: data.created_at,
+    category: data.category,
+    discount: data.discount,
+    featured: data.featured,
+    stock: data.stock
   };
 }
 
@@ -91,9 +105,14 @@ export async function updateProduct(params: UpdateProductParams): Promise<Produc
     description: data.description,
     price: data.price,
     images: data.imageurl ? [data.imageurl] : [],
+    imageurl: data.imageurl, // Include for backward compatibility
     model_url: data.model_url,
-    usdz_url: data.usdz_url || undefined,  // Handle potentially missing field
-    created_at: data.created_at
+    usdz_url: data.usdz_url || undefined,
+    created_at: data.created_at,
+    category: data.category,
+    discount: data.discount,
+    featured: data.featured,
+    stock: data.stock
   };
 }
 

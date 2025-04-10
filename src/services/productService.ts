@@ -22,7 +22,7 @@ export async function getAllProducts(): Promise<Product[]> {
     images: item.imageurl ? [item.imageurl] : [],  // Convert imageurl to images array
     imageurl: item.imageurl, // Include the original imageurl field for backward compatibility
     model_url: item.model_url,
-    usdz_url: item.usdz_url || undefined,  // Handle potentially missing usdz_url field
+    usdz_url: item.usdz_url,  // Access the usdz_url field directly
     created_at: item.created_at,
     category: item.category,
     discount: item.discount,
@@ -44,7 +44,7 @@ export async function createProduct(params: CreateProductParams): Promise<Produc
     price: params.price,
     imageurl: params.images && params.images.length > 0 ? params.images[0] : null,
     model_url: params.model_url,
-    usdz_url: params.usdz_url,
+    usdz_url: params.usdz_url,  // Include the usdz_url field
     category: params.category,
     discount: params.discount,
     featured: params.featured,
@@ -68,7 +68,7 @@ export async function createProduct(params: CreateProductParams): Promise<Produc
     images: data.imageurl ? [data.imageurl] : [],
     imageurl: data.imageurl, // Include for backward compatibility
     model_url: data.model_url,
-    usdz_url: data.usdz_url || undefined,
+    usdz_url: data.usdz_url,  // Access the usdz_url field directly
     created_at: data.created_at,
     category: data.category,
     discount: data.discount,
@@ -107,7 +107,7 @@ export async function updateProduct(params: UpdateProductParams): Promise<Produc
     images: data.imageurl ? [data.imageurl] : [],
     imageurl: data.imageurl, // Include for backward compatibility
     model_url: data.model_url,
-    usdz_url: data.usdz_url || undefined,
+    usdz_url: data.usdz_url,  // Access the usdz_url field directly
     created_at: data.created_at,
     category: data.category,
     discount: data.discount,

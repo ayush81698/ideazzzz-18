@@ -35,6 +35,11 @@ export const addToCart = (product: any) => {
   }
   
   localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  
+  // Dispatch custom event to notify components about cart changes
+  const event = new CustomEvent('cartUpdated');
+  window.dispatchEvent(event);
+  
   return [...cartItems];
 };
 
@@ -43,6 +48,10 @@ export const removeFromCart = (productId: string | number) => {
   if (index >= 0) {
     cartItems.splice(index, 1);
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    
+    // Dispatch custom event to notify components about cart changes
+    const event = new CustomEvent('cartUpdated');
+    window.dispatchEvent(event);
   }
   return [...cartItems];
 };

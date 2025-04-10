@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   NavigationMenu,
@@ -61,38 +60,31 @@ const Layout = () => {
   }, []);
 
   useEffect(() => {
-    const savedCart = localStorage.getItem('cartItems');
-    if (savedCart) {
-      try {
-        const parsedCart = JSON.parse(savedCart);
-        setCartCount(parsedCart.length);
-      } catch (e) {
-        console.error('Error parsing cart data:', e);
-      }
-    } else {
-      setCartCount(0);
-    }
-    
-    const handleStorageChange = () => {
-      const updatedCart = localStorage.getItem('cartItems');
-      if (updatedCart) {
+    const handleCartUpdate = () => {
+      const savedCart = localStorage.getItem('cartItems');
+      if (savedCart) {
         try {
-          const parsedCart = JSON.parse(updatedCart);
+          const parsedCart = JSON.parse(savedCart);
           setCartCount(parsedCart.length);
         } catch (e) {
           console.error('Error parsing cart data:', e);
+          setCartCount(0);
         }
       } else {
         setCartCount(0);
       }
     };
     
-    window.addEventListener('storage', handleStorageChange);
+    handleCartUpdate();
+    
+    window.addEventListener('storage', handleCartUpdate);
+    window.addEventListener('cartUpdated', handleCartUpdate);
     
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('storage', handleCartUpdate);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
     };
-  }, [location.pathname, cartItems]);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -158,7 +150,7 @@ const Layout = () => {
           <div className="flex items-center gap-2 md:gap-4">
             <AuthButtons />
             
-            <Link to="/cart" className="relative">
+            <Link to="/cart" className="relative" aria-label="Shopping Cart">
               <Button variant="ghost" size="icon" className="rounded-full text-white hover:bg-purple-600/50">
                 <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
@@ -203,6 +195,11 @@ const Layout = () => {
                       </Link>
                       <Link to="/about" onClick={() => setIsMenuOpen(false)}>
                         <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">About</Button>
+                      </Link>
+                      <Link to="/cart" onClick={() => setIsMenuOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">
+                          Cart {cartCount > 0 && `(${cartCount})`}
+                        </Button>
                       </Link>
                       {isAdmin && (
                         <Link to="/admin" onClick={() => setIsMenuOpen(false)}>

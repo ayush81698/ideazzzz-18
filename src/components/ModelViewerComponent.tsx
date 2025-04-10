@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import '@google/model-viewer';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 declare global {
   namespace JSX {
@@ -42,12 +43,36 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
   className = ""
 }) => {
   const modelViewerRef = useRef<HTMLElement | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (modelViewerRef.current) {
-      // Any additional setup if needed
+    const modelViewer = modelViewerRef.current;
+    
+    if (modelViewer) {
+      // Ensure AR mode is enabled for mobile devices when available
+      if (isMobile && ar && ios_src) {
+        // Add any mobile-specific AR configuration here
+        console.log("AR mode available for mobile device");
+      }
+      
+      // Event listeners for AR mode
+      const onARTracking = (event: any) => {
+        console.log("AR tracking started", event);
+      };
+      
+      const onARError = (event: any) => {
+        console.error("AR error encountered", event);
+      };
+      
+      modelViewer.addEventListener('ar-tracking', onARTracking);
+      modelViewer.addEventListener('ar-error', onARError);
+      
+      return () => {
+        modelViewer.removeEventListener('ar-tracking', onARTracking);
+        modelViewer.removeEventListener('ar-error', onARError);
+      };
     }
-  }, []);
+  }, [isMobile, ar, ios_src]);
 
   return (
     <model-viewer
@@ -56,7 +81,7 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
       ios-src={ios_src}
       alt={alt}
       poster={poster}
-      ar={ar ? "true" : "false"}
+      ar={ar && ios_src ? "true" : "false"}
       ar-modes="webxr scene-viewer quick-look"
       camera-controls={cameraControls ? "true" : "false"}
       auto-rotate={autoRotate ? "true" : "false"}
@@ -65,6 +90,8 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
       shadow-intensity={shadowIntensity}
       style={{ width, height }}
       className={className}
+      ar-status="not-presenting"
+      ar-scale="auto"
     >
       <div className="poster" slot="poster">
         {poster && <img src={poster} alt={`${alt} poster`} />}
@@ -72,6 +99,12 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
           <div className="update-bar"></div>
         </div>
       </div>
+      
+      {ar && ios_src && (
+        <button slot="ar-button" className="ar-button">
+          View in AR
+        </button>
+      )}
     </model-viewer>
   );
 };

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Product } from "@/types/products";
 import ModelViewerComponent from './ModelViewerComponent';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductCardProps {
   product: Product;
@@ -11,6 +12,8 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <Card className="overflow-hidden h-full flex flex-col">
       <div className="relative h-64 bg-gray-100">
@@ -23,6 +26,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
             autoRotate={true}
             cameraControls={true}
             ar={Boolean(product.usdz_url)}
+            poster={product.images && product.images.length > 0 ? product.images[0] : undefined}
           />
         ) : (
           product.images && product.images.length > 0 ? (
@@ -36,6 +40,14 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
               <span className="text-gray-400">No image</span>
             </div>
           )
+        )}
+        
+        {isMobile && product.model_url && product.usdz_url && (
+          <div className="absolute bottom-2 right-2 z-10">
+            <div className="bg-purple-600 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+              AR Available
+            </div>
+          </div>
         )}
       </div>
       <CardHeader className="flex-grow">

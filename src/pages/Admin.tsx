@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import ProductManager from '@/components/ProductManager';
+import ProductsTable from '@/components/ProductsTable';
 import BookingsManager from '@/components/BookingsManager';
 import UsersManager from '@/components/UsersManager';
 import PublicFiguresManager from '@/components/PublicFiguresManager';
@@ -92,7 +92,7 @@ const Admin = () => {
         </TabsList>
         
         <TabsContent value="products" className="w-full">
-          <ProductManager />
+          <ProductsTable />
         </TabsContent>
         
         <TabsContent value="bookings" className="w-full">

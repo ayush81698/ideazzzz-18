@@ -23,6 +23,9 @@ const ProductManager = ({ initialProduct, onComplete, mode = "create" }: Product
   const [images, setImages] = useState<string>(initialProduct?.images?.join("\n") || "");
   const [modelUrl, setModelUrl] = useState(initialProduct?.model_url || "");
   const [usdzUrl, setUsdzUrl] = useState(initialProduct?.usdz_url || "");
+  const [stock, setStock] = useState(initialProduct?.stock?.toString() || "");
+  const [category, setCategory] = useState(initialProduct?.category || "");
+  const [featured, setFeatured] = useState(initialProduct?.featured || false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -102,6 +105,17 @@ const ProductManager = ({ initialProduct, onComplete, mode = "create" }: Product
         .map((url) => url.trim())
         .filter((url) => url.length > 0);
 
+      // Parse stock value to integer
+      const parsedStock = stock ? parseInt(stock) : null;
+      if (stock && (isNaN(parsedStock) || parsedStock < 0)) {
+        toast({
+          title: "Invalid stock",
+          description: "Stock must be a positive number",
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (mode === "create") {
         const newProduct: CreateProductParams = {
           name,
@@ -110,6 +124,9 @@ const ProductManager = ({ initialProduct, onComplete, mode = "create" }: Product
           images: imageArray,
           model_url: modelUrl || undefined,
           usdz_url: usdzUrl || undefined,
+          category: category || undefined,
+          featured,
+          stock: parsedStock,
         };
         createMutation.mutate(newProduct);
       } else {
@@ -123,6 +140,9 @@ const ProductManager = ({ initialProduct, onComplete, mode = "create" }: Product
           images: imageArray,
           model_url: modelUrl || null,
           usdz_url: usdzUrl || null,
+          category: category || null,
+          featured,
+          stock: parsedStock,
         };
         updateMutation.mutate(updatedProduct);
       }
@@ -179,18 +199,53 @@ const ProductManager = ({ initialProduct, onComplete, mode = "create" }: Product
             />
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="price">Price ($)</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="Enter product price"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="stock">Stock</Label>
+              <Input
+                id="stock"
+                type="number"
+                min="0"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                placeholder="Enter available stock"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="price">Price ($)</Label>
+            <Label htmlFor="category">Category</Label>
             <Input
-              id="price"
-              type="number"
-              step="0.01"
-              min="0"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="Enter product price"
-              required
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="Enter product category (optional)"
             />
+          </div>
+
+          <div className="flex items-center space-x-2 my-4">
+            <input
+              type="checkbox"
+              id="featured"
+              checked={featured}
+              onChange={(e) => setFeatured(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <Label htmlFor="featured">Mark as featured product</Label>
           </div>
 
           <div className="space-y-2">

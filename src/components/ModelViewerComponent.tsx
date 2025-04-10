@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import '@google/model-viewer';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Box } from 'lucide-react';
+import { Box, View } from 'lucide-react';
 
 declare global {
   namespace JSX {
@@ -91,6 +91,7 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
         justify-content: center !important;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
         opacity: 1 !important;
+        animation: pulse 2s infinite !important;
       }
       
       .ar-button:active {
@@ -99,6 +100,30 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
       
       .ar-button svg {
         margin-right: 4px;
+      }
+      
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(126, 34, 206, 0.7);
+        }
+        70% {
+          transform: scale(1.05);
+          box-shadow: 0 0 0 10px rgba(126, 34, 206, 0);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(126, 34, 206, 0);
+        }
+      }
+      
+      /* Make AR button more prominent on mobile */
+      @media (max-width: 768px) {
+        .ar-button {
+          padding: 10px 18px !important;
+          font-size: 16px !important;
+          bottom: 20px !important;
+        }
       }
     `;
     document.head.appendChild(style);
@@ -137,7 +162,7 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
       
       {ar && ios_src && (
         <button slot="ar-button" className="ar-button">
-          <Box size={24} />
+          <View size={24} />
           View in AR
         </button>
       )}

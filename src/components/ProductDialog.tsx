@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Product } from "@/types/products";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import ModelViewerComponent from './ModelViewerComponent';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { View } from 'lucide-react';
 
 interface ProductDialogProps {
   product: Product | null;
@@ -14,6 +16,8 @@ interface ProductDialogProps {
 }
 
 const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogProps) => {
+  const isMobile = useIsMobile();
+  
   if (!product) return null;
 
   return (
@@ -38,6 +42,16 @@ const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogPro
                   ar={Boolean(product.usdz_url)}
                   className="w-full h-full"
                 />
+                
+                {/* Enhanced AR badge for the product dialog */}
+                {product.usdz_url && (
+                  <div className="absolute top-4 right-4 z-10 pointer-events-none">
+                    <div className="bg-purple-600 text-white text-sm px-3 py-1.5 rounded-full flex items-center gap-2 animate-pulse">
+                      <View size={18} />
+                      <span>{isMobile ? "Tap for AR" : "AR Available"}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : product.images && product.images.length > 0 ? (
               <Carousel className="w-full">
@@ -76,11 +90,16 @@ const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogPro
             )}
             
             {product.model_url && product.usdz_url && (
-              <div className="mt-4 text-sm text-gray-500">
-                <p>This product has a 3D model that you can view in AR:</p>
-                <ul className="list-disc pl-5 mt-2">
-                  <li>On Android: Click the "View in AR" button</li>
-                  <li>On iOS: Click the AR icon in the viewer</li>
+              <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex items-center gap-2 text-purple-700 font-semibold mb-2">
+                  <View size={20} />
+                  <span>AR Viewing Instructions</span>
+                </div>
+                <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                  <li>On <strong>iOS</strong>: Tap the 3D model to reveal the AR button</li>
+                  <li>On <strong>Android</strong>: Tap the "View in AR" button beneath the model</li>
+                  <li>Position your camera toward a flat surface</li>
+                  <li>Pinch to resize and drag to reposition the model in AR</li>
                 </ul>
               </div>
             )}

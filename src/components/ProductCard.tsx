@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Product } from "@/types/products";
 import ModelViewerComponent from './ModelViewerComponent';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Box } from 'lucide-react'; // Changed from Box3d to Box which is available in lucide-react
+import { Box, View } from 'lucide-react'; // Import View icon for better AR indication
 
 interface ProductCardProps {
   product: Product;
@@ -31,11 +31,11 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
               poster={product.images && product.images.length > 0 ? product.images[0] : undefined}
             />
             
-            {/* AR View Indicator - Always visible regardless of mobile/desktop */}
+            {/* AR View Indicator - Enhanced visibility */}
             {product.usdz_url && (
               <div className="absolute top-2 right-2 z-10">
                 <div className="bg-purple-600 text-white rounded-full p-2 shadow-lg" title="AR Available">
-                  <Box size={20} /> {/* Changed from Box3d to Box */}
+                  <View size={20} /> {/* Changed to View icon for better AR representation */}
                 </div>
               </div>
             )}
@@ -54,11 +54,12 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           )
         )}
         
-        {/* Mobile AR Badge */}
-        {isMobile && product.model_url && product.usdz_url && (
+        {/* Enhanced Mobile AR Badge - Always visible when AR is available */}
+        {product.model_url && product.usdz_url && (
           <div className="absolute bottom-2 right-2 z-10">
-            <div className="bg-purple-600 text-white text-xs px-2 py-1 rounded-full animate-pulse">
-              AR Available
+            <div className="bg-purple-600 text-white text-xs px-3 py-1.5 rounded-full animate-pulse flex items-center gap-1.5">
+              <View size={16} />
+              <span>AR View</span>
             </div>
           </div>
         )}

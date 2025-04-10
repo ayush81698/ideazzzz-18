@@ -1,90 +1,56 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ShoppingBag } from 'lucide-react';
-import ModelViewer from '@/components/ModelViewer';
-import { useIsMobile } from '@/hooks/use-mobile';
+import React from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Product } from "@/types/products";
+import ModelViewerComponent from './ModelViewerComponent';
 
 interface ProductCardProps {
-  product: {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    imageurl: string;
-    discount?: string;
-    model_url?: string | null;
-  };
+  product: Product;
+  onViewDetails: (product: Product) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const [showModel, setShowModel] = useState(false);
-  const hasModel = !!product.model_url;
-  const isMobile = useIsMobile();
-
+const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
   return (
-    <motion.div 
-      whileHover={{ y: -5 }}
-      className="relative"
-      onMouseEnter={() => !isMobile && hasModel && setShowModel(true)}
-      onMouseLeave={() => !isMobile && setShowModel(false)}
-      onClick={() => isMobile && hasModel && setShowModel(!showModel)}
-    >
-      <Card className="overflow-hidden h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <div className="relative h-48 md:h-56 overflow-hidden">
-          {showModel && hasModel ? (
-            <ModelViewer
-              modelUrl={product.model_url!}
-              height="100%"
-              width="100%"
-              autoRotate={true}
-              cameraControls={isMobile}
-              backgroundAlpha={0}
-              fieldOfView="30deg"
-              exposure="1.5"
+    <Card className="overflow-hidden h-full flex flex-col">
+      <div className="relative h-64 bg-gray-100">
+        {product.model_url ? (
+          <ModelViewerComponent 
+            src={product.model_url}
+            ios_src={product.usdz_url}
+            alt={product.name}
+            height="256px"
+            autoRotate={true}
+            cameraControls={true}
+            ar={Boolean(product.usdz_url)}
+          />
+        ) : (
+          product.images && product.images.length > 0 ? (
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              className="w-full h-full object-cover"
             />
           ) : (
-            <img 
-              src={product.imageurl} 
-              alt={product.name}
-              className="w-full h-full object-cover transform transition-transform hover:scale-105" 
-            />
-          )}
-          {product.discount && (
-            <div className="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 text-sm font-semibold">
-              {product.discount}
+            <div className="w-full h-full flex items-center justify-center bg-gray-200">
+              <span className="text-gray-400">No image</span>
             </div>
-          )}
-          {hasModel && (
-            <div className="absolute bottom-0 left-0 bg-purple-600 text-white px-2 py-0.5 text-xs font-medium">
-              {isMobile ? "Tap for 3D" : "3D Preview"}
-            </div>
-          )}
-        </div>
-        <CardContent className="p-4 md:p-5">
-          <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">{product.name}</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-2 md:mb-3 text-xs md:text-sm line-clamp-2">
-            {product.description}
-          </p>
-          <div className="flex justify-between items-center">
-            <span className="text-sm md:text-base font-bold">₹{product.price.toLocaleString()}</span>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="text-purple-600 border-purple-600 hover:bg-purple-600 hover:text-white"
-              asChild
-            >
-              <Link to={`/shop/${product.id}`}>
-                <ShoppingBag className="h-3 w-3 md:h-4 md:w-4 mr-1" /> View
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+          )
+        )}
+      </div>
+      <CardHeader className="flex-grow">
+        <CardTitle>{product.name}</CardTitle>
+        <CardDescription className="line-clamp-2">{product.description}</CardDescription>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <p className="font-bold text-lg">${product.price.toFixed(2)}</p>
+      </CardContent>
+      <CardFooter>
+        <Button onClick={() => onViewDetails(product)} className="w-full">
+          View Details
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

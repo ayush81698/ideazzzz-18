@@ -1,406 +1,269 @@
 
-import React, { useEffect, useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle,
-  CardDescription 
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogDescription
-} from '@/components/ui/dialog';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Trash2, Edit, Star, Box } from 'lucide-react';
-import { toast } from 'sonner';
-import { 
-  fetchProducts, 
-  addProduct, 
-  updateProduct, 
-  deleteProduct, 
-  Product 
-} from '@/services/productService';
-import { Progress } from '@/components/ui/progress';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { createProduct, updateProduct, deleteProduct } from "@/services/productService";
+import { CreateProductParams, Product, UpdateProductParams } from "@/types/products";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
-const ProductManager = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: 0,
-    imageurl: '',
-    discount: '',
-    category: '',
-    stock: 0,
-    featured: false,
-    model_url: ''
+interface ProductManagerProps {
+  initialProduct?: Product;
+  onComplete?: () => void;
+  mode?: "create" | "edit";
+}
+
+const ProductManager = ({ initialProduct, onComplete, mode = "create" }: ProductManagerProps) => {
+  const [name, setName] = useState(initialProduct?.name || "");
+  const [description, setDescription] = useState(initialProduct?.description || "");
+  const [price, setPrice] = useState(initialProduct?.price?.toString() || "");
+  const [images, setImages] = useState<string>(initialProduct?.images?.join("\n") || "");
+  const [modelUrl, setModelUrl] = useState(initialProduct?.model_url || "");
+  const [usdzUrl, setUsdzUrl] = useState(initialProduct?.usdz_url || "");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const createMutation = useMutation({
+    mutationFn: createProduct,
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Product created successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      if (onComplete) onComplete();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create product: ${error.message}`,
+        variant: "destructive",
+      });
+    },
   });
 
-  useEffect(() => {
-    loadProducts();
-  }, []);
+  const updateMutation = useMutation({
+    mutationFn: updateProduct,
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      if (onComplete) onComplete();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to update product: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
 
-  const loadProducts = async () => {
-    try {
-      setLoading(true);
-      const data = await fetchProducts();
-      setProducts(data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      toast.error("Failed to fetch products");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const deleteMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      if (onComplete) onComplete();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to delete product: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'price' || name === 'stock' ? parseFloat(value) || 0 : value
-    }));
-  };
-
-  const handleSwitchChange = (checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      featured: checked
-    }));
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      price: 0,
-      imageurl: '',
-      discount: '',
-      category: '',
-      stock: 0,
-      featured: false,
-      model_url: ''
-    });
-    setEditingProduct(null);
-    setUploadProgress(0);
-  };
-
-  const handleEdit = (product: Product) => {
-    setEditingProduct(product);
-    setFormData({
-      name: product.name || '',
-      description: product.description || '',
-      price: product.price || 0,
-      imageurl: product.imageurl || '',
-      discount: product.discount || '',
-      category: product.category || '',
-      stock: product.stock || 0,
-      featured: product.featured || false,
-      model_url: product.model_url || ''
-    });
-    setOpenDialog(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        const success = await deleteProduct(id);
-        if (success) {
-          setProducts(prev => prev.filter(product => product.id !== id));
-          toast.success("Product deleted successfully");
-        } else {
-          toast.error("Failed to delete product");
-        }
-      } catch (error) {
-        console.error("Error deleting product:", error);
-        toast.error("Failed to delete product");
-      }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      setUploading(true);
-      
-      if (!formData.name || !formData.description || !formData.price) {
-        toast.error("Name, description and price are required");
-        setUploading(false);
+      const parsedPrice = parseFloat(price);
+      if (isNaN(parsedPrice) || parsedPrice <= 0) {
+        toast({
+          title: "Invalid price",
+          description: "Please enter a valid price",
+          variant: "destructive",
+        });
         return;
       }
-      
-      if (editingProduct) {
-        console.log("Updating product with ID:", editingProduct.id);
-        console.log("Form data:", formData);
-        
-        const updated = await updateProduct(editingProduct.id, formData);
-        if (updated) {
-          setProducts(prev => 
-            prev.map(product => product.id === editingProduct.id ? updated : product)
-          );
-          toast.success('Product updated successfully');
-          setOpenDialog(false);
-          resetForm();
-        } else {
-          toast.error("Failed to update product");
-        }
+
+      const imageArray = images
+        .split("\n")
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0);
+
+      if (mode === "create") {
+        const newProduct: CreateProductParams = {
+          name,
+          description,
+          price: parsedPrice,
+          images: imageArray,
+          model_url: modelUrl || undefined,
+          usdz_url: usdzUrl || undefined,
+        };
+        createMutation.mutate(newProduct);
       } else {
-        console.log("Adding new product");
-        console.log("Form data:", formData);
-        
-        const newProduct = await addProduct(formData);
-        if (newProduct) {
-          setProducts(prev => [newProduct, ...prev]);
-          toast.success('Product added successfully');
-          setOpenDialog(false);
-          resetForm();
-        } else {
-          toast.error("Failed to add product");
-        }
+        if (!initialProduct) return;
+
+        const updatedProduct: UpdateProductParams = {
+          id: initialProduct.id,
+          name,
+          description,
+          price: parsedPrice,
+          images: imageArray,
+          model_url: modelUrl || null,
+          usdz_url: usdzUrl || null,
+        };
+        updateMutation.mutate(updatedProduct);
       }
     } catch (error) {
-      console.error("Error saving product:", error);
-      toast.error("Failed to save product");
-    } finally {
-      setUploading(false);
+      toast({
+        title: "Error",
+        description: `An unexpected error occurred: ${error.message}`,
+        variant: "destructive",
+      });
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Manage Products</h2>
-        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-          <DialogTrigger asChild>
-            <Button 
-              onClick={() => {
-                resetForm();
-                setOpenDialog(true);
-              }}
-            >
-              <Plus className="mr-2 h-4 w-4" /> Add Product
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[550px]">
-            <DialogHeader>
-              <DialogTitle>
-                {editingProduct ? 'Edit Product' : 'Add New Product'}
-              </DialogTitle>
-              <DialogDescription>
-                Fill in the product details below
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Product Name*</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price (₹)*</Label>
-                  <Input
-                    id="price"
-                    name="price"
-                    type="number"
-                    value={formData.price}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="description">Description*</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="imageurl">Image URL*</Label>
-                <Input
-                  id="imageurl"
-                  name="imageurl"
-                  value={formData.imageurl}
-                  onChange={handleChange}
-                  required
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="model_url">3D Model URL (GLB format)</Label>
-                <Input
-                  id="model_url"
-                  name="model_url"
-                  value={formData.model_url}
-                  onChange={handleChange}
-                  placeholder="https://example.com/model.glb"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Add a URL to a GLB 3D model file (optional)
-                </p>
-              </div>
-              
-              {uploading && (
-                <Progress value={uploadProgress} className="h-2" />
-              )}
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Input
-                    id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="stock">Stock</Label>
-                  <Input
-                    id="stock"
-                    name="stock"
-                    type="number"
-                    value={formData.stock}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="discount">Discount Label (e.g. "20% OFF")</Label>
-                <Input
-                  id="discount"
-                  name="discount"
-                  value={formData.discount}
-                  onChange={handleChange}
-                />
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="featured"
-                  checked={formData.featured}
-                  onCheckedChange={handleSwitchChange}
-                />
-                <Label htmlFor="featured">Featured Product</Label>
-              </div>
-              
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setOpenDialog(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {editingProduct ? 'Updating...' : 'Adding...'}
-                    </>
-                  ) : (
-                    <>{editingProduct ? 'Update' : 'Add'} Product</>
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+  const handleDelete = () => {
+    if (!initialProduct) return;
+    
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      deleteMutation.mutate(initialProduct.id);
+    }
+  };
 
-      {loading ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.length === 0 ? (
-            <p className="text-muted-foreground col-span-full text-center py-8">
-              No products found. Add your first product to get started.
+  const isLoading = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+
+  return (
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle>{mode === "create" ? "Add New Product" : "Edit Product"}</CardTitle>
+        <CardDescription>
+          {mode === "create"
+            ? "Fill in the details to add a new product"
+            : "Update the product information"}
+        </CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Product Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter product name"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter product description"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="price">Price ($)</Label>
+            <Input
+              id="price"
+              type="number"
+              step="0.01"
+              min="0"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="Enter product price"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="images">Images (One URL per line)</Label>
+            <Textarea
+              id="images"
+              value={images}
+              onChange={(e) => setImages(e.target.value)}
+              placeholder="Enter image URLs (one per line)"
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="model-url">3D Model URL (.glb)</Label>
+            <Input
+              id="model-url"
+              value={modelUrl}
+              onChange={(e) => setModelUrl(e.target.value)}
+              placeholder="Enter GLB model URL (optional)"
+            />
+            <p className="text-xs text-gray-500">
+              The URL for the 3D model file in GLB format (compatible with Android and web)
             </p>
-          ) : (
-            products.map((product) => (
-              <Card key={product.id} className="overflow-hidden">
-                <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={product.imageurl || '/placeholder.svg'}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/placeholder.svg';
-                    }}
-                  />
-                  {product.discount && (
-                    <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs">
-                      {product.discount}
-                    </div>
-                  )}
-                  {product.featured && (
-                    <div className="absolute top-2 left-2 bg-yellow-500 text-white p-1 rounded-full">
-                      <Star className="h-4 w-4" />
-                    </div>
-                  )}
-                  {product.model_url && (
-                    <div className="absolute bottom-2 left-2 bg-blue-500 text-white p-1 rounded-full">
-                      <Box className="h-4 w-4" />
-                    </div>
-                  )}
-                </div>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">{product.name}</CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    {product.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pb-2">
-                  <div className="flex justify-between items-center">
-                    <p className="font-bold text-lg">₹{product.price.toLocaleString()}</p>
-                    {product.category && (
-                      <span className="text-xs bg-muted px-2 py-1 rounded-full">
-                        {product.category}
-                      </span>
-                    )}
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button variant="outline" size="sm" onClick={() => handleEdit(product)}>
-                    <Edit className="h-4 w-4 mr-1" /> Edit
-                  </Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(product.id)}>
-                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="usdz-url">iOS AR Model URL (.usdz)</Label>
+            <Input
+              id="usdz-url"
+              value={usdzUrl}
+              onChange={(e) => setUsdzUrl(e.target.value)}
+              placeholder="Enter USDZ model URL (optional for iOS AR)"
+            />
+            <p className="text-xs text-gray-500">
+              The URL for the iOS AR-compatible model file in USDZ format (required for AR on iOS)
+            </p>
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex flex-wrap gap-2">
+          <Button type="submit" disabled={isLoading}>
+            {isLoading
+              ? mode === "create"
+                ? "Creating..."
+                : "Updating..."
+              : mode === "create"
+              ? "Create Product"
+              : "Update Product"}
+          </Button>
+
+          {mode === "edit" && (
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isLoading}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
           )}
-        </div>
-      )}
-    </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onComplete}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   );
 };
 

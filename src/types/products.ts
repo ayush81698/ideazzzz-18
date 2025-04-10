@@ -4,11 +4,27 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  imageurl: string;
-  discount?: string;
-  category?: string;
-  featured?: boolean;
-  stock?: number;
-  created_at?: string;
-  model_url?: string | null;
+  images: string[];
+  model_url?: string;
+  usdz_url?: string;
+  created_at: string;
+}
+
+export interface CreateProductParams {
+  name: string;
+  description: string;
+  price: number;
+  images: string[];
+  model_url?: string;
+  usdz_url?: string;
+}
+
+export interface UpdateProductParams {
+  id: string;
+  name?: string;
+  description?: string;
+  price?: number;
+  images?: string[];
+  model_url?: string;
+  usdz_url?: string;
 }

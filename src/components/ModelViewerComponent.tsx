@@ -50,7 +50,7 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
     const modelViewer = modelViewerRef.current;
     
     if (modelViewer) {
-      if (isMobile && ar && ios_src) {
+      if (isMobile && ar) {
         console.log("AR mode available for mobile device");
       }
       
@@ -92,10 +92,13 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
         opacity: 1 !important;
         animation: pulse 2s infinite !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
       }
       
       .ar-button:active {
         background-color: #581c87 !important;
+        transform: scale(0.98) !important;
       }
       
       .ar-button svg {
@@ -120,9 +123,19 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
       /* Make AR button more prominent on mobile */
       @media (max-width: 768px) {
         .ar-button {
-          padding: 10px 18px !important;
+          padding: 12px 20px !important;
           font-size: 16px !important;
           bottom: 20px !important;
+          right: 20px !important;
+          z-index: 20 !important; 
+          opacity: 1 !important;
+          visibility: visible !important;
+        }
+        
+        model-viewer::part(default-ar-button) {
+          visibility: visible !important;
+          opacity: 1 !important;
+          pointer-events: auto !important;
         }
       }
     `;
@@ -140,7 +153,7 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
       ios-src={ios_src}
       alt={alt}
       poster={poster}
-      ar={ar && ios_src ? "true" : "false"}
+      ar={ar ? "true" : "false"}
       ar-modes="webxr scene-viewer quick-look"
       camera-controls={cameraControls ? "true" : "false"}
       auto-rotate={autoRotate ? "true" : "false"}
@@ -152,6 +165,8 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
       ar-status="not-presenting"
       ar-scale="auto"
       ar-placement="floor"
+      reveal="auto"
+      loading="eager"
     >
       <div className="poster" slot="poster">
         {poster && <img src={poster} alt={`${alt} poster`} />}
@@ -160,12 +175,19 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
         </div>
       </div>
       
-      {ar && ios_src && (
+      {ar && (
         <button slot="ar-button" className="ar-button">
           <View size={24} />
           View in AR
         </button>
       )}
+
+      {/* Add explicit Android AR button */}
+      <div id="ar-prompt" className="absolute bottom-5 left-0 right-0 text-center">
+        <span className="px-4 py-2 bg-purple-600 text-white rounded-full shadow-lg">
+          Tap to view in your space
+        </span>
+      </div>
     </model-viewer>
   );
 };

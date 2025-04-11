@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   NavigationMenu,
@@ -8,7 +9,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -20,6 +21,7 @@ import AuthButtons from '@/components/AuthButtons';
 
 const Layout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
@@ -98,6 +100,11 @@ const Layout = () => {
     };
   }, []);
 
+  // Function to navigate to cart
+  const handleCartClick = () => {
+    navigate('/cart');
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className={`sticky top-0 z-50 w-full ${isScrolled ? 'bg-black/90 backdrop-blur-md shadow-sm' : 'bg-black'} transition-all duration-300`}>
@@ -150,16 +157,21 @@ const Layout = () => {
           <div className="flex items-center gap-2 md:gap-4">
             <AuthButtons />
             
-            <Link to="/cart" className="relative" aria-label="Shopping Cart">
-              <Button variant="ghost" size="icon" className="rounded-full text-white hover:bg-purple-600/50">
-                <ShoppingCart className="h-5 w-5" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                    {cartCount}
-                  </span>
-                )}
-              </Button>
-            </Link>
+            {/* Cart Button - Always visible on both mobile and desktop */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full text-white hover:bg-purple-600/50"
+              onClick={handleCartClick}
+              aria-label="Shopping Cart"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                  {cartCount}
+                </span>
+              )}
+            </Button>
             
             {isMobile && (
               <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>

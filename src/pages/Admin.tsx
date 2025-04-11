@@ -8,6 +8,7 @@ import ProductsTable from '@/components/ProductsTable';
 import BookingsManager from '@/components/BookingsManager';
 import UsersManager from '@/components/UsersManager';
 import PublicFiguresManager from '@/components/PublicFiguresManager';
+import FeaturedProductsSettingsManager from '@/components/FeaturedProductsSettingsManager';
 
 // Explicitly define admin emails for type safety
 const ADMIN_EMAILS: string[] = [
@@ -84,11 +85,12 @@ const Admin = () => {
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
       
       <Tabs defaultValue="products" className="w-full">
-        <TabsList className="mb-8 grid grid-cols-4 max-w-4xl">
+        <TabsList className="mb-8 grid grid-cols-5 max-w-4xl">
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="bookings">Bookings</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="public-figures">Public Figures</TabsTrigger>
+          <TabsTrigger value="settings">Site Settings</TabsTrigger>
         </TabsList>
         
         <TabsContent value="products" className="w-full">
@@ -105,6 +107,12 @@ const Admin = () => {
         
         <TabsContent value="public-figures" className="w-full">
           <PublicFiguresManager />
+        </TabsContent>
+        
+        <TabsContent value="settings" className="w-full">
+          <div className="space-y-8">
+            <FeaturedProductsSettingsManager />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

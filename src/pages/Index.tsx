@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -12,16 +13,69 @@ import SplineModel from '@/components/SplineModel';
 import PublicFiguresSlider from '@/components/PublicFiguresSlider';
 import { Image } from '@/components/ui/image';
 
+interface FeaturedProductsSettings {
+  title: string;
+  subtitle: string;
+  background_type: 'image' | 'youtube' | 'color';
+  background_value: string;
+  active: boolean;
+}
+
 const Index = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [splineError, setSplineError] = useState(false);
+  const [settings, setSettings] = useState<FeaturedProductsSettings>({
+    title: 'Featured Products',
+    subtitle: 'Explore our handpicked collection of premium 3D models and services',
+    background_type: 'image',
+    background_value: '',
+    active: true
+  });
   const isMobile = useIsMobile();
 
   useEffect(() => {
     const timeout = setTimeout(() => setIsModelLoaded(true), 1000);
     return () => clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    // Fetch settings for featured products section
+    const fetchSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('content')
+          .select('*')
+          .eq('section', 'featured_products')
+          .eq('id', 'settings')
+          .single();
+          
+        if (error && error.code !== 'PGRST116') {
+          // PGRST116 is "no rows returned" - not an error for us
+          console.error('Error fetching featured products settings:', error);
+        }
+        
+        if (data) {
+          try {
+            const parsedContent = JSON.parse(data.content || '{}');
+            setSettings({
+              title: data.title || 'Featured Products',
+              subtitle: parsedContent.subtitle || 'Explore our handpicked collection of premium 3D models and services',
+              background_type: parsedContent.background_type || 'image',
+              background_value: parsedContent.background_value || '',
+              active: parsedContent.active !== false
+            });
+          } catch (e) {
+            console.error('Error parsing content JSON:', e);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      }
+    };
+    
+    fetchSettings();
   }, []);
 
   useEffect(() => {
@@ -78,6 +132,70 @@ const Index = () => {
   const handleSplineError = () => {
     console.log('Spline error detected, showing fallback');
     setSplineError(true);
+  };
+  
+  // Function to get YouTube embed URL from any YouTube URL format
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return null;
+    
+    let videoId = '';
+    
+    if (url.includes('youtu.be/')) {
+      // Short URL format: https://youtu.be/VIDEO_ID
+      videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
+    } else if (url.includes('youtube.com/watch')) {
+      // Standard URL format: https://www.youtube.com/watch?v=VIDEO_ID
+      const urlParams = new URLSearchParams(url.split('?')[1]);
+      videoId = urlParams.get('v') || '';
+    } else if (url.includes('youtube.com/embed/')) {
+      // Embed URL format: https://www.youtube.com/embed/VIDEO_ID
+      videoId = url.split('youtube.com/embed/')[1]?.split('?')[0] || '';
+    }
+    
+    if (!videoId) return url;
+    
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0`;
+  };
+
+  const getFeaturedProductsBackground = () => {
+    if (settings.background_type === 'youtube' && settings.background_value) {
+      return (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <iframe
+            src={getYouTubeEmbedUrl(settings.background_value)}
+            className="absolute w-full h-full"
+            style={{ 
+              transform: 'scale(1.2)',
+              transformOrigin: 'center center'
+            }}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+          ></iframe>
+          <div className="absolute inset-0 bg-black bg-opacity-70"></div>
+        </div>
+      );
+    } else if (settings.background_type === 'image' && settings.background_value) {
+      return (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: `url(${settings.background_value})`,
+          }}
+        >
+          <div className="absolute inset-0 bg-black bg-opacity-70"></div>
+        </div>
+      );
+    } else if (settings.background_type === 'color' && settings.background_value) {
+      return (
+        <div 
+          className="absolute inset-0"
+          style={{ backgroundColor: settings.background_value }}
+        ></div>
+      );
+    }
+    
+    // Default background if no settings or invalid ones
+    return <div className="absolute inset-0 bg-gray-50 dark:bg-gray-900"></div>;
   };
 
   return (
@@ -144,76 +262,80 @@ const Index = () => {
       
       <PublicFiguresSlider />
       
-      <section className="py-12 md:py-16 bg-gray-50 dark:bg-gray-900">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8 md:mb-10">
-            <Badge className="mb-2 bg-ideazzz-pink px-4 py-1 text-white">Special Offers</Badge>
-            <h2 className="text-2xl md:text-4xl font-bold">Featured Products</h2>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">
-              Explore our handpicked collection of premium 3D models and services
-            </p>
-          </div>
+      {settings.active && (
+        <section className="py-12 md:py-16 relative overflow-hidden">
+          {getFeaturedProductsBackground()}
           
-          {loadingProducts ? (
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ideazzz-purple"></div>
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="text-center mb-8 md:mb-10">
+              <Badge className="mb-2 bg-ideazzz-pink px-4 py-1 text-white">Special Offers</Badge>
+              <h2 className="text-2xl md:text-4xl font-bold text-white">{settings.title}</h2>
+              <p className="text-gray-300 mt-2">
+                {settings.subtitle}
+              </p>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-              {featuredProducts.map((product) => (
-                <motion.div 
-                  key={product.id}
-                  whileHover={{ y: -10 }}
-                  className="relative"
-                >
-                  <Card className="overflow-hidden h-full shadow-lg hover:shadow-xl transition-shadow duration-300">
-                    <div className="relative h-36 md:h-48 overflow-hidden">
-                      <Image 
-                        src={product.imageurl} 
-                        alt={product.name}
-                        className="w-full h-full object-cover transform transition-transform hover:scale-110"
-                        priority={true}
-                      />
-                      {product.discount && (
-                        <div className="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 text-sm font-semibold">
-                          {product.discount}
-                        </div>
-                      )}
-                    </div>
-                    <CardContent className="p-4 md:p-5">
-                      <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2">{product.name}</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-2 md:mb-3 text-xs md:text-sm">
-                        {product.description}
-                      </p>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm md:text-base font-bold">₹{product.price.toLocaleString()}</span>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="text-ideazzz-purple border-ideazzz-purple hover:bg-ideazzz-purple hover:text-white"
-                          asChild
-                        >
-                          <Link to={`/shop/${product.id}`}>
-                            <ShoppingBag className="h-3 w-3 md:h-4 md:w-4 mr-1" /> View
-                          </Link>
-                        </Button>
+            
+            {loadingProducts ? (
+              <div className="flex justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ideazzz-purple"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+                {featuredProducts.map((product) => (
+                  <motion.div 
+                    key={product.id}
+                    whileHover={{ y: -10 }}
+                    className="relative"
+                  >
+                    <Card className="overflow-hidden h-full shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white/10 backdrop-blur-sm border border-white/20">
+                      <div className="relative h-36 md:h-48 overflow-hidden">
+                        <Image 
+                          src={product.imageurl} 
+                          alt={product.name}
+                          className="w-full h-full object-cover transform transition-transform hover:scale-110"
+                          priority={true}
+                        />
+                        {product.discount && (
+                          <div className="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 text-sm font-semibold">
+                            {product.discount}
+                          </div>
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+                      <CardContent className="p-4 md:p-5">
+                        <h3 className="text-base md:text-lg font-semibold mb-1 md:mb-2 text-white">{product.name}</h3>
+                        <p className="text-gray-300 mb-2 md:mb-3 text-xs md:text-sm">
+                          {product.description}
+                        </p>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm md:text-base font-bold text-white">₹{product.price.toLocaleString()}</span>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="text-ideazzz-purple border-ideazzz-purple hover:bg-ideazzz-purple hover:text-white"
+                            asChild
+                          >
+                            <Link to={`/shop/${product.id}`}>
+                              <ShoppingBag className="h-3 w-3 md:h-4 md:w-4 mr-1" /> View
+                            </Link>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+            
+            <div className="mt-8 md:mt-10 text-center">
+              <Link to="/shop">
+                <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">
+                  View All Products
+                </Button>
+              </Link>
             </div>
-          )}
-          
-          <div className="mt-8 md:mt-10 text-center">
-            <Link to="/shop">
-              <Button size="lg" className="bg-ideazzz-purple hover:bg-ideazzz-purple/90">
-                View All Products
-              </Button>
-            </Link>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
       
       <section className="py-16 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4">

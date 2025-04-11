@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -178,7 +179,7 @@ const PublicFiguresSlider: React.FC = () => {
                     }}
                   ></div>
                   
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-20">
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white z-20 bg-black bg-opacity-50">
                     <h3 className="text-xl font-bold mb-1">{figure.name}</h3>
                     {figure.subtitle && (
                       <p className="text-sm opacity-90 mb-2">{figure.subtitle}</p>
@@ -231,18 +232,18 @@ const PublicFiguresSlider: React.FC = () => {
                   
                   <div className="relative z-10 h-full flex flex-col justify-between p-5">
                     <h1 className="title-card z-10 relative">
-                      <span className="marg-bott font-bold text-lg md:text-xl lg:text-2xl">
+                      <span className="marg-bott font-bold text-lg md:text-xl lg:text-2xl text-white">
                         {figure.name}
                       </span>
                       {figure.subtitle && (
-                        <span className="subtitle text-sm md:text-base">
+                        <span className="subtitle text-sm md:text-base text-white block mt-1">
                           {figure.subtitle}
                         </span>
                       )}
                     </h1>
                     {figure.description && (
                       <h3 className="card-title subsubtitle z-10 relative">
-                        <span>{figure.description}</span>
+                        <span className="text-white text-sm">{figure.description}</span>
                       </h3>
                     )}
                   </div>

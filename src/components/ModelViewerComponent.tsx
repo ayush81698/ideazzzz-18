@@ -55,7 +55,7 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
         
         // Force the AR button to be visible
         const arButton = modelViewer.querySelector('button[slot="ar-button"]');
-        if (arButton) {
+        if (arButton && arButton instanceof HTMLElement) {
           arButton.style.visibility = 'visible';
           arButton.style.opacity = '1';
           arButton.style.display = 'flex';
@@ -84,19 +84,19 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
     // Force AR button visibility through DOM manipulation after render
     setTimeout(() => {
       const arButton = document.querySelector('button.ar-button');
-      if (arButton) {
-        (arButton as HTMLElement).style.visibility = 'visible';
-        (arButton as HTMLElement).style.opacity = '1';
-        (arButton as HTMLElement).style.display = 'flex';
-        (arButton as HTMLElement).style.zIndex = '100';
+      if (arButton && arButton instanceof HTMLElement) {
+        arButton.style.visibility = 'visible';
+        arButton.style.opacity = '1';
+        arButton.style.display = 'flex';
+        arButton.style.zIndex = '100';
       }
       
       // Force model-viewer default AR button visibility as well
       const defaultArButton = document.querySelector('model-viewer::part(default-ar-button)');
-      if (defaultArButton) {
-        (defaultArButton as HTMLElement).style.visibility = 'visible';
-        (defaultArButton as HTMLElement).style.opacity = '1';
-        (defaultArButton as HTMLElement).style.pointerEvents = 'auto';
+      if (defaultArButton && defaultArButton instanceof HTMLElement) {
+        defaultArButton.style.visibility = 'visible';
+        defaultArButton.style.opacity = '1';
+        defaultArButton.style.pointerEvents = 'auto';
       }
     }, 1000);
   }, []);

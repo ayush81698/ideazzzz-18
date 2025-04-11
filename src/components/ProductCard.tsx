@@ -26,6 +26,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
             height="384px"
             autoRotate={true}
             cameraControls={true}
+            enableAR={true}
             poster={product.images && product.images.length > 0 ? product.images[0] : undefined}
           />
         ) : (

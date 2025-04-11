@@ -52,6 +52,14 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
     if (modelViewer) {
       if (isMobile && ar) {
         console.log("AR mode available for mobile device");
+        
+        // Force the AR button to be visible
+        const arButton = modelViewer.querySelector('button[slot="ar-button"]');
+        if (arButton) {
+          arButton.style.visibility = 'visible';
+          arButton.style.opacity = '1';
+          arButton.style.display = 'flex';
+        }
       }
       
       const onARTracking = (event: any) => {
@@ -73,6 +81,27 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
   }, [isMobile, ar, ios_src]);
 
   useEffect(() => {
+    // Force AR button visibility through DOM manipulation after render
+    setTimeout(() => {
+      const arButton = document.querySelector('button.ar-button');
+      if (arButton) {
+        (arButton as HTMLElement).style.visibility = 'visible';
+        (arButton as HTMLElement).style.opacity = '1';
+        (arButton as HTMLElement).style.display = 'flex';
+        (arButton as HTMLElement).style.zIndex = '100';
+      }
+      
+      // Force model-viewer default AR button visibility as well
+      const defaultArButton = document.querySelector('model-viewer::part(default-ar-button)');
+      if (defaultArButton) {
+        (defaultArButton as HTMLElement).style.visibility = 'visible';
+        (defaultArButton as HTMLElement).style.opacity = '1';
+        (defaultArButton as HTMLElement).style.pointerEvents = 'auto';
+      }
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
       .ar-button {
@@ -85,7 +114,7 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
         position: absolute !important;
         bottom: 16px !important;
         right: 16px !important;
-        z-index: 10 !important;
+        z-index: 100 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -94,6 +123,17 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
         animation: pulse 2s infinite !important;
         visibility: visible !important;
         pointer-events: auto !important;
+      }
+      
+      model-viewer::part(default-ar-button) {
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        display: block !important;
+        position: absolute !important;
+        bottom: 16px !important;
+        right: 16px !important;
+        z-index: 100 !important;
       }
       
       .ar-button:active {
@@ -127,15 +167,30 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
           font-size: 16px !important;
           bottom: 20px !important;
           right: 20px !important;
-          z-index: 20 !important; 
+          z-index: 200 !important; 
           opacity: 1 !important;
           visibility: visible !important;
+          display: block !important;
         }
         
         model-viewer::part(default-ar-button) {
           visibility: visible !important;
           opacity: 1 !important;
           pointer-events: auto !important;
+          display: block !important;
+          position: absolute !important;
+          bottom: 16px !important;
+          right: 16px !important;
+          z-index: 200 !important;
+        }
+        
+        #ar-prompt {
+          background-color: rgba(0, 0, 0, 0.7) !important;
+          padding: 10px !important;
+          border-radius: 10px !important;
+          z-index: 200 !important;
+          opacity: 1 !important;
+          visibility: visible !important;
         }
       }
     `;
@@ -167,6 +222,8 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
       ar-placement="floor"
       reveal="auto"
       loading="eager"
+      quick-look-browsers="safari chrome"
+      touch-action="pan-y"
     >
       <div className="poster" slot="poster">
         {poster && <img src={poster} alt={`${alt} poster`} />}
@@ -175,15 +232,16 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
         </div>
       </div>
       
+      {/* Explicit AR Button with high visibility */}
       {ar && (
-        <button slot="ar-button" className="ar-button">
+        <button slot="ar-button" className="ar-button" style={{visibility: 'visible', opacity: 1}}>
           <View size={24} />
           View in AR
         </button>
       )}
 
-      {/* Add explicit Android AR button */}
-      <div id="ar-prompt" className="absolute bottom-5 left-0 right-0 text-center">
+      {/* Add explicit Android AR prompt with higher z-index */}
+      <div id="ar-prompt" className="absolute bottom-5 left-0 right-0 text-center z-50" style={{zIndex: 100}}>
         <span className="px-4 py-2 bg-purple-600 text-white rounded-full shadow-lg">
           Tap to view in your space
         </span>

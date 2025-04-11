@@ -22,7 +22,7 @@ const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">{product.name}</DialogTitle>
           <DialogDescription className="text-lg mt-1">${product.price.toFixed(2)}</DialogDescription>
@@ -31,21 +31,21 @@ const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogPro
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="relative">
             {product.model_url ? (
-              <div className="h-[400px]">
+              <div className={`${isMobile ? 'h-[350px]' : 'h-[450px]'}`}>
                 <ModelViewerComponent
                   src={product.model_url}
                   ios_src={product.usdz_url}
                   alt={product.name}
-                  height="400px"
+                  height="100%"
                   autoRotate={true}
                   cameraControls={true}
                   ar={Boolean(product.usdz_url)}
                   className="w-full h-full"
                 />
                 
-                {/* Enhanced AR badge for the product dialog */}
+                {/* Enhanced AR badge for the product dialog - more visible */}
                 {product.usdz_url && (
-                  <div className="absolute top-4 right-4 z-10 pointer-events-none">
+                  <div className="absolute top-4 right-4 z-30 pointer-events-none">
                     <div className="bg-purple-600 text-white text-sm px-3 py-1.5 rounded-full flex items-center gap-2 animate-pulse">
                       <View size={18} />
                       <span>{isMobile ? "Tap for AR" : "AR Available"}</span>
@@ -97,10 +97,30 @@ const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogPro
                 </div>
                 <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
                   <li>On <strong>iOS</strong>: Tap the 3D model to reveal the AR button</li>
-                  <li>On <strong>Android</strong>: Tap the "View in AR" button beneath the model</li>
+                  <li>On <strong>Android</strong>: Look for the "View in AR" button near the bottom of the model</li>
                   <li>Position your camera toward a flat surface</li>
                   <li>Pinch to resize and drag to reposition the model in AR</li>
                 </ul>
+                
+                {/* Add extra prominent AR button outside the model viewer for mobile */}
+                {isMobile && (
+                  <div className="mt-4">
+                    <Button 
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2" 
+                      onClick={() => {
+                        const arButton = document.querySelector('button[slot="ar-button"]');
+                        if (arButton) {
+                          (arButton as HTMLElement).click();
+                        } else {
+                          console.log("AR button not found");
+                        }
+                      }}
+                    >
+                      <View size={20} />
+                      View in AR
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>

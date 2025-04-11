@@ -17,14 +17,14 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
   
   return (
     <Card className="overflow-hidden h-full flex flex-col">
-      <div className="relative h-64 bg-gray-100">
+      <div className="relative h-72 bg-gray-100">
         {product.model_url ? (
           <>
             <ModelViewerComponent 
               src={product.model_url}
               ios_src={product.usdz_url}
               alt={product.name}
-              height="256px"
+              height="288px"
               autoRotate={true}
               cameraControls={true}
               ar={Boolean(product.usdz_url)}
@@ -56,7 +56,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
         
         {/* Prominent AR Badge - Always visible when AR is available */}
         {product.model_url && product.usdz_url && (
-          <div className="absolute bottom-2 right-2 z-10">
+          <div className="absolute bottom-2 right-2 z-20">
             <div className="bg-purple-600 text-white text-xs px-3 py-1.5 rounded-full animate-pulse flex items-center gap-1.5 shadow-lg">
               <View size={16} />
               <span>Try AR View</span>

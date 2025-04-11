@@ -6,7 +6,6 @@ import { Product } from "@/types/products";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import ModelViewerComponent from './ModelViewerComponent';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { View } from 'lucide-react';
 
 interface ProductDialogProps {
   product: Product | null;
@@ -31,7 +30,7 @@ const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogPro
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="relative">
             {product.model_url ? (
-              <div className={`${isMobile ? 'h-[350px]' : 'h-[450px]'}`}>
+              <div className={`${isMobile ? 'h-[450px]' : 'h-[550px]'}`}>
                 <ModelViewerComponent
                   src={product.model_url}
                   ios_src={product.usdz_url}
@@ -39,19 +38,8 @@ const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogPro
                   height="100%"
                   autoRotate={true}
                   cameraControls={true}
-                  ar={Boolean(product.usdz_url)}
                   className="w-full h-full"
                 />
-                
-                {/* Enhanced AR badge for the product dialog - more visible */}
-                {product.usdz_url && (
-                  <div className="absolute top-4 right-4 z-30 pointer-events-none">
-                    <div className="bg-purple-600 text-white text-sm px-3 py-1.5 rounded-full flex items-center gap-2 animate-pulse">
-                      <View size={18} />
-                      <span>{isMobile ? "Tap for AR" : "AR Available"}</span>
-                    </div>
-                  </div>
-                )}
               </div>
             ) : product.images && product.images.length > 0 ? (
               <Carousel className="w-full">
@@ -87,41 +75,6 @@ const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogPro
               >
                 Add to Cart
               </Button>
-            )}
-            
-            {product.model_url && product.usdz_url && (
-              <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                <div className="flex items-center gap-2 text-purple-700 font-semibold mb-2">
-                  <View size={20} />
-                  <span>AR Viewing Instructions</span>
-                </div>
-                <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                  <li>On <strong>iOS</strong>: Tap the 3D model to reveal the AR button</li>
-                  <li>On <strong>Android</strong>: Look for the "View in AR" button near the bottom of the model</li>
-                  <li>Position your camera toward a flat surface</li>
-                  <li>Pinch to resize and drag to reposition the model in AR</li>
-                </ul>
-                
-                {/* Add extra prominent AR button outside the model viewer for mobile */}
-                {isMobile && (
-                  <div className="mt-4">
-                    <Button 
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center gap-2" 
-                      onClick={() => {
-                        const arButton = document.querySelector('button[slot="ar-button"]');
-                        if (arButton) {
-                          (arButton as HTMLElement).click();
-                        } else {
-                          console.log("AR button not found");
-                        }
-                      }}
-                    >
-                      <View size={20} />
-                      View in AR
-                    </Button>
-                  </div>
-                )}
-              </div>
             )}
           </div>
         </div>

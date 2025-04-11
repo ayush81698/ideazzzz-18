@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Product } from "@/types/products";
 import ModelViewerComponent from './ModelViewerComponent';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Box, View } from 'lucide-react'; 
+import { Box } from 'lucide-react'; 
 
 interface ProductCardProps {
   product: Product;
@@ -17,29 +17,17 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
   
   return (
     <Card className="overflow-hidden h-full flex flex-col">
-      <div className="relative h-72 bg-gray-100">
+      <div className="relative h-96 bg-gray-100">
         {product.model_url ? (
-          <>
-            <ModelViewerComponent 
-              src={product.model_url}
-              ios_src={product.usdz_url}
-              alt={product.name}
-              height="288px"
-              autoRotate={true}
-              cameraControls={true}
-              ar={Boolean(product.usdz_url)}
-              poster={product.images && product.images.length > 0 ? product.images[0] : undefined}
-            />
-            
-            {/* Enhanced AR View Indicator */}
-            {product.usdz_url && (
-              <div className="absolute top-2 right-2 z-10">
-                <div className="bg-purple-600 text-white rounded-full p-2 shadow-lg animate-pulse" title="AR Available">
-                  <View size={20} />
-                </div>
-              </div>
-            )}
-          </>
+          <ModelViewerComponent 
+            src={product.model_url}
+            ios_src={product.usdz_url}
+            alt={product.name}
+            height="384px"
+            autoRotate={true}
+            cameraControls={true}
+            poster={product.images && product.images.length > 0 ? product.images[0] : undefined}
+          />
         ) : (
           product.images && product.images.length > 0 ? (
             <img
@@ -52,16 +40,6 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
               <span className="text-gray-400">No image</span>
             </div>
           )
-        )}
-        
-        {/* Prominent AR Badge - Always visible when AR is available */}
-        {product.model_url && product.usdz_url && (
-          <div className="absolute bottom-2 right-2 z-20">
-            <div className="bg-purple-600 text-white text-xs px-3 py-1.5 rounded-full animate-pulse flex items-center gap-1.5 shadow-lg">
-              <View size={16} />
-              <span>Try AR View</span>
-            </div>
-          </div>
         )}
       </div>
 

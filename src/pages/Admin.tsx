@@ -26,20 +26,44 @@ const Admin = () => {
     const initializeDatabase = async () => {
       try {
         // Check if content table exists, create if not
-        const { error: contentTableError } = await supabase.rpc('create_content_table_if_not_exists');
-        if (contentTableError && contentTableError.message.indexOf('does not exist') > -1) {
-          // If the RPC doesn't exist, create the table directly
-          await supabase.query(`
-            CREATE TABLE IF NOT EXISTS public.content (
-              id TEXT NOT NULL,
-              section TEXT NOT NULL,
-              title TEXT,
-              content JSONB,
-              created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-              updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
-              PRIMARY KEY (id, section)
-            );
-          `);
+        const { data, error } = await supabase.from('content').select('id').limit(1);
+        
+        if (error && error.message.indexOf('does not exist') > -1) {
+          // If the table doesn't exist, create it
+          await supabase.rpc('create_public_figures_table');
+          
+          // Create content table directly using SQL
+          const { error: sqlError } = await supabase.from('content').insert({
+            id: 'init',
+            section: 'system',
+            title: 'Database Initialization',
+            content: 'Content table created successfully'
+          });
+          
+          if (sqlError && sqlError.message.indexOf('does not exist') > -1) {
+            // Execute raw SQL using REST API since query method isn't available
+            await fetch(`${supabase.supabaseUrl}/rest/v1/sql`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': supabase.supabaseKey,
+                'Authorization': `Bearer ${supabase.supabaseKey}`
+              },
+              body: JSON.stringify({
+                query: `
+                  CREATE TABLE IF NOT EXISTS public.content (
+                    id TEXT NOT NULL,
+                    section TEXT NOT NULL,
+                    title TEXT,
+                    content JSONB,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+                    PRIMARY KEY (id, section)
+                  );
+                `
+              })
+            });
+          }
         }
         
         console.log('Database initialization completed');

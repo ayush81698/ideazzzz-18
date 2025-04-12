@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import AuthButtons from '@/components/AuthButtons';
 import { ThemeSwitcher } from '@/hooks/useTheme';
+import { useThemeContext } from '@/providers/ThemeProvider';
 
 const Layout = () => {
   const location = useLocation();
@@ -28,6 +29,7 @@ const Layout = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const { theme } = useThemeContext();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -108,9 +110,21 @@ const Layout = () => {
     }
   };
 
+  const getMenuTextClass = () => {
+    return theme === 'light' 
+      ? 'text-gray-800 hover:text-gray-900' 
+      : 'text-white hover:text-white';
+  };
+  
+  const getButtonClass = () => {
+    return theme === 'light'
+      ? 'text-gray-800 hover:bg-gray-200'
+      : 'text-white hover:bg-purple-600/50';
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
-      <header className={`sticky top-0 z-50 w-full ${isScrolled ? 'bg-black/90 backdrop-blur-md shadow-sm dark:bg-black/90 dark:backdrop-blur-md' : 'bg-black dark:bg-black bg-white/90 dark:text-white text-black'} transition-all duration-300`}>
+      <header className={`sticky top-0 z-50 w-full ${isScrolled ? 'bg-black/90 backdrop-blur-md shadow-sm dark:bg-black/90 dark:backdrop-blur-md' : theme === 'dark' ? 'bg-black' : 'bg-white/90'} transition-all duration-300`}>
         <div className="container mx-auto flex items-center justify-between px-4 h-16">
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-2">
@@ -126,28 +140,28 @@ const Layout = () => {
                 <NavigationMenuList>
                   <NavigationMenuItem>
                     <Link to="/">
-                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} text-white hover:text-white hover:bg-purple-600/50`}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/50`}>
                         Home
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <Link to="/shop">
-                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} text-white hover:text-white hover:bg-purple-600/50`}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/50`}>
                         Shop
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <Link to="/booking">
-                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} text-white hover:text-white hover:bg-purple-600/50`}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/50`}>
                         Book a Session
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <Link to="/about">
-                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} text-white hover:text-white hover:bg-purple-600/50`}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/50`}>
                         About
                       </NavigationMenuLink>
                     </Link>
@@ -159,20 +173,29 @@ const Layout = () => {
           
           <div className="flex items-center gap-2 md:gap-4">
             {/* Theme Toggle Button - Always visible */}
-            <ThemeSwitcher />
+            <div className="z-20">
+              <ThemeSwitcher />
+            </div>
             
-            <AuthButtons />
-            
-            {/* Removed cart button from desktop navbar */}
+            <div className="z-20">
+              <AuthButtons />
+            </div>
             
             {isMobile && (
               <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-purple-600/50">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="md:hidden z-20"
+                    style={{
+                      backgroundColor: theme === 'light' ? 'rgba(200, 200, 200, 0.5)' : 'rgba(80, 80, 80, 0.5)'
+                    }}
+                  >
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="p-0 bg-black text-white dark:bg-black dark:text-white">
+                <SheetContent side="right" className={`p-0 ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'}`}>
                   <div className="p-6">
                     <div className="flex justify-between items-center mb-8">
                       <Link to="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
@@ -182,34 +205,64 @@ const Layout = () => {
                           className="h-8 w-auto"
                         />
                       </Link>
-                      <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)} className="text-white hover:bg-purple-600/50">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => setIsMenuOpen(false)} 
+                        className={getButtonClass()}
+                      >
                         <X className="h-5 w-5" />
                       </Button>
                     </div>
                     
                     <div className="flex flex-col space-y-4">
                       <Link to="/" onClick={() => setIsMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">Home</Button>
+                        <Button 
+                          variant="ghost" 
+                          className={`w-full justify-start ${getButtonClass()}`}
+                        >
+                          Home
+                        </Button>
                       </Link>
                       <Link to="/shop" onClick={() => setIsMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">Shop</Button>
+                        <Button 
+                          variant="ghost" 
+                          className={`w-full justify-start ${getButtonClass()}`}
+                        >
+                          Shop
+                        </Button>
                       </Link>
                       <Link to="/booking" onClick={() => setIsMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">Book a Session</Button>
+                        <Button 
+                          variant="ghost" 
+                          className={`w-full justify-start ${getButtonClass()}`}
+                        >
+                          Book a Session
+                        </Button>
                       </Link>
                       <Link to="/about" onClick={() => setIsMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">About</Button>
+                        <Button 
+                          variant="ghost" 
+                          className={`w-full justify-start ${getButtonClass()}`}
+                        >
+                          About
+                        </Button>
                       </Link>
                       {isAdmin && (
                         <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
-                          <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">Admin</Button>
+                          <Button 
+                            variant="ghost" 
+                            className={`w-full justify-start ${getButtonClass()}`}
+                          >
+                            Admin
+                          </Button>
                         </Link>
                       )}
                       
-                      {/* Cart button in the sliding menu - always visible here */}
+                      {/* Cart button inside the sliding menu */}
                       <Button 
                         variant="ghost" 
-                        className="w-full justify-start text-white hover:bg-purple-600/50 flex items-center gap-2"
+                        className={`w-full justify-start ${getButtonClass()} flex items-center gap-2`}
                         onClick={handleCartClick}
                       >
                         <ShoppingCart className="h-5 w-5" />
@@ -226,7 +279,7 @@ const Layout = () => {
               </Sheet>
             )}
             
-            {/* Cart button for desktop - show as a slide-out button that's always visible */}
+            {/* Cart button for desktop */}
             {!isMobile && (
               <Button
                 variant="ghost"
@@ -247,7 +300,7 @@ const Layout = () => {
         </div>
       </header>
       
-      <main className="flex-1 bg-black text-white dark:bg-black dark:text-white bg-white text-black">
+      <main className={`flex-1 ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

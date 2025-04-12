@@ -21,13 +21,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     // Update the root element's data-theme attribute as well
     root.setAttribute('data-theme', themeValue.theme);
     
-    // Set background color for dark mode
+    // Set background color and text color based on theme
     if (themeValue.theme === 'dark') {
-      document.body.classList.add('bg-black', 'text-white');
-      document.body.classList.remove('bg-white', 'text-black');
+      document.body.className = 'bg-black text-white';
     } else {
-      document.body.classList.add('bg-white', 'text-black');
-      document.body.classList.remove('bg-black', 'text-white');
+      document.body.className = 'bg-white text-black';
     }
   }, [themeValue.theme]);
 

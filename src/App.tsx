@@ -51,7 +51,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider>
-          <div className="dark">
+          <div>
             {isLoading && <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />}
             <Toaster />
             <Sonner />

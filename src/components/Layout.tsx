@@ -103,11 +103,14 @@ const Layout = () => {
   // Function to navigate to cart
   const handleCartClick = () => {
     navigate('/cart');
+    if (isMenuOpen) {
+      setIsMenuOpen(false); // Close the menu when clicking cart
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className={`sticky top-0 z-50 w-full ${isScrolled ? 'bg-black/90 backdrop-blur-md shadow-sm' : 'bg-black'} transition-all duration-300`}>
+      <header className={`sticky top-0 z-50 w-full ${isScrolled ? 'bg-black/90 backdrop-blur-md shadow-sm dark:bg-black/90 dark:backdrop-blur-md' : 'bg-black dark:bg-black bg-white/90 dark:text-white text-black'} transition-all duration-300`}>
         <div className="container mx-auto flex items-center justify-between px-4 h-16">
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-2">
@@ -160,24 +163,7 @@ const Layout = () => {
             
             <AuthButtons />
             
-            {/* Cart Button - Only visible on desktop */}
-            {!isMobile && (
-              <Button 
-                variant="ghost" 
-                size="default" 
-                className="rounded-full text-white hover:bg-purple-600/50 flex items-center gap-2"
-                onClick={() => navigate('/cart')}
-                aria-label="Shopping Cart"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span>Cart</span>
-                {cartCount > 0 && (
-                  <span className="ml-1 bg-purple-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                    {cartCount}
-                  </span>
-                )}
-              </Button>
-            )}
+            {/* Removed cart button from desktop navbar */}
             
             {isMobile && (
               <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
@@ -186,7 +172,7 @@ const Layout = () => {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="p-0 bg-black text-white">
+                <SheetContent side="right" className="p-0 bg-black text-white dark:bg-black dark:text-white">
                   <div className="p-6">
                     <div className="flex justify-between items-center mb-8">
                       <Link to="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
@@ -214,26 +200,54 @@ const Layout = () => {
                       <Link to="/about" onClick={() => setIsMenuOpen(false)}>
                         <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">About</Button>
                       </Link>
-                      <Link to="/cart" onClick={() => setIsMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">
-                          Cart {cartCount > 0 && `(${cartCount})`}
-                        </Button>
-                      </Link>
                       {isAdmin && (
                         <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
                           <Button variant="ghost" className="w-full justify-start text-white hover:bg-purple-600/50">Admin</Button>
                         </Link>
                       )}
+                      
+                      {/* Cart button in the sliding menu - always visible here */}
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start text-white hover:bg-purple-600/50 flex items-center gap-2"
+                        onClick={handleCartClick}
+                      >
+                        <ShoppingCart className="h-5 w-5" />
+                        <span>Cart</span>
+                        {cartCount > 0 && (
+                          <span className="ml-1 bg-purple-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                            {cartCount}
+                          </span>
+                        )}
+                      </Button>
                     </div>
                   </div>
                 </SheetContent>
               </Sheet>
             )}
+            
+            {/* Cart button for desktop - show as a slide-out button that's always visible */}
+            {!isMobile && (
+              <Button
+                variant="ghost"
+                className="fixed right-0 top-20 px-3 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-r-none rounded-l-md z-40 flex items-center gap-2 shadow-lg"
+                onClick={handleCartClick}
+                aria-label="Shopping Cart"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                <span>Cart</span>
+                {cartCount > 0 && (
+                  <span className="ml-1 bg-white text-purple-600 text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </header>
       
-      <main className="flex-1 bg-black text-white">
+      <main className="flex-1 bg-black text-white dark:bg-black dark:text-white bg-white text-black">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

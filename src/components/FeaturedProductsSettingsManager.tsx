@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,7 +47,10 @@ const FeaturedProductsSettingsManager = () => {
         
         if (data) {
           try {
-            const parsedContent = JSON.parse(data.content || '{}');
+            const parsedContent = data.content ? 
+              (typeof data.content === 'string' ? JSON.parse(data.content) : data.content) : 
+              {};
+              
             setSettings({
               id: data.id,
               background_type: parsedContent.background_type || 'image',
@@ -74,6 +78,41 @@ const FeaturedProductsSettingsManager = () => {
     try {
       setSaving(true);
       
+      // First, check if we need to create the content table
+      try {
+        const { error: checkError } = await supabase
+          .from('content')
+          .select('id')
+          .limit(1);
+          
+        if (checkError && checkError.message.includes('does not exist')) {
+          // Create content table if it doesn't exist
+          await fetch(`${import.meta.env.VITE_SUPABASE_URL || "https://isjcanepamlbwrxujuvz.supabase.co"}/rest/v1/sql`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzamNhbmVwYW1sYndyeHVqdXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNjMyMDQsImV4cCI6MjA1ODYzOTIwNH0.ue75CyIzjYJ6WZW7mMImLiGij0KW0JpU5FrDXubpusc",
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzamNhbmVwYW1sYndyeHVqdXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNjMyMDQsImV4cCI6MjA1ODYzOTIwNH0.ue75CyIzjYJ6WZW7mMImLiGij0KW0JpU5FrDXubpusc"}`
+            },
+            body: JSON.stringify({
+              query: `
+                CREATE TABLE IF NOT EXISTS public.content (
+                  id TEXT NOT NULL,
+                  section TEXT NOT NULL,
+                  title TEXT,
+                  content JSONB,
+                  created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+                  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+                  PRIMARY KEY (id, section)
+                );
+              `
+            })
+          });
+        }
+      } catch (err) {
+        console.error("Error checking or creating content table:", err);
+      }
+      
       const contentJson = JSON.stringify({
         background_type: settings.background_type,
         background_value: settings.background_value,
@@ -81,28 +120,45 @@ const FeaturedProductsSettingsManager = () => {
         active: settings.active
       });
       
-      const { error: checkError } = await supabase
+      // Use explicit insert or update approach to avoid ON CONFLICT issues
+      const { data: existingData } = await supabase
         .from('content')
         .select('id')
-        .limit(1);
+        .eq('id', 'settings')
+        .eq('section', 'featured_products')
+        .single();
       
-      if (checkError && checkError.code === 'PGRST116') {
-        console.log('Content table may not exist, attempting to insert anyway');
+      let error;
+      
+      if (existingData) {
+        // If record exists, update it
+        const { error: updateError } = await supabase
+          .from('content')
+          .update({
+            title: settings.title,
+            content: contentJson,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', 'settings')
+          .eq('section', 'featured_products');
+          
+        error = updateError;
+      } else {
+        // If record doesn't exist, insert it
+        const { error: insertError } = await supabase
+          .from('content')
+          .insert({
+            id: 'settings',
+            section: 'featured_products',
+            title: settings.title,
+            content: contentJson
+          });
+          
+        error = insertError;
       }
-      
-      const { error } = await supabase
-        .from('content')
-        .upsert({
-          id: 'settings',
-          section: 'featured_products',
-          title: settings.title,
-          content: contentJson
-        }, {
-          onConflict: 'id, section'
-        });
         
       if (error) {
-        console.error('Upsert error details:', error);
+        console.error('Error saving settings:', error);
         toast.error('Failed to save settings: ' + error.message);
         return;
       }

@@ -14,10 +14,10 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ShoppingCart, Menu, X, MapPin } from 'lucide-react';
-import { cartItems } from '@/pages/Shop';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import AuthButtons from '@/components/AuthButtons';
+import { ThemeSwitcher } from '@/hooks/useTheme';
 
 const Layout = () => {
   const location = useLocation();
@@ -155,24 +155,29 @@ const Layout = () => {
           </div>
           
           <div className="flex items-center gap-2 md:gap-4">
+            {/* Theme Toggle Button - Always visible */}
+            <ThemeSwitcher />
+            
             <AuthButtons />
             
-            {/* Cart Button - Always visible but more prominent on desktop */}
-            <Button 
-              variant="ghost" 
-              size={isMobile ? "icon" : "default"} 
-              className={`rounded-full text-white hover:bg-purple-600/50 ${!isMobile ? "flex items-center gap-2" : ""}`}
-              onClick={handleCartClick}
-              aria-label="Shopping Cart"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {!isMobile && <span>Cart</span>}
-              {cartCount > 0 && (
-                <span className={`${isMobile ? "absolute -top-1 -right-1" : "ml-1"} bg-purple-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full`}>
-                  {cartCount}
-                </span>
-              )}
-            </Button>
+            {/* Cart Button - Only visible on desktop */}
+            {!isMobile && (
+              <Button 
+                variant="ghost" 
+                size="default" 
+                className="rounded-full text-white hover:bg-purple-600/50 flex items-center gap-2"
+                onClick={() => navigate('/cart')}
+                aria-label="Shopping Cart"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                <span>Cart</span>
+                {cartCount > 0 && (
+                  <span className="ml-1 bg-purple-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+            )}
             
             {isMobile && (
               <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>

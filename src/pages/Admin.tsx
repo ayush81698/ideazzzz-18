@@ -23,6 +23,35 @@ const Admin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const initializeDatabase = async () => {
+      try {
+        // Check if content table exists, create if not
+        const { error: contentTableError } = await supabase.rpc('create_content_table_if_not_exists');
+        if (contentTableError && contentTableError.message.indexOf('does not exist') > -1) {
+          // If the RPC doesn't exist, create the table directly
+          await supabase.query(`
+            CREATE TABLE IF NOT EXISTS public.content (
+              id TEXT NOT NULL,
+              section TEXT NOT NULL,
+              title TEXT,
+              content JSONB,
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+              updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+              PRIMARY KEY (id, section)
+            );
+          `);
+        }
+        
+        console.log('Database initialization completed');
+      } catch (error) {
+        console.error('Error initializing database:', error);
+        // Continue with the app - non-critical error
+      }
+    };
+    
+    // Initialize the database tables if needed
+    initializeDatabase();
+    
     const checkAdminStatus = async () => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser();

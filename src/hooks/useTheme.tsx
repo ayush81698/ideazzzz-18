@@ -4,7 +4,15 @@ import { useState, useEffect } from 'react';
 type Theme = 'light' | 'dark';
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>('dark');
+  // Initialize theme from localStorage or default to dark
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Check if window is defined (for SSR)
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme') as Theme;
+      return savedTheme || 'dark';
+    }
+    return 'dark';
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -26,13 +34,14 @@ export function useTheme() {
   return { theme, toggleTheme };
 }
 
+// Separate component for the theme switcher
 export const ThemeSwitcher = () => {
   const { theme, toggleTheme } = useTheme();
   
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-full hover:bg-gray-800 transition-colors"
+      className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
       aria-label="Toggle theme"
     >
       {theme === 'dark' ? (

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,7 +39,6 @@ const FeaturedProductsSettingsManager = () => {
           .single();
           
         if (error && error.code !== 'PGRST116') {
-          // PGRST116 is "no rows returned" - not an error for us if this is first setup
           console.error('Error fetching featured products settings:', error);
           toast.error('Failed to load settings');
           return;
@@ -83,6 +81,15 @@ const FeaturedProductsSettingsManager = () => {
         active: settings.active
       });
       
+      const { error: checkError } = await supabase
+        .from('content')
+        .select('id')
+        .limit(1);
+      
+      if (checkError && checkError.code === 'PGRST116') {
+        console.log('Content table may not exist, attempting to insert anyway');
+      }
+      
       const { error } = await supabase
         .from('content')
         .upsert({
@@ -91,17 +98,19 @@ const FeaturedProductsSettingsManager = () => {
           title: settings.title,
           content: contentJson
         }, {
-          onConflict: 'id,section'
+          onConflict: 'id, section'
         });
         
       if (error) {
-        throw error;
+        console.error('Upsert error details:', error);
+        toast.error('Failed to save settings: ' + error.message);
+        return;
       }
       
       toast.success('Settings saved successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving settings:', error);
-      toast.error('Failed to save settings');
+      toast.error('Failed to save settings: ' + (error.message || 'Unknown error'));
     } finally {
       setSaving(false);
     }
@@ -216,16 +225,12 @@ const FeaturedProductsSettingsManager = () => {
     
     let videoId = '';
     
-    // Handle different YouTube URL formats
     if (url.includes('youtu.be/')) {
-      // Short URL format: https://youtu.be/VIDEO_ID
       videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
     } else if (url.includes('youtube.com/watch')) {
-      // Standard URL format: https://www.youtube.com/watch?v=VIDEO_ID
       const urlParams = new URLSearchParams(url.split('?')[1]);
       videoId = urlParams.get('v') || '';
     } else if (url.includes('youtube.com/embed/')) {
-      // Embed URL format: https://www.youtube.com/embed/VIDEO_ID
       videoId = url.split('youtube.com/embed/')[1]?.split('?')[0] || '';
     }
     

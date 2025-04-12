@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
 interface ThemeContextType {
@@ -11,6 +11,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const themeValue = useTheme();
+
+  // Apply theme class to document on mount
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(themeValue.theme);
+  }, [themeValue.theme]);
 
   return (
     <ThemeContext.Provider value={themeValue}>

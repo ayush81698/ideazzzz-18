@@ -42,12 +42,12 @@ const Admin = () => {
           
           if (sqlError && sqlError.message.indexOf('does not exist') > -1) {
             // Execute raw SQL using REST API since query method isn't available
-            await fetch(`${supabase.supabaseUrl}/rest/v1/sql`, {
+            await fetch(`${import.meta.env.VITE_SUPABASE_URL || "https://isjcanepamlbwrxujuvz.supabase.co"}/rest/v1/sql`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'apikey': supabase.supabaseKey,
-                'Authorization': `Bearer ${supabase.supabaseKey}`
+                'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzamNhbmVwYW1sYndyeHVqdXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNjMyMDQsImV4cCI6MjA1ODYzOTIwNH0.ue75CyIzjYJ6WZW7mMImLiGij0KW0JpU5FrDXubpusc",
+                'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlzamNhbmVwYW1sYndyeHVqdXZ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMwNjMyMDQsImV4cCI6MjA1ODYzOTIwNH0.ue75CyIzjYJ6WZW7mMImLiGij0KW0JpU5FrDXubpusc"}`
               },
               body: JSON.stringify({
                 query: `

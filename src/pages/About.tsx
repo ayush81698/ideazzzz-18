@@ -1,13 +1,19 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useThemeContext } from '@/providers/ThemeProvider';
 
 const About = () => {
   const { theme } = useThemeContext();
   
+  useEffect(() => {
+    console.log("About page theme:", theme);
+  }, [theme]);
+  
+  // Define classes based on theme
   const bgClass = theme === 'dark' ? 'bg-black text-white' : 'bg-white text-gray-800';
   const cardClass = theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100';
+  const buttonTextClass = theme === 'dark' ? 'text-white' : 'text-purple-700';
 
   return (
     <div className={`py-12 ${bgClass}`}>
@@ -111,7 +117,7 @@ const About = () => {
             <a href="mailto:hello@adeazzz.com" className="bg-ideazzz-purple hover:bg-ideazzz-purple/80 text-white px-8 py-3 rounded-lg font-medium">
               Email Us
             </a>
-            <a href="/booking" className={`bg-transparent border border-ideazzz-purple ${theme === 'dark' ? 'text-ideazzz-purple' : 'text-purple-700'} hover:bg-ideazzz-purple/10 px-8 py-3 rounded-lg font-medium`}>
+            <a href="/booking" className={`bg-transparent border border-ideazzz-purple ${buttonTextClass} hover:bg-ideazzz-purple/10 px-8 py-3 rounded-lg font-medium`}>
               Book a Consultation
             </a>
           </div>

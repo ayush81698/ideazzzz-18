@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
 interface ThemeContextType {
@@ -10,27 +10,43 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const themeValue = useTheme();
+  // Get theme values from our hook
+  const { theme, toggleTheme } = useTheme();
+  
+  // Debug logging
+  console.log("ThemeProvider current theme:", theme);
 
   // Apply theme class to document on mount and when theme changes
   useEffect(() => {
     const root = window.document.documentElement;
+    
+    // Remove both classes first
     root.classList.remove('light', 'dark');
-    root.classList.add(themeValue.theme);
     
-    // Update the root element's data-theme attribute as well
-    root.setAttribute('data-theme', themeValue.theme);
+    // Add the current theme class
+    root.classList.add(theme);
     
-    // Set background color and text color based on theme
-    if (themeValue.theme === 'dark') {
-      document.body.className = 'bg-black text-white';
+    // Update the root element's data-theme attribute
+    root.setAttribute('data-theme', theme);
+    
+    // Apply body classes based on theme
+    if (theme === 'dark') {
+      document.body.classList.add('bg-black', 'text-white');
+      document.body.classList.remove('bg-white', 'text-black');
     } else {
-      document.body.className = 'bg-white text-black';
+      document.body.classList.add('bg-white', 'text-black');
+      document.body.classList.remove('bg-black', 'text-white');
     }
-  }, [themeValue.theme]);
+    
+    console.log("Theme applied to document:", theme);
+    
+    // Force a re-render of components that might use theme values
+    window.dispatchEvent(new Event('themeChange'));
+    
+  }, [theme]);
 
   return (
-    <ThemeContext.Provider value={themeValue}>
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

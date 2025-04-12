@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   NavigationMenu,
@@ -62,7 +61,7 @@ const Layout = () => {
       authListener.subscription.unsubscribe();
     };
   }, []);
-
+  
   useEffect(() => {
     const handleCartUpdate = () => {
       const savedCart = localStorage.getItem('cartItems');
@@ -83,10 +82,14 @@ const Layout = () => {
     
     window.addEventListener('storage', handleCartUpdate);
     window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('themeChange', () => {
+      console.log("Theme change event received in Layout");
+    });
     
     return () => {
       window.removeEventListener('storage', handleCartUpdate);
       window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('themeChange', () => {});
     };
   }, []);
 
@@ -102,11 +105,10 @@ const Layout = () => {
     };
   }, []);
 
-  // Function to navigate to cart
   const handleCartClick = () => {
     navigate('/cart');
     if (isMenuOpen) {
-      setIsMenuOpen(false); // Close the menu when clicking cart
+      setIsMenuOpen(false);
     }
   };
 
@@ -123,8 +125,8 @@ const Layout = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className={`sticky top-0 z-50 w-full ${isScrolled ? 'bg-black/90 backdrop-blur-md shadow-sm dark:bg-black/90 dark:backdrop-blur-md' : theme === 'dark' ? 'bg-black' : 'bg-white/90'} transition-all duration-300`}>
+    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'}`}>
+      <header className={`sticky top-0 z-50 w-full ${isScrolled ? `${theme === 'dark' ? 'bg-black/90' : 'bg-white/90'} backdrop-blur-md shadow-sm` : theme === 'dark' ? 'bg-black' : 'bg-white'} transition-all duration-300`}>
         <div className="container mx-auto flex items-center justify-between px-4 h-16">
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-2">
@@ -172,8 +174,7 @@ const Layout = () => {
           </div>
           
           <div className="flex items-center gap-2 md:gap-4">
-            {/* Theme Toggle Button - Always visible */}
-            <div className="z-20">
+            <div className="z-20 mr-2">
               <ThemeSwitcher />
             </div>
             
@@ -187,7 +188,7 @@ const Layout = () => {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="md:hidden z-20"
+                    className="md:hidden z-20 ml-2"
                     style={{
                       backgroundColor: theme === 'light' ? 'rgba(200, 200, 200, 0.5)' : 'rgba(80, 80, 80, 0.5)'
                     }}
@@ -259,7 +260,6 @@ const Layout = () => {
                         </Link>
                       )}
                       
-                      {/* Cart button inside the sliding menu */}
                       <Button 
                         variant="ghost" 
                         className={`w-full justify-start ${getButtonClass()} flex items-center gap-2`}
@@ -279,7 +279,6 @@ const Layout = () => {
               </Sheet>
             )}
             
-            {/* Cart button for desktop */}
             {!isMobile && (
               <Button
                 variant="ghost"

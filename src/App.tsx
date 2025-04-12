@@ -33,6 +33,7 @@ const App = () => {
       // Allow some time for all resources to render
       const timer = setTimeout(() => {
         setIsLoading(false);
+        console.log("App loaded, setting isLoading to false");
       }, 1000);
       
       return () => clearTimeout(timer);
@@ -45,6 +46,18 @@ const App = () => {
       window.addEventListener('load', handleLoad);
       return () => window.removeEventListener('load', handleLoad);
     }
+  }, []);
+
+  // Add debug info for theme
+  useEffect(() => {
+    const handleThemeChange = () => {
+      console.log("Theme changed in App.tsx");
+      console.log("Body classes:", document.body.className);
+      console.log("HTML classes:", document.documentElement.classList);
+    };
+
+    window.addEventListener('themeChange', handleThemeChange);
+    return () => window.removeEventListener('themeChange', handleThemeChange);
   }, []);
 
   return (

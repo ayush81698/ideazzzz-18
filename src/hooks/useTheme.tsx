@@ -4,22 +4,27 @@ import { useState, useEffect } from 'react';
 type Theme = 'light' | 'dark';
 
 export function useTheme() {
-  // Initialize theme from localStorage or user preference with dark fallback
+  // Initialize theme from localStorage or user preference with light fallback
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('theme') as Theme;
-      if (savedTheme) return savedTheme;
+      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+        return savedTheme;
+      }
       
       // Check user preference if no saved theme
       const userPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       return userPrefersDark ? 'dark' : 'light';
     }
-    return 'dark';
+    return 'light'; // Default to light theme as fallback
   });
 
   useEffect(() => {
-    // Store the theme preference in localStorage
-    localStorage.setItem('theme', theme);
+    // Store the theme preference in localStorage whenever it changes
+    if (theme) {
+      localStorage.setItem('theme', theme);
+      console.log('Theme set to:', theme);
+    }
   }, [theme]);
 
   const toggleTheme = () => {

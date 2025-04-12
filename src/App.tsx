@@ -48,16 +48,22 @@ const App = () => {
     }
   }, []);
 
-  // Add debug info for theme
+  // Check for current theme on mount
   useEffect(() => {
-    const handleThemeChange = () => {
-      console.log("Theme changed in App.tsx");
-      console.log("Body classes:", document.body.className);
-      console.log("HTML classes:", document.documentElement.classList);
-    };
-
-    window.addEventListener('themeChange', handleThemeChange);
-    return () => window.removeEventListener('themeChange', handleThemeChange);
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      console.log("App.tsx found saved theme:", savedTheme);
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.documentElement.classList.add(savedTheme);
+      
+      if (savedTheme === 'dark') {
+        document.body.classList.add('bg-black', 'text-white');
+        document.body.classList.remove('bg-white', 'text-black');
+      } else {
+        document.body.classList.add('bg-white', 'text-black');
+        document.body.classList.remove('bg-black', 'text-white');
+      }
+    }
   }, []);
 
   return (

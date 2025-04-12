@@ -6,15 +6,19 @@ type Theme = 'light' | 'dark';
 export function useTheme() {
   // Initialize theme from localStorage or user preference with light fallback
   const [theme, setTheme] = useState<Theme>(() => {
+    // Ensure we're in a browser environment
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('theme') as Theme;
       if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
+        console.log("Using saved theme from localStorage:", savedTheme);
         return savedTheme;
       }
       
       // Check user preference if no saved theme
       const userPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return userPrefersDark ? 'dark' : 'light';
+      const preferredTheme = userPrefersDark ? 'dark' : 'light';
+      console.log("No saved theme, using user preference:", preferredTheme);
+      return preferredTheme;
     }
     return 'light'; // Default to light theme as fallback
   });
@@ -23,13 +27,18 @@ export function useTheme() {
     // Store the theme preference in localStorage whenever it changes
     if (theme) {
       localStorage.setItem('theme', theme);
-      console.log('Theme set to:', theme);
+      console.log('Theme set in localStorage:', theme);
+      
+      // Dispatch a custom event to notify other components
+      window.dispatchEvent(new CustomEvent('themeChange', { detail: theme }));
     }
   }, [theme]);
 
   const toggleTheme = () => {
+    console.log("Toggle theme called, current theme:", theme);
     setTheme(prevTheme => {
       const newTheme = prevTheme === 'dark' ? 'light' : 'dark';
+      console.log("Switching theme to:", newTheme);
       return newTheme;
     });
   };

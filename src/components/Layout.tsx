@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   NavigationMenu,
@@ -82,14 +83,10 @@ const Layout = () => {
     
     window.addEventListener('storage', handleCartUpdate);
     window.addEventListener('cartUpdated', handleCartUpdate);
-    window.addEventListener('themeChange', () => {
-      console.log("Theme change event received in Layout");
-    });
     
     return () => {
       window.removeEventListener('storage', handleCartUpdate);
       window.removeEventListener('cartUpdated', handleCartUpdate);
-      window.removeEventListener('themeChange', () => {});
     };
   }, []);
 
@@ -281,15 +278,15 @@ const Layout = () => {
             
             {!isMobile && (
               <Button
-                variant="ghost"
-                className="fixed right-0 top-20 px-3 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-r-none rounded-l-md z-40 flex items-center gap-2 shadow-lg"
+                variant={theme === 'light' ? 'outline' : 'default'} 
+                className={`flex items-center gap-2 ${theme === 'light' ? 'bg-white text-gray-800 border-gray-300 hover:bg-gray-100' : 'bg-purple-600 hover:bg-purple-700 text-white'}`}
                 onClick={handleCartClick}
                 aria-label="Shopping Cart"
               >
                 <ShoppingCart className="h-5 w-5" />
                 <span>Cart</span>
                 {cartCount > 0 && (
-                  <span className="ml-1 bg-white text-purple-600 text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                  <span className={`ml-1 ${theme === 'light' ? 'bg-purple-600 text-white' : 'bg-white text-purple-600'} text-xs w-5 h-5 flex items-center justify-center rounded-full`}>
                     {cartCount}
                   </span>
                 )}
@@ -313,7 +310,7 @@ const Layout = () => {
         </AnimatePresence>
       </main>
       
-      <footer className="bg-gray-900 text-white py-8">
+      <footer className={`${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-900 text-white'} py-8`}>
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>

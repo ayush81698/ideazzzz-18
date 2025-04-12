@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
 interface ThemeContextType {
@@ -38,10 +38,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       document.body.classList.remove('bg-black', 'text-white');
     }
     
-    console.log("Theme applied to document:", theme);
-    
-    // Force a re-render of components that might use theme values
-    window.dispatchEvent(new Event('themeChange'));
+    console.log("Theme applied to document:", theme, "Root classes:", root.classList);
     
   }, [theme]);
 

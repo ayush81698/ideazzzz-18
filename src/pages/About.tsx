@@ -11,8 +11,8 @@ const About = () => {
   }, [theme]);
   
   // Define classes based on theme
-  const bgClass = theme === 'dark' ? 'bg-black text-white' : 'bg-white text-gray-800';
-  const cardClass = theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100';
+  const bgClass = theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-800';
+  const cardClass = theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100';
   const buttonTextClass = theme === 'dark' ? 'text-white' : 'text-purple-700';
 
   return (

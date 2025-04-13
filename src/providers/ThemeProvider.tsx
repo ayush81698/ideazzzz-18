@@ -31,11 +31,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     
     // Apply body classes based on theme
     if (theme === 'dark') {
-      document.body.classList.add('bg-black', 'text-white');
-      document.body.classList.remove('bg-white', 'text-black');
+      document.body.classList.add('dark');
+      document.body.classList.remove('light');
     } else {
-      document.body.classList.add('bg-white', 'text-black');
-      document.body.classList.remove('bg-black', 'text-white');
+      document.body.classList.add('light');
+      document.body.classList.remove('dark');
     }
     
     console.log("ThemeProvider: Theme applied to document:", theme);

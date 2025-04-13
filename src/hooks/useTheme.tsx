@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 type Theme = 'light' | 'dark';
 
 export function useTheme() {
-  // Initialize theme from localStorage or user preference with light fallback
+  // Initialize theme from localStorage with light as fallback
   const [theme, setTheme] = useState<Theme>(() => {
     // Ensure we're in a browser environment
     if (typeof window !== 'undefined') {
@@ -14,19 +14,12 @@ export function useTheme() {
         return savedTheme;
       }
       
-      // Check user preference if no saved theme
-      const userPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const preferredTheme = userPrefersDark ? 'dark' : 'light';
-      console.log("No saved theme, using user preference:", preferredTheme);
-      return preferredTheme;
+      // Default to light theme if no saved preference
+      console.log("No saved theme, using default light theme");
+      return 'light';
     }
     return 'light'; // Default to light theme as fallback
   });
-
-  // Immediately apply theme when initialized
-  useEffect(() => {
-    applyTheme(theme);
-  }, []);
 
   useEffect(() => {
     // Store the theme preference in localStorage whenever it changes
@@ -34,37 +27,10 @@ export function useTheme() {
       localStorage.setItem('theme', theme);
       console.log('Theme set in localStorage:', theme);
       
-      // Apply theme to document
-      applyTheme(theme);
-      
       // Dispatch a custom event to notify other components
       window.dispatchEvent(new CustomEvent('themeChange', { detail: theme }));
     }
   }, [theme]);
-
-  const applyTheme = (currentTheme: Theme) => {
-    const root = window.document.documentElement;
-    
-    // Remove both classes first
-    root.classList.remove('light', 'dark');
-    
-    // Add the current theme class
-    root.classList.add(currentTheme);
-    
-    // Update the root element's data-theme attribute
-    root.setAttribute('data-theme', currentTheme);
-    
-    // Apply body classes based on theme
-    if (currentTheme === 'dark') {
-      document.body.classList.add('bg-black', 'text-white');
-      document.body.classList.remove('bg-white', 'text-black');
-    } else {
-      document.body.classList.add('bg-white', 'text-black');
-      document.body.classList.remove('bg-black', 'text-white');
-    }
-    
-    console.log("Theme applied to document:", currentTheme, "Root classes:", root.classList);
-  };
 
   const toggleTheme = () => {
     console.log("Toggle theme called, current theme:", theme);

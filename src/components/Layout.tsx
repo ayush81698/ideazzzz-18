@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   NavigationMenu,
@@ -102,7 +101,6 @@ const Layout = () => {
     };
   }, []);
 
-  // Listen for theme changes
   useEffect(() => {
     console.log("Layout detected theme change:", theme);
   }, [theme]);
@@ -126,9 +124,17 @@ const Layout = () => {
       : 'text-gray-800 hover:bg-gray-200';
   };
 
+  const getHeaderClass = () => {
+    const scrolledClass = isScrolled 
+      ? `${theme === 'dark' ? 'bg-gray-900/90' : 'bg-white/90'} backdrop-blur-md shadow-sm` 
+      : theme === 'dark' ? 'bg-gray-900' : 'bg-white';
+    
+    return `sticky top-0 z-50 w-full ${scrolledClass} transition-all duration-300`;
+  };
+
   return (
-    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'}`}>
-      <header className={`sticky top-0 z-50 w-full ${isScrolled ? `${theme === 'dark' ? 'bg-black/90' : 'bg-white/90'} backdrop-blur-md shadow-sm` : theme === 'dark' ? 'bg-black' : 'bg-white'} transition-all duration-300`}>
+    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+      <header className={getHeaderClass()}>
         <div className="container mx-auto flex items-center justify-between px-4 h-16">
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-2">
@@ -144,35 +150,35 @@ const Layout = () => {
                 <NavigationMenuList>
                   <NavigationMenuItem>
                     <Link to="/">
-                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/50`}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/20`}>
                         Home
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <Link to="/shop">
-                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/50`}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/20`}>
                         Shop
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <Link to="/booking">
-                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/50`}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/20`}>
                         Book a Session
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <Link to="/about">
-                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/50`}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/20`}>
                         About
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
                     <Link to="/cart">
-                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/50`}>
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/20`}>
                         <span className="flex items-center">
                           <ShoppingCart className="h-4 w-4 mr-1" />
                           Cart
@@ -213,7 +219,7 @@ const Layout = () => {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className={`p-0 ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'}`}>
+                <SheetContent side="right" className={`p-0 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
                   <div className="p-6">
                     <div className="flex justify-between items-center mb-8">
                       <Link to="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
@@ -299,7 +305,7 @@ const Layout = () => {
         </div>
       </header>
       
-      <main className={`flex-1 ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'}`}>
+      <main className={`flex-1 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -313,7 +319,7 @@ const Layout = () => {
         </AnimatePresence>
       </main>
       
-      <footer className={`${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-900 text-white'} py-8`}>
+      <footer className={`${theme === 'dark' ? 'bg-gray-900 text-white border-t border-gray-800' : 'bg-gray-900 text-white'} py-8`}>
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>

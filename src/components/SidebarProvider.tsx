@@ -51,7 +51,7 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({ children }) => {
   const { theme } = useThemeContext();
   
   return (
-    <div className={`relative min-h-screen ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
+    <div className={`relative min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}`}>
       <AnimatedSidebar menuItems={navigationItems} />
       {children}
     </div>

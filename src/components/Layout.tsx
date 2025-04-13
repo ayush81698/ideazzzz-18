@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   NavigationMenu,
@@ -11,24 +12,63 @@ import {
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { ShoppingCart, Menu, X, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import AuthButtons from '@/components/AuthButtons';
 import { ThemeSwitcher } from '@/hooks/useTheme';
 import { useThemeContext } from '@/providers/ThemeProvider';
+import AnimatedSidebar from './AnimatedSidebar';
 
 const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const { theme } = useThemeContext();
+  
+  // Define navigation items for AnimatedSidebar
+  const navigationItems = [
+    {
+      id: 'home',
+      label: 'Home',
+      path: '/',
+      eyebrow: 'Start'
+    },
+    {
+      id: 'shop',
+      label: 'Shop',
+      path: '/shop',
+      eyebrow: 'Products'
+    },
+    {
+      id: 'booking',
+      label: 'Booking',
+      path: '/booking',
+      eyebrow: 'Sessions'
+    },
+    {
+      id: 'about',
+      label: 'About',
+      path: '/about',
+      eyebrow: 'Info'
+    },
+    {
+      id: 'admin',
+      label: 'Admin',
+      path: '/admin',
+      eyebrow: 'Dashboard'
+    },
+    {
+      id: 'cart',
+      label: 'Cart',
+      path: '/cart',
+      eyebrow: 'Shopping'
+    }
+  ];
 
   useEffect(() => {
     const checkUser = async () => {
@@ -101,27 +141,14 @@ const Layout = () => {
     };
   }, []);
 
-  useEffect(() => {
-    console.log("Layout detected theme change:", theme);
-  }, [theme]);
-
   const handleCartClick = () => {
     navigate('/cart');
-    if (isMenuOpen) {
-      setIsMenuOpen(false);
-    }
   };
 
   const getMenuTextClass = () => {
     return theme === 'dark' 
       ? 'text-white hover:text-gray-200' 
       : 'text-gray-800 hover:text-gray-900';
-  };
-  
-  const getButtonClass = () => {
-    return theme === 'dark'
-      ? 'text-white hover:bg-purple-600/50'
-      : 'text-gray-800 hover:bg-gray-200';
   };
 
   const getHeaderClass = () => {
@@ -205,101 +232,9 @@ const Layout = () => {
               <AuthButtons />
             </div>
             
+            {/* Use AnimatedSidebar for mobile instead of Sheet */}
             {isMobile && (
-              <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="md:hidden z-20 ml-2"
-                    style={{
-                      backgroundColor: theme === 'light' ? 'rgba(200, 200, 200, 0.5)' : 'rgba(80, 80, 80, 0.5)'
-                    }}
-                  >
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className={`p-0 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
-                  <div className="p-6">
-                    <div className="flex justify-between items-center mb-8">
-                      <Link to="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
-                        <img 
-                          src="/lovable-uploads/6b787a6d-ec96-492c-9e23-419a0a02a642.png" 
-                          alt="Ideazzz Logo" 
-                          className="h-8 w-auto"
-                        />
-                      </Link>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={() => setIsMenuOpen(false)} 
-                        className={getButtonClass()}
-                      >
-                        <X className="h-5 w-5" />
-                      </Button>
-                    </div>
-                    
-                    <div className="flex flex-col space-y-4">
-                      <Link to="/" onClick={() => setIsMenuOpen(false)}>
-                        <Button 
-                          variant="ghost" 
-                          className={`w-full justify-start ${getButtonClass()}`}
-                        >
-                          Home
-                        </Button>
-                      </Link>
-                      <Link to="/shop" onClick={() => setIsMenuOpen(false)}>
-                        <Button 
-                          variant="ghost" 
-                          className={`w-full justify-start ${getButtonClass()}`}
-                        >
-                          Shop
-                        </Button>
-                      </Link>
-                      <Link to="/booking" onClick={() => setIsMenuOpen(false)}>
-                        <Button 
-                          variant="ghost" 
-                          className={`w-full justify-start ${getButtonClass()}`}
-                        >
-                          Book a Session
-                        </Button>
-                      </Link>
-                      <Link to="/about" onClick={() => setIsMenuOpen(false)}>
-                        <Button 
-                          variant="ghost" 
-                          className={`w-full justify-start ${getButtonClass()}`}
-                        >
-                          About
-                        </Button>
-                      </Link>
-                      {isAdmin && (
-                        <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
-                          <Button 
-                            variant="ghost" 
-                            className={`w-full justify-start ${getButtonClass()}`}
-                          >
-                            Admin
-                          </Button>
-                        </Link>
-                      )}
-                      
-                      <Button 
-                        variant="ghost" 
-                        className={`w-full justify-start ${getButtonClass()} flex items-center gap-2`}
-                        onClick={handleCartClick}
-                      >
-                        <ShoppingCart className="h-5 w-5" />
-                        <span>Cart</span>
-                        {cartCount > 0 && (
-                          <span className="ml-1 bg-purple-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                            {cartCount}
-                          </span>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
+              <AnimatedSidebar menuItems={navigationItems} />
             )}
           </div>
         </div>

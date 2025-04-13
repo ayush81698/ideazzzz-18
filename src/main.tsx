@@ -5,15 +5,15 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import { Toaster } from '@/components/ui/sonner';
-import SidebarProvider from './components/SidebarProvider';
+import { ThemeProvider } from './providers/ThemeProvider';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <SidebarProvider>
+      <ThemeProvider>
         <App />
         <Toaster position="top-right" />
-      </SidebarProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>,
 );

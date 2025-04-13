@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { ThemeProvider } from "@/providers/ThemeProvider";
+import SidebarProvider from "@/components/SidebarProvider";
 import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import Shop from "./pages/Shop";
@@ -48,28 +48,10 @@ const App = () => {
     }
   }, []);
 
-  // Apply the saved theme immediately on mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      console.log("App.tsx found saved theme:", savedTheme);
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      document.documentElement.classList.add(savedTheme);
-      
-      if (savedTheme === 'dark') {
-        document.body.classList.add('bg-black', 'text-white');
-        document.body.classList.remove('bg-white', 'text-black');
-      } else {
-        document.body.classList.add('bg-white', 'text-black');
-        document.body.classList.remove('bg-black', 'text-white');
-      }
-    }
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <ThemeProvider>
+        <SidebarProvider>
           <div className="min-h-screen w-full">
             {isLoading && <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />}
             <Toaster />
@@ -91,7 +73,7 @@ const App = () => {
               </Routes>
             </AnimatePresence>
           </div>
-        </ThemeProvider>
+        </SidebarProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import '@google/model-viewer';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from 'sonner';
 
 declare global {
   namespace JSX {
@@ -45,19 +46,67 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
   const modelViewerRef = useRef<HTMLElement | null>(null);
   const isMobile = useIsMobile();
   
-  useEffect(() => {
-    // Make AR button more visible if AR is enabled
+  // Function to enhance AR button visibility
+  const enhanceARButton = () => {
     if (enableAR && modelViewerRef.current) {
-      const arButton = modelViewerRef.current.querySelector('.ar-button');
+      const arButton = modelViewerRef.current.querySelector('button[slot="ar-button"]');
       if (arButton && arButton instanceof HTMLElement) {
+        // Make AR button more visible and user-friendly
         arButton.style.opacity = '1';
         arButton.style.visibility = 'visible';
         arButton.style.position = 'absolute';
         arButton.style.bottom = '16px';
         arButton.style.right = '16px';
+        arButton.style.backgroundColor = '#ffffff';
+        arButton.style.border = '1px solid #cccccc';
+        arButton.style.borderRadius = '24px';
+        arButton.style.padding = '8px 16px';
+        arButton.style.fontSize = '14px';
+        arButton.style.fontWeight = 'bold';
+        arButton.style.color = '#333333';
+        arButton.style.cursor = 'pointer';
+        arButton.style.boxShadow = '0px 2px 4px rgba(0,0,0,0.2)';
+        arButton.style.display = 'flex';
+        arButton.style.alignItems = 'center';
+        arButton.style.justifyContent = 'center';
+        arButton.textContent = '👋 View in AR';
+
+        // Create a dedicated AR info toast
+        if (isMobile) {
+          setTimeout(() => {
+            toast.info("AR View Available", {
+              description: "Tap the 'View in AR' button to see this model in your space",
+              duration: 5000,
+              position: "bottom-center"
+            });
+          }, 2000);
+        }
+      } else {
+        console.warn("AR button not found in model-viewer");
       }
     }
-  }, [enableAR]);
+  };
+
+  useEffect(() => {
+    // Add event listeners to know when model is loaded
+    const handleLoad = () => {
+      console.log("Model loaded, enhancing AR button");
+      enhanceARButton();
+    };
+
+    if (modelViewerRef.current) {
+      modelViewerRef.current.addEventListener('load', handleLoad);
+      
+      // Also try to enhance after a small delay as a fallback
+      setTimeout(enhanceARButton, 1000);
+    }
+
+    return () => {
+      if (modelViewerRef.current) {
+        modelViewerRef.current.removeEventListener('load', handleLoad);
+      }
+    };
+  }, []);
 
   // For iOS devices where model-viewer AR might not work, provide a direct AR Quick Look link
   if (ios_src && isMobile && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -85,7 +134,7 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
           </div>
         </model-viewer>
         
-        {/* iOS AR Quick Look link */}
+        {/* iOS AR Quick Look link - styled to be very visible */}
         <a 
           href={ios_src}
           rel="ar" 
@@ -101,7 +150,9 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
             textDecoration: 'none',
             display: 'flex',
             alignItems: 'center',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            zIndex: 10,
+            fontWeight: 'bold'
           }}
         >
           <span style={{ marginRight: '6px' }}>🍏</span> View in AR
@@ -136,7 +187,31 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
           <div className="update-bar"></div>
         </div>
       </div>
-      <button slot="ar-button" className="ar-button">
+      {/* Custom AR button to ensure it's always visible */}
+      <button 
+        slot="ar-button" 
+        className="ar-button" 
+        style={{
+          opacity: '1',
+          visibility: 'visible',
+          position: 'absolute',
+          bottom: '16px',
+          right: '16px',
+          backgroundColor: '#ffffff',
+          border: '1px solid #cccccc',
+          borderRadius: '24px',
+          padding: '8px 16px',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          color: '#333333',
+          cursor: 'pointer',
+          boxShadow: '0px 2px 4px rgba(0,0,0,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10
+        }}
+      >
         👋 View in AR
       </button>
     </model-viewer>

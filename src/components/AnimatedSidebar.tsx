@@ -86,12 +86,17 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
     }
   }, [isOpen]);
 
+  // Apply button style based on device type
+  const buttonPositionClass = isMobile 
+    ? "fixed top-4 right-4 z-[120]" 
+    : "relative z-[120] ml-2";
+
   return (
     <>
-      {/* Toggle Button */}
+      {/* Toggle Button - visible on both mobile and desktop */}
       <button 
         onClick={toggleSidebar}
-        className="menu-button fixed top-4 right-4 z-[120] p-3 rounded-full bg-purple-600/80 backdrop-blur-lg border border-purple-400/40 shadow-lg hover:bg-purple-700"
+        className={`${buttonPositionClass} p-3 rounded-full bg-purple-600/80 backdrop-blur-lg border border-purple-400/40 shadow-lg hover:bg-purple-700`}
         aria-label={isOpen ? "Close menu" : "Open menu"}
       >
         <div className="menu-button-text">

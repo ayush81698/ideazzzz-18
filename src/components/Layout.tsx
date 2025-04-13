@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   NavigationMenu,
@@ -23,12 +22,12 @@ import AnimatedSidebar from './AnimatedSidebar';
 const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const [cartCount, setCartCount] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const { theme } = useThemeContext();
+  const isMobile = useIsMobile();
   
   // Define navigation items for AnimatedSidebar
   const navigationItems = [
@@ -232,10 +231,7 @@ const Layout = () => {
               <AuthButtons />
             </div>
             
-            {/* Use AnimatedSidebar for mobile instead of Sheet */}
-            {isMobile && (
-              <AnimatedSidebar menuItems={navigationItems} />
-            )}
+            <AnimatedSidebar menuItems={navigationItems} />
           </div>
         </div>
       </header>

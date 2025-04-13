@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { X, Menu, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useThemeContext } from '@/providers/ThemeProvider';
 
 interface MenuItem {
   id: string;
@@ -24,6 +25,7 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
   const itemsRef = useRef<(HTMLLIElement | null)[]>([]);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const isMobile = useIsMobile();
+  const { theme } = useThemeContext();
 
   const toggleSidebar = () => {
     setIsOpen(prev => !prev);
@@ -118,13 +120,19 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
         {/* Menu Container */}
         <div 
           ref={menuRef} 
-          className="menu h-full w-full md:w-[35em] ml-auto relative overflow-auto bg-black/90"
+          className={`menu h-full w-full md:w-[35em] ml-auto relative overflow-auto ${
+            theme === 'dark' ? 'bg-black/90' : 'bg-white/90'
+          }`}
           style={{ paddingTop: 'calc(3 * var(--menu-padding, 2em))', paddingBottom: 'var(--menu-padding, 2em)' }}
         >
           {/* Menu Background */}
           <div className="menu-bg absolute inset-0">
-            <div className="bg-panel first absolute inset-0 rounded-l-[1.25em] bg-black/90"></div>
-            <div className="bg-panel second absolute inset-0 rounded-l-[1.25em] translate-x-1 translate-y-1 bg-gray-900/80"></div>
+            <div className={`bg-panel first absolute inset-0 rounded-l-[1.25em] ${
+              theme === 'dark' ? 'bg-black/90' : 'bg-white/90'
+            }`}></div>
+            <div className={`bg-panel second absolute inset-0 rounded-l-[1.25em] translate-x-1 translate-y-1 ${
+              theme === 'dark' ? 'bg-gray-900/80' : 'bg-gray-100/80'
+            }`}></div>
           </div>
 
           {/* Menu Content */}
@@ -139,19 +147,29 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
                 >
                   <Link 
                     to={item.path} 
-                    className="menu-link group w-full flex gap-3 py-3 px-[var(--menu-padding,2em)] relative rounded-md hover:bg-purple-600/20"
+                    className={`menu-link group w-full flex gap-3 py-3 px-[var(--menu-padding,2em)] relative rounded-md ${
+                      theme === 'dark' ? 'hover:bg-purple-600/20' : 'hover:bg-purple-600/10'
+                    }`}
                     onClick={toggleSidebar}
                   >
-                    <div className="menu-link-bg absolute inset-0 bg-black/60 origin-bottom rounded-md"></div>
+                    <div className={`menu-link-bg absolute inset-0 rounded-md ${
+                      theme === 'dark' ? 'bg-black/60' : 'bg-white/60'
+                    }`}></div>
                     <div className="flex flex-col z-1">
                       {item.eyebrow && (
-                        <span className="eyebrow text-xs uppercase mb-1 text-purple-300">{item.eyebrow}</span>
+                        <span className={`eyebrow text-xs uppercase mb-1 ${
+                          theme === 'dark' ? 'text-purple-300' : 'text-purple-700'
+                        }`}>{item.eyebrow}</span>
                       )}
-                      <h2 className="menu-link-heading text-[2.5rem] md:text-[5.625rem] uppercase font-bold leading-[0.75] text-white">
+                      <h2 className={`menu-link-heading text-[2.5rem] md:text-[5.625rem] uppercase font-bold leading-[0.75] ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                         {item.label}
                       </h2>
                     </div>
-                    <ChevronRight className="ml-auto self-center text-purple-300 opacity-60 group-hover:opacity-100 transition-opacity" />
+                    <ChevronRight className={`ml-auto self-center ${
+                      theme === 'dark' ? 'text-purple-300' : 'text-purple-700'
+                    } opacity-60 group-hover:opacity-100 transition-opacity`} />
                   </Link>
                 </li>
               ))}
@@ -159,15 +177,38 @@ const AnimatedSidebar: React.FC<AnimatedSidebarProps> = ({ menuItems }) => {
 
             {/* Menu Footer */}
             <div className="menu-details flex flex-col gap-5 px-[var(--menu-padding,2em)]">
-              <p className="p-small text-purple-200">Connect with us</p>
+              <p className={`p-small ${
+                theme === 'dark' ? 'text-purple-200' : 'text-purple-800'
+              }`}>Connect with us</p>
               <div className="socials-row flex gap-6">
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="p-large text-link text-white hover:text-purple-300">
+                <a 
+                  href="https://twitter.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className={`p-large text-link ${
+                    theme === 'dark' ? 'text-white hover:text-purple-300' : 'text-gray-900 hover:text-purple-700'
+                  }`}
+                >
                   Twitter
                 </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="p-large text-link text-white hover:text-purple-300">
+                <a 
+                  href="https://instagram.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className={`p-large text-link ${
+                    theme === 'dark' ? 'text-white hover:text-purple-300' : 'text-gray-900 hover:text-purple-700'
+                  }`}
+                >
                   Instagram
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="p-large text-link text-white hover:text-purple-300">
+                <a 
+                  href="https://linkedin.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className={`p-large text-link ${
+                    theme === 'dark' ? 'text-white hover:text-purple-300' : 'text-gray-900 hover:text-purple-700'
+                  }`}
+                >
                   LinkedIn
                 </a>
               </div>

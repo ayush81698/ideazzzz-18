@@ -38,7 +38,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       document.body.classList.remove('bg-black', 'text-white');
     }
     
-    console.log("Theme applied to document:", theme, "Root classes:", root.classList);
+    console.log("ThemeProvider: Theme applied to document:", theme);
+    
+    // Force re-render of components that might not be directly connected to the theme context
+    document.dispatchEvent(new Event('themeChanged'));
     
   }, [theme]);
 

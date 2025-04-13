@@ -48,7 +48,7 @@ const App = () => {
     }
   }, []);
 
-  // Check for current theme on mount
+  // Apply the saved theme immediately on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {

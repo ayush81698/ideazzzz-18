@@ -102,6 +102,11 @@ const Layout = () => {
     };
   }, []);
 
+  // Listen for theme changes
+  useEffect(() => {
+    console.log("Layout detected theme change:", theme);
+  }, [theme]);
+
   const handleCartClick = () => {
     navigate('/cart');
     if (isMenuOpen) {
@@ -110,15 +115,15 @@ const Layout = () => {
   };
 
   const getMenuTextClass = () => {
-    return theme === 'light' 
-      ? 'text-gray-800 hover:text-gray-900' 
-      : 'text-white hover:text-white';
+    return theme === 'dark' 
+      ? 'text-white hover:text-gray-200' 
+      : 'text-gray-800 hover:text-gray-900';
   };
   
   const getButtonClass = () => {
-    return theme === 'light'
-      ? 'text-gray-800 hover:bg-gray-200'
-      : 'text-white hover:bg-purple-600/50';
+    return theme === 'dark'
+      ? 'text-white hover:bg-purple-600/50'
+      : 'text-gray-800 hover:bg-gray-200';
   };
 
   return (
@@ -162,6 +167,21 @@ const Layout = () => {
                     <Link to="/about">
                       <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/50`}>
                         About
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <Link to="/cart">
+                      <NavigationMenuLink className={`${navigationMenuTriggerStyle()} ${getMenuTextClass()} hover:bg-purple-600/50`}>
+                        <span className="flex items-center">
+                          <ShoppingCart className="h-4 w-4 mr-1" />
+                          Cart
+                          {cartCount > 0 && (
+                            <span className="ml-1 bg-purple-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                              {cartCount}
+                            </span>
+                          )}
+                        </span>
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
@@ -274,23 +294,6 @@ const Layout = () => {
                   </div>
                 </SheetContent>
               </Sheet>
-            )}
-            
-            {!isMobile && (
-              <Button
-                variant={theme === 'light' ? 'outline' : 'default'} 
-                className={`flex items-center gap-2 ${theme === 'light' ? 'bg-white text-gray-800 border-gray-300 hover:bg-gray-100' : 'bg-purple-600 hover:bg-purple-700 text-white'}`}
-                onClick={handleCartClick}
-                aria-label="Shopping Cart"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span>Cart</span>
-                {cartCount > 0 && (
-                  <span className={`ml-1 ${theme === 'light' ? 'bg-purple-600 text-white' : 'bg-white text-purple-600'} text-xs w-5 h-5 flex items-center justify-center rounded-full`}>
-                    {cartCount}
-                  </span>
-                )}
-              </Button>
             )}
           </div>
         </div>

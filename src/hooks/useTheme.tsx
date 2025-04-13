@@ -23,16 +23,48 @@ export function useTheme() {
     return 'light'; // Default to light theme as fallback
   });
 
+  // Immediately apply theme when initialized
+  useEffect(() => {
+    applyTheme(theme);
+  }, []);
+
   useEffect(() => {
     // Store the theme preference in localStorage whenever it changes
     if (theme) {
       localStorage.setItem('theme', theme);
       console.log('Theme set in localStorage:', theme);
       
+      // Apply theme to document
+      applyTheme(theme);
+      
       // Dispatch a custom event to notify other components
       window.dispatchEvent(new CustomEvent('themeChange', { detail: theme }));
     }
   }, [theme]);
+
+  const applyTheme = (currentTheme: Theme) => {
+    const root = window.document.documentElement;
+    
+    // Remove both classes first
+    root.classList.remove('light', 'dark');
+    
+    // Add the current theme class
+    root.classList.add(currentTheme);
+    
+    // Update the root element's data-theme attribute
+    root.setAttribute('data-theme', currentTheme);
+    
+    // Apply body classes based on theme
+    if (currentTheme === 'dark') {
+      document.body.classList.add('bg-black', 'text-white');
+      document.body.classList.remove('bg-white', 'text-black');
+    } else {
+      document.body.classList.add('bg-white', 'text-black');
+      document.body.classList.remove('bg-black', 'text-white');
+    }
+    
+    console.log("Theme applied to document:", currentTheme, "Root classes:", root.classList);
+  };
 
   const toggleTheme = () => {
     console.log("Toggle theme called, current theme:", theme);

@@ -1,8 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useThemeContext } from '@/providers/ThemeProvider';
 import './PublicFiguresSlider.css';
 
 interface PublicFigure {
@@ -47,6 +47,7 @@ const PublicFiguresSlider: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const isMobile = useIsMobile();
+  const { theme } = useThemeContext();
   
   useEffect(() => {
     const fetchFigures = async () => {
@@ -113,16 +114,16 @@ const PublicFiguresSlider: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="py-16 bg-gray-900 flex justify-center items-center">
+      <div className={`py-16 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} flex justify-center items-center`}>
         <div className="w-8 h-8 border-4 border-ideazzz-purple border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <section className="py-16 overflow-hidden bg-gray-900 relative">
+    <section className={`py-16 overflow-hidden ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'} relative`}>
       {activeVideoUrl && (
-        <div className="absolute inset-0 w-full h-full overflow-hidden">
+        <div className="absolute inset-0 w-full h-full overflow-hidden background-video-container">
           {isYouTubeUrl(activeVideoUrl) ? (
             <iframe
               src={getYouTubeEmbedUrl(activeVideoUrl)}
@@ -150,7 +151,7 @@ const PublicFiguresSlider: React.FC = () => {
               playsInline
             />
           )}
-          {!isMobile && <div className="absolute inset-0 bg-black bg-opacity-40"></div>}
+          <div className="absolute inset-0 bg-black bg-opacity-40 video-background-overlay"></div>
         </div>
       )}
       

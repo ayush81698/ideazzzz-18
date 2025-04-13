@@ -127,3 +127,15 @@
 .marg-bott {
   margin-bottom: 1.5rem;
 }
+
+/* Mobile background size adjustments */
+@media (max-width: 768px) {
+  .background-video-container video,
+  .background-video-container iframe {
+    transform: scale(3) !important;
+  }
+  
+  .video-background-overlay {
+    background-size: 300% !important;
+  }
+}

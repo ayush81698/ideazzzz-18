@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useThemeContext } from '@/providers/ThemeProvider';
 
 type Theme = 'light' | 'dark';
 
@@ -46,7 +47,7 @@ export function useTheme() {
 
 // Separate component for the theme switcher
 export const ThemeSwitcher = () => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useThemeContext();
   
   return (
     <button

@@ -17,6 +17,8 @@ interface ProductDialogProps {
 const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogProps) => {
   const isMobile = useIsMobile();
   
+  // Guard against undefined window during SSR/hydration
+  if (typeof window === 'undefined') return null;
   if (!product) return null;
 
   // Determine if AR is available based on whether we have the required model format
@@ -77,13 +79,13 @@ const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogPro
             <h3 className="font-semibold mb-2">Description</h3>
             <p className="text-gray-700 mb-6">{product.description}</p>
             
-            {product.model_url && product.usdz_url && (
+            {product.model_url && (
               <div className="bg-gray-100 p-3 rounded-md mb-4 text-sm">
                 <p className="font-semibold mb-1">📱 Experience in Augmented Reality</p>
                 <p>Look for the AR button in the model viewer to see this product in your space!</p>
                 <ul className="mt-2 space-y-1">
                   <li>• Android: Use the 👋 View in AR button</li>
-                  <li>• iPhone/iPad: Use the 🍏 View in AR button</li>
+                  <li>• iOS: Use the 🍏 View in AR button</li>
                 </ul>
               </div>
             )}

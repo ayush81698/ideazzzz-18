@@ -15,6 +15,9 @@ interface ProductCardProps {
 const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
   const isMobile = useIsMobile();
   
+  // Guard against undefined window during SSR/hydration
+  if (typeof window === 'undefined') return null;
+  
   return (
     <Card className="overflow-hidden h-full flex flex-col">
       <div className="relative h-96 bg-gray-100">

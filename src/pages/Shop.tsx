@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -14,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import ModelViewer from '@/components/ModelViewer';
+import ModelViewerComponent from '@/components/ModelViewerComponent';
 import { Filter, ShoppingCart, Star, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -170,7 +169,6 @@ const Shop = () => {
         </motion.div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-8">
-          {/* Filters Sidebar */}
           <motion.div 
             initial="hidden"
             animate="visible"
@@ -245,7 +243,6 @@ const Shop = () => {
             </div>
           </motion.div>
           
-          {/* Products Grid */}
           <div className="lg:col-span-3">
             <div className="flex justify-between items-center mb-4 md:mb-6">
               <div className="text-sm md:text-lg font-medium">
@@ -309,17 +306,42 @@ const Shop = () => {
                         onClick={() => handleProductClick(product.id)}
                       >
                         <div className="absolute inset-0 transition-opacity duration-300 group-hover:opacity-0">
-                          <img 
-                            src={product.imageurl || '/placeholder.svg'} 
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/placeholder.svg';
-                            }}
-                          />
+                          {product.model_url ? (
+                            <ModelViewerComponent 
+                              src={product.model_url}
+                              ios_src={product.usdz_url}
+                              alt={product.name}
+                              height="100%"
+                              width="100%"
+                              autoRotate={true}
+                              cameraControls={true}
+                              enableAR={true}
+                              poster={product.imageurl}
+                            />
+                          ) : (
+                            <img 
+                              src={product.imageurl || '/placeholder.svg'} 
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = '/placeholder.svg';
+                              }}
+                            />
+                          )}
                         </div>
                         <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                          {/* Optional 3D model view if available */}
+                          {product.model_url && (
+                            <ModelViewerComponent 
+                              src={product.model_url}
+                              ios_src={product.usdz_url}
+                              alt={product.name}
+                              height="100%"
+                              width="100%"
+                              autoRotate={true}
+                              cameraControls={true}
+                              enableAR={true}
+                            />
+                          )}
                         </div>
                         <div className="absolute top-2 left-2 flex flex-wrap gap-1">
                           {product.discount && (

@@ -22,6 +22,9 @@ export function detectARSupport(modelUrl?: string, iosModelUrl?: string): boolea
   return isIOSSupported || isAndroidSupported || hasWebXR;
 }
 
+// Global flag to track if AR toast has been shown during this session
+let arToastShown = false;
+
 /**
  * Enhance AR button visibility and functionality
  */
@@ -62,13 +65,14 @@ export function enhanceARButton(
     
     setArAvailable(true);
     
-    // Show a toast notification only once when AR is available
-    if (isMobile && !modelVisible) {
+    // Show a toast notification only once per session when AR is available
+    if (isMobile && !arToastShown) {
       toast.info("AR View Available", {
         description: "Tap the 'View in AR' button to see this model in your space",
         duration: 5000,
         position: "bottom-center"
       });
+      arToastShown = true; // Set the global flag to prevent repeated toasts
       setModelVisible(true);
     }
   } else {

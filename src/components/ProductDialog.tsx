@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/types/products";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import ModelViewerComponent from './ModelViewerComponent';
+import { ModelViewerComponent } from '@/components/model-viewer';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductDialogProps {
@@ -16,6 +16,7 @@ interface ProductDialogProps {
 
 const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogProps) => {
   const isMobile = useIsMobile();
+  const [modelLoaded, setModelLoaded] = useState(false);
   
   // Guard against undefined window during SSR/hydration
   if (typeof window === 'undefined') return null;
@@ -35,7 +36,10 @@ const ProductDialog = ({ product, open, onClose, onAddToCart }: ProductDialogPro
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="relative">
             {product.model_url ? (
-              <div className={`${isMobile ? 'h-[450px]' : 'h-[550px]'} relative`}>
+              <div 
+                className={`${isMobile ? 'h-[450px]' : 'h-[550px]'} relative`}
+                onLoad={() => setModelLoaded(true)}
+              >
                 <ModelViewerComponent
                   src={product.model_url}
                   ios_src={product.usdz_url}

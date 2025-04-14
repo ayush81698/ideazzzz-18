@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { ModelViewerProps } from './ModelViewerProps';
 import { enhanceARButton } from './ar-detection';
@@ -28,6 +29,8 @@ const StandardModelViewer: React.FC<ModelViewerProps> = ({
 
   // Handle AR button visibility enhancement
   useEffect(() => {
+    const modelId = `model-${Math.random().toString(36).substr(2, 9)}`;
+    
     const handleVisibilityChange = (event: any) => {
       // Ensure we're setting a boolean value to the boolean state
       const isVisible = event.detail.visible === true;

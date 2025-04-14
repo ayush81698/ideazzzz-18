@@ -172,7 +172,8 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
     
     // 1. Use model-visibility event (more reliable than load)
     const handleVisibilityChange = (event: any) => {
-      const isVisible = event.detail.visible;
+      // Fix: Ensure we're setting a boolean value to the boolean state
+      const isVisible = event.detail.visible === true;
       if (isVisible) {
         console.log(`Model ${alt} is now visible`);
         enhanceARButton();

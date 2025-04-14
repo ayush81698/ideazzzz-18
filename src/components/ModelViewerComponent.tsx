@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import '@google/model-viewer';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -61,10 +62,40 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
   const isMobile = useIsMobile();
   const [arAvailable, setArAvailable] = useState<boolean>(false);
   const [modelVisible, setModelVisible] = useState<boolean>(false);
+  const [arSupported, setArSupported] = useState<boolean | null>(null);
   
   // Guards against SSR/hydration issues
   if (typeof window === 'undefined') return null;
-  
+
+  // Helper function to detect AR support based on browser
+  useEffect(() => {
+    const checkARSupport = () => {
+      // Check for Android AR support
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isChrome = /Chrome/i.test(navigator.userAgent) && !/Edge|Edg/i.test(navigator.userAgent);
+      const androidARSupport = isAndroid && isChrome;
+      
+      // Check for iOS AR support
+      const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const iosSafari = isiOS && /Safari/i.test(navigator.userAgent) && !/CriOS|FxiOS/i.test(navigator.userAgent);
+      const iOSARSupport = isiOS && ios_src;
+      
+      // AR is supported if either platform has support
+      const supported = androidARSupport || iOSARSupport;
+      setArSupported(supported);
+      
+      console.log(`AR Support Check: Android=${androidARSupport}, iOS=${iOSARSupport}, Overall=${supported}`);
+      
+      // Log MIME type diagnostic info if available
+      if (modelViewerRef.current) {
+        console.log(`Model URL: ${src}`);
+        if (ios_src) console.log(`iOS Model URL: ${ios_src}`);
+      }
+    };
+    
+    checkARSupport();
+  }, [src, ios_src]);
+
   // Function to enhance AR button visibility with better event handling
   const enhanceARButton = () => {
     if (!enableAR || !modelViewerRef.current) return;
@@ -109,6 +140,33 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
     }
   };
 
+  // Handle AR activation results
+  useEffect(() => {
+    if (!modelViewerRef.current) return;
+    
+    const handleActivateAR = () => {
+      console.log("AR activation attempted");
+    };
+    
+    const handleARTracking = (event: any) => {
+      console.log("AR tracking event:", event.detail);
+    };
+    
+    const modelViewer = modelViewerRef.current;
+    
+    if (modelViewer) {
+      modelViewer.addEventListener('ar-tracking', handleARTracking);
+      modelViewer.addEventListener('activate-ar', handleActivateAR);
+    }
+    
+    return () => {
+      if (modelViewer) {
+        modelViewer.removeEventListener('ar-tracking', handleARTracking);
+        modelViewer.removeEventListener('activate-ar', handleActivateAR);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     // Multiple approaches to ensure AR button is enhanced
     
@@ -127,6 +185,15 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
       console.log(`AR Status: ${event.detail.status}`);
       if (event.detail.status === 'session-started') {
         console.log('AR session started');
+      } else if (event.detail.status === 'not-presenting') {
+        console.log('AR not presenting - check if device supports AR');
+      } else if (event.detail.status === 'failed') {
+        console.error('AR session failed to start');
+        // Show toast with failure reason
+        toast.error("AR Failed", {
+          description: "Could not start AR view. Please try again or use another device.",
+          duration: 3000,
+        });
       }
     };
     
@@ -216,6 +283,47 @@ const ModelViewerComponent: React.FC<ModelViewerProps> = ({
         >
           <span style={{ marginRight: '6px' }}>🍏</span> View in AR
         </a>
+      </div>
+    );
+  }
+
+  // Add fallback for devices where AR might not work properly
+  if (arSupported === false && isMobile) {
+    return (
+      <div className={`ar-unsupported ${className}`} style={{ width, height, position: 'relative' }}>
+        <model-viewer
+          ref={modelViewerRef}
+          src={src}
+          alt={alt}
+          poster={poster}
+          camera-controls={cameraControls ? "true" : "false"}
+          auto-rotate={autoRotate ? "true" : "false"}
+          environment-image={environmentImage}
+          exposure={exposure}
+          shadow-intensity={shadowIntensity}
+          style={{ width: '100%', height: '100%' }}
+          loading="eager"
+        />
+        <div 
+          className="ar-unsupported-message"
+          style={{
+            position: 'absolute',
+            bottom: '16px',
+            right: '16px',
+            backgroundColor: '#fff',
+            color: '#000',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            textAlign: 'center',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            zIndex: 10,
+            fontSize: '14px',
+            maxWidth: '80%'
+          }}
+        >
+          <p>AR not supported on this device/browser</p>
+          {isIOS && !ios_src && <p>iOS device requires USDZ model file</p>}
+        </div>
       </div>
     );
   }

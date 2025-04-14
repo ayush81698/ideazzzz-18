@@ -1,0 +1,27 @@
+
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[[headers]]
+  for = "*.glb"
+  [headers.values]
+    Content-Type = "model/gltf-binary"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "*.gltf"
+  [headers.values]
+    Content-Type = "model/gltf+json"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "*.usdz"
+  [headers.values]
+    Content-Type = "model/vnd.usd+zip"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
